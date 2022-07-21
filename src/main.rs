@@ -1,9 +1,15 @@
 use std::{collections::VecDeque};
 use std::env;
 
-use llvm_ir::{Module, Function};
+use llvm_ir::{Module, Function, Instruction};
 use llvm_ir_analysis::{ModuleAnalysis, FunctionAnalysis, CFGNode};
 use rustc_demangle::demangle;
+use tracing::debug;
+use z3::{
+    ast::{self, Ast, Bool, Int},
+    SatResult,
+};
+use z3::{Config, Context, Solver};
 
 
 fn parse_control_flow_graph(func_analysis: &FunctionAnalysis) -> () {
@@ -17,12 +23,12 @@ fn parse_control_flow_graph(func_analysis: &FunctionAnalysis) -> () {
     match stack[0] {
         CFGNode::Block(name) => {
             let preds = cfg.preds(name);
-            println!("Start preds:");
+            debug!("Start preds:");
             for pred in preds {
-                println!("{:?}", pred);
+                debug!("{:?}", pred);
             }
         },
-        _ => println!("\tReturn block"),
+        _ => debug!("\tReturn block"),
     }
 
     while stack.len() > 0 {
@@ -31,11 +37,26 @@ fn parse_control_flow_graph(func_analysis: &FunctionAnalysis) -> () {
             blocks.push(current_block);
             match current_block {
                 CFGNode::Block(name) => {
-                    println!("\tvalue: {}", name);
+                    debug!("\tvalue: {}", name);
                     stack.extend(cfg.succs(name));
                 },
-                _ => println!("\tReturn block"),
+                _ => debug!("\tReturn block"),
             }
+        }
+    }
+}
+
+fn parse_instruction(instr: &Instruction) -> () {
+
+    match instr {
+        Instruction::Add(add) => {
+            println!("\tAdd operation: {:?}", add)
+        },
+        Instruction::Mul(mul) => {
+            println!("\tMul operation: {:?}", mul)
+        }
+        unknown_opp => {
+            debug!("\tUnknown operation: {:?}", unknown_opp);
         }
     }
 }
@@ -48,7 +69,9 @@ fn backward_symbolic_execution(func: &Function) -> () {
         println!("\t\t{:?}", bb.name);
         for instr in &bb.instrs {
             println!("\t\t\t{:?}", instr.to_string());
+            parse_instruction(instr);
         }
+        println!("\t\t\t{:?}", bb.term);
     }
 }
 
@@ -79,7 +102,7 @@ fn main() {
     let func = module.get_func_by_name("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E").unwrap();
     let fa = ma.fn_analysis("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E");
     
-    println!("Backward Symbolic Execution in {:?}", demangle("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E"));
+    debug!("Backward Symbolic Execution in {:?}", demangle("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E"));
     backward_symbolic_execution(func);
     parse_control_flow_graph(fa);
 }

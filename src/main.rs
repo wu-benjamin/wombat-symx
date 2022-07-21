@@ -1,9 +1,8 @@
 use std::collections::VecDeque;
 
-use llvm_ir::{Module, module};
+use llvm_ir::Module;
 use llvm_ir_analysis::{ModuleAnalysis, FunctionAnalysis, CFGNode};
 use rustc_demangle::demangle;
-
 
 
 fn backward_symbolic_execution(function: &FunctionAnalysis) -> () {
@@ -35,12 +34,14 @@ fn backward_symbolic_execution(function: &FunctionAnalysis) -> () {
     }
 }
 
+
 fn print_file_functions(module: &Module) -> () {
     println!("Functions in {:?}:", module.name);
     for func in &module.functions {
         println!("\t{:?}", demangle(&func.name.as_str()).to_string());
     }
 }
+
 
 fn main() {
     println!("Hello, world!");

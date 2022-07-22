@@ -1,6 +1,7 @@
 use std::{collections::VecDeque};
 use std::env;
 
+use inkwell::values::{FunctionValue, InstructionValue, InstructionOpcode};
 use rustc_demangle::demangle;
 use tracing::debug;
 use z3::{
@@ -50,43 +51,49 @@ use std::path::Path;
 //     }
 // }
 
-// fn parse_instruction(instr: &Instruction) -> () {
-
-//     match instr {
-//         Instruction::Add(add) => {
-//             println!("\tAdd operation: {:?}", add)
-//         },
-//         Instruction::Mul(mul) => {
-//             println!("\tMul operation: {:?}", mul)
-//         }
-//         unknown_opp => {
-//             debug!("\tUnknown operation: {:?}", unknown_opp);
-//         }
-//     }
-// }
-
-
-// fn backward_symbolic_execution(func: &Function) -> () {
-//     //! Perform backward symbolic execution on a function given the llvm-ir function object
-//     println!("\tBasic Blocks:");
-//     for bb in &func.basic_blocks {
-//         println!("\t\t{:?}", bb.name);
-//         for instr in &bb.instrs {
-//             println!("\t\t\t{:?}", instr.to_string());
-//             parse_instruction(instr);
-//         }
-//         println!("\t\t\t{:?}", bb.term);
-//     }
-// }
+fn parse_instruction(instruction: &InstructionValue) -> () {
+    match instruction.get_opcode() {
+        InstructionOpcode::Add => {
+            println!("\t\t\tAdd operation: {:?}", "add")
+        },
+        InstructionOpcode::Mul => {
+            println!("\t\t\tMul operation: {:?}", "mul")
+        }
+        _ => {
+            println!("\t\t\tUnknown operation: {:?}", instruction.get_opcode());
+        }
+    }
+    for operand_index in 0..instruction.get_num_operands() {
+        let operand = instruction.get_operand(operand_index).unwrap();
+        println!("\t\t\t\tOperand {}: {:?}", operand_index, operand);
+    }
+}
 
 
-fn print_file_functions(module: InkwellModule) -> () {
+fn backward_symbolic_execution(function: &FunctionValue) -> () {
+    //! Perform backward symbolic execution on a function given the llvm-ir function object
+    println!("\tBasic Blocks:");
+    for bb in function.get_basic_blocks() {
+        println!("\t\t{:?}", bb.get_name().to_str().unwrap());
+        let mut next_instruction = bb.get_first_instruction();
+        while let Some(current_instruction) = next_instruction {
+            println!("\t\t\t{:?}", current_instruction.to_string());
+            // parse_instruction(&current_instruction);
+            next_instruction = current_instruction.get_next_instruction();
+        }
+        // Terminator is already printed as a regular instruction
+        // println!("\t\t\t{:?}", bb.get_terminator());
+    }
+}
+
+
+fn print_file_functions(module: &InkwellModule) -> () {
     //! Iterates through all functions in the file and prints the demangled name
     println!("Functions in {:?}:", module.get_name());
-    let mut current_function = module.get_first_function();
-    while let Some(function) = current_function {
-        println!("\t{:?} == {:?}", demangle(function.get_name().to_str().unwrap()).to_string(), function.get_name());
-        current_function = function.get_next_function();
+    let mut next_function = module.get_first_function();
+    while let Some(current_function) = next_function {
+        println!("\t{:?} == {:?}", demangle(current_function.get_name().to_str().unwrap()).to_string(), current_function.get_name());
+        next_function = current_function.get_next_function();
     }
 }
 
@@ -103,7 +110,16 @@ fn main() {
     let context = InkwellContext::create();
     let buffer = MemoryBuffer::create_from_file(&path).unwrap();
     let module = InkwellModule::parse_bitcode_from_buffer(&buffer, &context).unwrap();
-    print_file_functions(module);
+    print_file_functions(&module);
+
+    let mut next_function = module.get_first_function();
+    while let Some(current_function) = next_function {
+        if demangle(&current_function.get_name().to_str().unwrap()).to_string().contains(&file_name[file_name.find("/").unwrap()+1..file_name.find(".").unwrap()]) {
+            println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
+            backward_symbolic_execution(&current_function);
+        }
+        next_function = current_function.get_next_function();
+    }
 
     // let ma = ModuleAnalysis::new(&module);
     // for func in &module.functions {

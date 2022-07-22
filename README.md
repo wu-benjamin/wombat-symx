@@ -12,6 +12,10 @@ To build the project, use:
 ```
 cargo build
 ```
+To create the bytecode files required by the symbolic executor from the test Rust source files, use:
+```
+./help.sh
+```
 
 ## Runtime Execution
 

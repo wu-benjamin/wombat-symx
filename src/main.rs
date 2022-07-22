@@ -94,15 +94,23 @@ fn main() {
         file_name = args[1].to_string();
     }
 
-    let module = Module::from_bc_path(file_name).unwrap();
+    let module = Module::from_bc_path(&file_name).unwrap();
     
     print_file_functions(&module);
 
     let ma = ModuleAnalysis::new(&module);
-    let func = module.get_func_by_name("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E").unwrap();
-    let fa = ma.fn_analysis("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E");
+    for func in &module.functions {
+        if demangle(&func.name).to_string().contains(&file_name[file_name.find("/").unwrap()+1..file_name.find(".").unwrap()]) {
+            let func = module.get_func_by_name(&func.name).unwrap();
+            
+            println!("Backward Symbolic Execution in {:?}", demangle(&func.name));
+            backward_symbolic_execution(func);
+        }
+    }
+    // let func = module.get_func_by_name("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E").unwrap();
+    // let fa = ma.fn_analysis("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E");
     
-    debug!("Backward Symbolic Execution in {:?}", demangle("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E"));
-    backward_symbolic_execution(func);
-    parse_control_flow_graph(fa);
+    // debug!("Backward Symbolic Execution in {:?}", demangle("_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E"));
+    // backward_symbolic_execution(func);
+    // parse_control_flow_graph(fa);
 }

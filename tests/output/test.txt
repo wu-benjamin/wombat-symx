@@ -1,0 +1,92 @@
+Functions in "tests/test.bc":
+	"core::ops::function::FnOnce::call_once{{vtable.shim}}::he0f6166ec1573e3e" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17he0f6166ec1573e3eE"
+	"core::ops::function::FnOnce::call_once::h4451daff7261e69a" == "_ZN4core3ops8function6FnOnce9call_once17h4451daff7261e69aE"
+	"core::ops::function::FnOnce::call_once::h7692efa6bbb00873" == "_ZN4core3ops8function6FnOnce9call_once17h7692efa6bbb00873E"
+	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::h3ddbc4150ac84f98" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17h3ddbc4150ac84f98E"
+	"test::foo::h0617b14829d2c383" == "_ZN4test3foo17h0617b14829d2c383E"
+	"test::main::h90cdca1c5e05c042" == "_ZN4test4main17h90cdca1c5e05c042E"
+	"core::hint::black_box::hcccdee715a7dad2e" == "_ZN4core4hint9black_box17hcccdee715a7dad2eE"
+	"std::process::ExitCode::to_i32::h6fcee6da13ad240b" == "_ZN3std7process8ExitCode6to_i3217h6fcee6da13ad240bE"
+	"<() as std::process::Termination>::report::hd5eae0ee6f69e72d" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17hd5eae0ee6f69e72dE"
+	"<std::process::ExitCode as std::process::Termination>::report::h4c87e231545bf941" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17h4c87e231545bf941E"
+	"std::rt::lang_start::h2c33ebe669ff4f15" == "_ZN3std2rt10lang_start17h2c33ebe669ff4f15E"
+	"std::rt::lang_start::{{closure}}::hbda48e7636c3485f" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17hbda48e7636c3485fE"
+	"std::sys_common::backtrace::__rust_begin_short_backtrace::h0706aa3075dfe500" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h0706aa3075dfe500E"
+	"std::sys::unix::process::process_common::ExitCode::as_i32::hd52d8041ef27b242" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217hd52d8041ef27b242E"
+	"main" == "main"
+Backward Symbolic Execution in test::foo::h0617b14829d2c383
+	Basic Blocks:
+		Name("start")
+			"%r1 = alloca i64, align 8"
+			"%r = alloca i64, align 8"
+			CondBr(CondBr { condition: LocalOperand { name: Name("c1"), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("bb1"), false_dest: Name("bb3"), debugloc: None })
+		Name("bb3")
+			"%0 = call @llvm.uadd.with.overflow.i64(i64 %x, i64 4)"
+			"%_9.0 = extractvalue { i64, i1 } %0, 0"
+			"%_9.1 = extractvalue { i64, i1 } %0, 1"
+			"%1 = call @llvm.expect.i1(i1 %_9.1, i1 false)"
+			CondBr(CondBr { condition: LocalOperand { name: Number(1), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("panic2"), false_dest: Name("bb4"), debugloc: None })
+		Name("bb1")
+			"%2 = call @llvm.uadd.with.overflow.i64(i64 %x, i64 3)"
+			"%_7.0 = extractvalue { i64, i1 } %2, 0"
+			"%_7.1 = extractvalue { i64, i1 } %2, 1"
+			"%3 = call @llvm.expect.i1(i1 %_7.1, i1 false)"
+			CondBr(CondBr { condition: LocalOperand { name: Number(3), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("panic"), false_dest: Name("bb2"), debugloc: None })
+		Name("bb2")
+			"store i64 %_7.0, i64* %r1, align 8"
+			Br(Br { dest: Name("bb5"), debugloc: None })
+		Name("panic")
+			"call @_ZN4core9panicking5panic17h4241c5ccea17facaE(bitcast ([28 x i8]* @str.0 to [0 x i8]*), i64 28, bitcast (<{ i8*, [16 x i8] }>* @alloc26 to %core::panic::location::Location*))"
+			Unreachable(Unreachable { debugloc: None })
+		Name("bb5")
+			CondBr(CondBr { condition: LocalOperand { name: Name("c2"), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("bb6"), false_dest: Name("bb8"), debugloc: None })
+		Name("bb4")
+			"store i64 %_9.0, i64* %r1, align 8"
+			Br(Br { dest: Name("bb5"), debugloc: None })
+		Name("panic2")
+			"call @_ZN4core9panicking5panic17h4241c5ccea17facaE(bitcast ([28 x i8]* @str.0 to [0 x i8]*), i64 28, bitcast (<{ i8*, [16 x i8] }>* @alloc28 to %core::panic::location::Location*))"
+			Unreachable(Unreachable { debugloc: None })
+		Name("bb8")
+			"%_13 = load i64* %r1, align 8"
+			"%4 = call @llvm.usub.with.overflow.i64(i64 %_13, i64 2)"
+			"%_14.0 = extractvalue { i64, i1 } %4, 0"
+			"%_14.1 = extractvalue { i64, i1 } %4, 1"
+			"%5 = call @llvm.expect.i1(i1 %_14.1, i1 false)"
+			CondBr(CondBr { condition: LocalOperand { name: Number(5), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("panic4"), false_dest: Name("bb9"), debugloc: None })
+		Name("bb6")
+			"%_11 = load i64* %r1, align 8"
+			"%6 = call @llvm.usub.with.overflow.i64(i64 %_11, i64 1)"
+			"%_12.0 = extractvalue { i64, i1 } %6, 0"
+			"%_12.1 = extractvalue { i64, i1 } %6, 1"
+			"%7 = call @llvm.expect.i1(i1 %_12.1, i1 false)"
+			CondBr(CondBr { condition: LocalOperand { name: Number(7), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("panic3"), false_dest: Name("bb7"), debugloc: None })
+		Name("bb7")
+			"store i64 %_12.0, i64* %r, align 8"
+			Br(Br { dest: Name("bb10"), debugloc: None })
+		Name("panic3")
+			"call @_ZN4core9panicking5panic17h4241c5ccea17facaE(bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %core::panic::location::Location*))"
+			Unreachable(Unreachable { debugloc: None })
+		Name("bb10")
+			"%_17 = load i64* %r, align 8"
+			"%_16 = icmp ugt i64 %_17, i64 %x"
+			"%_15 = xor i1 %_16, i1 true"
+			CondBr(CondBr { condition: LocalOperand { name: Name("_15"), ty: TypeRef(IntegerType { bits: 1 }) }, true_dest: Name("bb11"), false_dest: Name("bb12"), debugloc: None })
+		Name("bb9")
+			"store i64 %_14.0, i64* %r, align 8"
+			Br(Br { dest: Name("bb10"), debugloc: None })
+		Name("panic4")
+			"call @_ZN4core9panicking5panic17h4241c5ccea17facaE(bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, bitcast (<{ i8*, [16 x i8] }>* @alloc32 to %core::panic::location::Location*))"
+			Unreachable(Unreachable { debugloc: None })
+		Name("bb12")
+			"%8 = load i64* %r, align 8"
+			Ret(Ret { return_operand: Some(LocalOperand { name: Number(8), ty: TypeRef(IntegerType { bits: 64 }) }), debugloc: None })
+		Name("bb11")
+			"call @_ZN4core9panicking5panic17h4241c5ccea17facaE(bitcast (<{ [23 x i8] }>* @alloc33 to [0 x i8]*), i64 23, bitcast (<{ i8*, [16 x i8] }>* @alloc35 to %core::panic::location::Location*))"
+			Unreachable(Unreachable { debugloc: None })
+Backward Symbolic Execution in test::main::h90cdca1c5e05c042
+	Basic Blocks:
+		Name("start")
+			"%_1 = call @_ZN4test3foo17h0617b14829d2c383E(i1 false, i1 true, i64 13)"
+			Br(Br { dest: Name("bb1"), debugloc: None })
+		Name("bb1")
+			Ret(Ret { return_operand: None, debugloc: None })

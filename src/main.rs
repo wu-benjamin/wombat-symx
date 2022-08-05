@@ -275,7 +275,8 @@ fn main() {
     while let Some(current_function) = next_function {
         let current_function_name = demangle(&current_function.get_name().to_str().unwrap()).to_string();
         if current_function_name.contains(&file_name[file_name.find("/").unwrap()+1..file_name.find(".").unwrap()])
-            && !current_function_name.contains("::main") {
+                && !current_function_name.contains("::main") {
+            // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
             pretty_print_function(&current_function);
             let forward_edges = get_forward_edges(&current_function);

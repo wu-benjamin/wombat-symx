@@ -11,3 +11,4 @@ inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", feat
 rustc-demangle = "0.1"
 tracing = "0.1"
 tracing-subscriber = "0.2.0"
+either = "1.7.0"

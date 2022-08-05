@@ -300,7 +300,7 @@ fn get_entry_condition<'a>(
 
 
 fn backward_symbolic_execution(function: &FunctionValue) -> () {
-    // Perform backward symbolic execution on a function given the llvm-ir function object
+    //! Perform backward symbolic execution on a function given the llvm-ir function object
     let forward_edges = get_forward_edges(&function);
     let backward_edges = get_backward_edges(&function);
     let backward_sorted_nodes = backward_topological_sort(&function);

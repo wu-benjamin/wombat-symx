@@ -328,6 +328,12 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
         }
 
         // Parse statements in the basic block
+        let mut prev_instruction = get_basic_block_by_name(&function, &node).get_last_instruction();
+
+        while let Some(current_instruction) = prev_instruction {
+            // TODO: Process current instruction
+            prev_instruction = current_instruction.get_previous_instruction();
+        }
 
         // handle assign panic
         if let Some(successors) = forward_edges.get(&node) {

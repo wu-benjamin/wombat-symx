@@ -1,10 +1,9 @@
-use std::collections::{VecDeque, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::env;
-use either;
 
+use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionValue, InstructionOpcode};
 use rustc_demangle::demangle;
-use tracing::debug;
 use z3::{
     ast::{self, Ast, Bool, Int},
     SatResult,
@@ -20,21 +19,61 @@ use std::path::Path;
 const COMMON_END_NODE_NAME: &str = "common_end";
 const PANIC_VAR_NAME: &str = "panic_var";
 
-fn parse_instruction(instruction: &InstructionValue) -> () {
-    match instruction.get_opcode() {
-        InstructionOpcode::Add => {
-            println!("\t\t\tAdd operation: {:?}", "add")
-        },
-        InstructionOpcode::Mul => {
-            println!("\t\t\tMul operation: {:?}", "mul")
+#[derive(Debug)]
+
+enum IsCleanup {
+    YES,
+    NO,
+    UNKNOWN,
+}
+
+
+fn is_panic_block(bb: &BasicBlock) -> IsCleanup {
+    if let Some(terminator) = bb.get_terminator() {
+        let opcode = terminator.get_opcode();
+        let num_operands = terminator.get_num_operands();
+        match &opcode {
+            InstructionOpcode::Return => {
+                return IsCleanup::NO;
+            }
+            InstructionOpcode::Br => {
+                return IsCleanup::NO;
+            }
+            InstructionOpcode::Switch => {
+                return IsCleanup::NO;
+            }
+            InstructionOpcode::IndirectBr => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::Invoke => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::CallBr => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::Resume => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::CatchSwitch => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::CatchRet => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::CleanupRet => {
+                return IsCleanup::UNKNOWN;
+            }
+            InstructionOpcode::Unreachable => {
+                return IsCleanup::YES;
+            }
+            _ => {
+                println!("Opcode {:?} is not supported as a terminator for panic detection", opcode);
+                return IsCleanup::UNKNOWN;
+            }
         }
-        _ => {
-            println!("\t\t\tUnknown operation: {:?}", instruction.get_opcode());
-        }
-    }
-    for operand_index in 0..instruction.get_num_operands() {
-        let operand = instruction.get_operand(operand_index).unwrap();
-        println!("\t\t\t\tOperand {}: {:?}", operand_index, operand);
+    } else {
+        println!("\tNo terminator found for panic detection");
+        return IsCleanup::UNKNOWN;
     }
 }
 
@@ -180,10 +219,180 @@ fn forward_topological_sort(function: &FunctionValue) -> Vec<String> {
     return sorted;
 }
 
+
 fn backward_topological_sort(function: &FunctionValue) -> Vec<String> {
     let mut sorted = forward_topological_sort(function);
     sorted.reverse();
     return sorted;
+}
+
+
+fn get_entry_condition<'a>(
+    solver: &'a Solver<'_>,
+    body: &'a Body<'_>,
+    predecessor: &str,
+    node: &str,
+) -> Bool<'a> {
+    let mut entry_condition = ast::Bool::from_bool(solver.get_context(), true);
+    if let Ok(n) = predecessor.parse() {
+        if let Some(terminator) = &body.basic_blocks()[BasicBlock::from_usize(n)].terminator {
+            match &terminator.kind {
+                TerminatorKind::SwitchInt { discr, targets, .. } => {
+                    let mut switch_value = 1;
+                    for switch_target_and_value in targets.iter() {
+                        if switch_target_and_value.1.index().to_string() == node {
+                            switch_value = switch_target_and_value.0;
+                            break;
+                        }
+                    }
+                    if targets.iter().len() != 1 {
+                        debug!(
+                            "SwitchInt with more than 1 non-other value is not currently supported"
+                        )
+                    }
+                    match discr {
+                        Operand::Copy(place) => {
+                            if body.local_decls[place.local].ty.to_string() == "i32" {
+                                let typed_switch_value = ast::Int::from_bv(
+                                    &ast::BV::from_i64(
+                                        solver.get_context(),
+                                        switch_value.try_into().unwrap(),
+                                        32,
+                                    ),
+                                    true,
+                                );
+                                let switch_var = ast::Int::new_const(
+                                    solver.get_context(),
+                                    get_var_name_from_place(place),
+                                );
+                                entry_condition = switch_var._eq(&typed_switch_value);
+                            } else if body.local_decls[place.local].ty.to_string() == "bool" {
+                                let typed_switch_value =
+                                    ast::Bool::from_bool(solver.get_context(), switch_value != 0);
+                                let switch_var = ast::Bool::new_const(
+                                    solver.get_context(),
+                                    get_var_name_from_place(place),
+                                );
+                                entry_condition = switch_var._eq(&typed_switch_value);
+                            } else {
+                                debug!(
+                                    "Local Decl type {} not supported yet",
+                                    body.local_decls[place.local].ty.to_string()
+                                );
+                            }
+                        }
+                        Operand::Move(place) => {
+                            if body.local_decls[place.local].ty.to_string() == "i32" {
+                                let typed_switch_value = ast::Int::from_bv(
+                                    &ast::BV::from_i64(
+                                        solver.get_context(),
+                                        switch_value.try_into().unwrap(),
+                                        32,
+                                    ),
+                                    true,
+                                );
+                                let switch_var = ast::Int::new_const(
+                                    solver.get_context(),
+                                    get_var_name_from_place(place),
+                                );
+                                entry_condition = switch_var._eq(&typed_switch_value);
+                            } else if body.local_decls[place.local].ty.to_string() == "bool" {
+                                let typed_switch_value =
+                                    ast::Bool::from_bool(solver.get_context(), switch_value != 0);
+                                let switch_var = ast::Bool::new_const(
+                                    solver.get_context(),
+                                    get_var_name_from_place(place),
+                                );
+                                entry_condition = switch_var._eq(&typed_switch_value);
+                            } else {
+                                debug!(
+                                    "Local Decl type {} not supported yet",
+                                    body.local_decls[place.local].ty.to_string()
+                                );
+                            }
+                        }
+                        Operand::Constant(constant) => {
+                            if let Some(scalar) = constant.literal.try_to_scalar() && let Some(value) = scalar.to_i32().ok() {
+                                let typed_switch_value = ast::Int::from_bv(
+                                    &ast::BV::from_i64(
+                                        solver.get_context(),
+                                        switch_value.try_into().unwrap(),
+                                        32,
+                                    ),
+                                    true,
+                                );
+                                let switch_var = ast::Int::from_bv(
+                                    &ast::BV::from_i64(
+                                        solver.get_context(),
+                                        value.try_into().unwrap(),
+                                        32,
+                                    ),
+                                    true,
+                                );
+                                entry_condition = switch_var._eq(&typed_switch_value);
+                                debug!("Found constant {}", value);
+                            } else {
+                                debug!("Failed to get entry condition for SwitchInt constant");
+                            }
+                        }
+                    }
+                }
+                TerminatorKind::Call { .. } => {
+                    // FIXME: Revisit assumption of no information about call
+                    // and that the call can go to any successor without any additional constraints
+                    // ACTUALLY WE MAY NEED TO ENCODE THE ASSIGNMENT OF THE RETURN IN THE DESTINATION CASE (NON-CLEANUP)
+                    // BUT WE PROBABLY WILL NOT SUPPORT UNDERSTANDING RETURN VALUES FOR NOW SINCE IT REQUIRES DOMAIN KNOWLEDGE OF FUNCTION
+                }
+                TerminatorKind::Assert { cond, cleanup, expected, .. } => {
+                    let mut should_assert_hold = true;
+                    if let Some(cleanup) = cleanup && cleanup.index().to_string() == node {
+                        should_assert_hold = false;
+                    }
+                    if !expected {
+                        should_assert_hold = !should_assert_hold;
+                    }
+                    match cond {
+                        Operand::Copy(place) => {
+                            let typed_switch_value =
+                                ast::Bool::from_bool(solver.get_context(), should_assert_hold);
+                            let switch_var = ast::Bool::new_const(
+                                solver.get_context(),
+                                get_var_name_from_place(place),
+                            );
+                            // debug!("HELLO {:?}", get_var_name_from_place(place));
+                            entry_condition = switch_var._eq(&typed_switch_value);
+                        }
+                        Operand::Move(place) => {
+                            let typed_switch_value =
+                                ast::Bool::from_bool(solver.get_context(), should_assert_hold);
+                            let switch_var = ast::Bool::new_const(
+                                solver.get_context(),
+                                get_var_name_from_place(place),
+                            );
+                            // debug!("HELLO {:?}", get_var_name_from_place(place));
+                            entry_condition = switch_var._eq(&typed_switch_value);
+                        }
+                        Operand::Constant(constant) => {
+                            if let Some(scalar) = constant.literal.try_to_scalar() && let Some(value) = scalar.to_i8().ok() {
+                                let typed_switch_value =
+                                    ast::Bool::from_bool(solver.get_context(), should_assert_hold);
+                                let switch_var =
+                                    ast::Bool::from_bool(solver.get_context(), value != 0);
+                                entry_condition = switch_var._eq(&typed_switch_value);
+                                debug!("Found constant {}", value);
+                            } else {
+                                debug!("Failed to get entry condition for Assert constant");
+                            }
+                        }
+                    }
+                }
+                _ => (),
+            }
+        } else {
+            debug!("\tNo terminator");
+        }
+    }
+    return entry_condition;
 }
 
 
@@ -198,17 +407,91 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     let ctx = Z3Context::new(&cfg);
     let solver = Solver::new(&ctx);
 
-    println!("\tBasic Blocks:");
-    for bb in function.get_basic_blocks() {
-        println!("\t\t{:?}", bb.get_name().to_str().unwrap());
-        let mut next_instruction = bb.get_first_instruction();
-        while let Some(current_instruction) = next_instruction {
-            println!("\t\t\t{:?}", current_instruction.to_string());
-            // parse_instruction(&current_instruction);
-            next_instruction = current_instruction.get_next_instruction();
+    for node in backward_sorted_nodes {
+        let mut successor_conditions = ast::Bool::from_bool(solver.get_context(), true);
+        if let Some(successors) = forward_edges.get(&node) {
+            for successor in successors {
+                let successor_var =
+                    ast::Bool::new_const(solver.get_context(), format!("node_{}", successor));
+                successor_conditions =
+                    ast::Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
+            }
         }
-        // Terminator is already printed as a regular instruction
-        // println!("\t\t\t{:?}", bb.get_terminator());
+        let mut node_var = successor_conditions;
+
+        if node == COMMON_END_NODE_NAME.to_string() {
+            let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
+            node_var = ast::Bool::and(solver.get_context(), &[&panic_var.not(), &node_var]);
+        }
+
+        // Parse statements in the basic block
+
+        // handle assign panic
+        if let Some(successors) = forward_edges.get(&node) {
+            let mut is_predecessor_of_end_node = false;
+            for successor in successors {
+                if successor == COMMON_END_NODE_NAME {
+                    is_predecessor_of_end_node = true;
+                    break;
+                }
+            }
+            if is_predecessor_of_end_node {
+                let mut is_panic = false;
+                if let Ok(n) = node.parse() && body.basic_blocks()[BasicBlock::from_usize(n)].is_cleanup {
+                    is_panic = true;
+                }
+                let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
+                let panic_value = ast::Bool::from_bool(solver.get_context(), is_panic);
+                let panic_assignment = panic_var._eq(&panic_value);
+                node_var = panic_assignment.implies(&node_var);
+            }
+        }
+
+        let mut entry_conditions_set = false;
+        let mut entry_conditions = ast::Bool::from_bool(solver.get_context(), true);
+        if let Some(predecessors) = backward_edges.get(&node) {
+            if predecessors.len() > 0 {
+                for predecessor in predecessors {
+                    // get conditions
+                    let entry_condition = get_entry_condition(&solver, body, &predecessor, &node);
+                    entry_conditions = ast::Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
+                }
+                entry_conditions_set = true;
+            }
+        }  
+        if !entry_conditions_set {
+            entry_conditions = ast::Bool::from_bool(solver.get_context(), true);
+            entry_conditions_set = true;
+        }
+        node_var = entry_conditions.implies(&node_var);
+
+        let named_node_var = ast::Bool::new_const(solver.get_context(), format!("node_{}", node));
+        solver.assert(&named_node_var._eq(&node_var));
+    }
+
+    // // constrain int inputs
+    // for i in 0..body.arg_count {
+    //     let arg = ast::Int::new_const(&solver.get_context(), format!("_{}", (i + 1).to_string()));
+    //     let min_int =
+    //         ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+    //     let max_int =
+    //         ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+    //     solver
+    //         .assert(&ast::Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+    // }
+
+    let start_node = function.get_first_basic_block().unwrap();
+    let start_node_var_name = start_node.get_name().to_str().unwrap();
+    let start_node_var = ast::Bool::new_const(solver.get_context(), String::from(start_node_var_name));
+    solver.assert(&start_node_var.not());
+    println!("{:?}", solver);
+
+    // Attempt resolving the model (and obtaining the respective arg values if panic found)
+    println!("Resolved value: {:?}", solver.check());
+
+    if solver.check() == SatResult::Sat {
+        // TODO: Identify concrete function params for Sat case
+        println!("\n{:?}", solver.get_model().unwrap());
     }
 }
 
@@ -228,32 +511,32 @@ fn pretty_print_function(function: &FunctionValue) -> () {
     println!("Number of Nodes: {}", function.count_basic_blocks());
     println!("Arg count: {}", function.count_params());
     // No local decl available to print
-    // for i in 0..body.num_nodes() {
-    //     // debug!("Node: {:?}", body.basic_blocks()[BasicBlock::from_usize(i)]);
-    //     debug!("bb{}", i);
-    //     debug!("\tis_cleanup: {}", body.basic_blocks()[BasicBlock::from_usize(i)].is_cleanup);
-    //     for j in 0..body.basic_blocks()[BasicBlock::from_usize(i)].statements.len() {
-    //         let statement = &body.basic_blocks()[BasicBlock::from_usize(i)].statements[j];
-    //         if matches!(statement.kind, StatementKind::Assign(..)) {
-    //             debug!("\tStatement: {:?}", statement);
-    //         }
-    //     }
-    //     if let Some(terminator) = &body.basic_blocks()[BasicBlock::from_usize(i)].terminator {
-    //         debug!("\tTerminator: {:?}", terminator.kind);
-    //     // match &terminator.kind {
-    //     //     TerminatorKind::Call{..} => {
-    //     //         debug!("is call!");
-    //     //     },
-    //     //     _ => (),
-    //     // }
-    //     } else {
-    //         debug!("\tNo terminator");
-    //     }
-    // }
-    // debug!("Start Node: {:?}", body.start_node());
-    // body.successors(body.start_node()).for_each(|bb| {
-    //     debug!("Successor to Start: {:?}", bb);
-    // });
+    println!("Basic Blocks:");
+    for bb in function.get_basic_blocks() {
+        println!("\tBasic Block: {:?}", bb.get_name().to_str().unwrap());
+        println!("\t\tis_cleanup: {:?}", is_panic_block(&bb));
+        let mut next_instruction = bb.get_first_instruction();
+        let has_terminator = bb.get_terminator().is_some();
+
+        while let Some(current_instruction) = next_instruction {
+            println!("\t\tStatement: {:?}", current_instruction.to_string());
+            next_instruction = current_instruction.get_next_instruction();
+        }
+
+        if has_terminator {
+            println!("\t\tLast statement is a terminator")
+        } else {
+            println!("\t\tNo terminator")
+        }
+    }
+
+    let first_basic_block = function.get_first_basic_block().unwrap();
+    println!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
+    let forward_edges = get_forward_edges(function);
+    let successors = forward_edges.get(first_basic_block.get_name().to_str().unwrap()).unwrap();
+    for successor in successors {
+        println!("\tSuccessor to start node {:?}", successor);
+    }
 }
 
 

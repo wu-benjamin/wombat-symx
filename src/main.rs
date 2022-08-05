@@ -364,7 +364,6 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
         }  
         if !entry_conditions_set {
             entry_conditions = ast::Bool::from_bool(solver.get_context(), true);
-            entry_conditions_set = true;
         }
         node_var = entry_conditions.implies(&node_var);
 

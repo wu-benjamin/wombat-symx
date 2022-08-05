@@ -47,7 +47,6 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String) -> Ba
 fn is_panic_block(bb: &BasicBlock) -> IsCleanup {
     if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
-        let num_operands = terminator.get_num_operands();
         match &opcode {
             InstructionOpcode::Return => {
                 return IsCleanup::NO;
@@ -374,15 +373,17 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     }
 
     // // constrain int inputs
-    // for i in 0..body.arg_count {
-    //     let arg = ast::Int::new_const(&solver.get_context(), format!("_{}", (i + 1).to_string()));
-    //     let min_int =
-    //         ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
-    //     let max_int =
-    //         ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
-    //     solver
-    //         .assert(&ast::Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
-    // }
+    for input in function.get_params() {
+        // let arg = ast::Int::new_const(&solver.get_context(), format!("_{}", (i + 1).to_string()));
+        // TODO: Support other input types
+        let arg = ast::Int::new_const(&solver.get_context(), input.into_int_value().get_name().to_str().unwrap());
+        let min_int =
+            ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+        let max_int =
+            ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+        solver
+            .assert(&ast::Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+    }
 
     let start_node = function.get_first_basic_block().unwrap();
     let start_node_var_name = start_node.get_name().to_str().unwrap();

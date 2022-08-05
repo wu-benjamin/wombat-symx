@@ -325,34 +325,34 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
         if node == COMMON_END_NODE_NAME.to_string() {
             let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
             node_var = ast::Bool::and(solver.get_context(), &[&panic_var.not(), &node_var]);
-        }
+        } else {
+            // Parse statements in the basic block
+            let mut prev_instruction = get_basic_block_by_name(&function, &node).get_last_instruction();
 
-        // Parse statements in the basic block
-        let mut prev_instruction = get_basic_block_by_name(&function, &node).get_last_instruction();
-
-        while let Some(current_instruction) = prev_instruction {
-            // TODO: Process current instruction
-            prev_instruction = current_instruction.get_previous_instruction();
-        }
-
-        // handle assign panic
-        if let Some(successors) = forward_edges.get(&node) {
-            let mut is_predecessor_of_end_node = false;
-            for successor in successors {
-                if successor == COMMON_END_NODE_NAME {
-                    is_predecessor_of_end_node = true;
-                    break;
-                }
+            while let Some(current_instruction) = prev_instruction {
+                // TODO: Process current instruction
+                prev_instruction = current_instruction.get_previous_instruction();
             }
-            if is_predecessor_of_end_node {
-                let mut is_panic = false;
-                if is_panic_block(&get_basic_block_by_name(&function, &node)) == IsCleanup::YES {
-                    is_panic = true;
+
+            // handle assign panic
+            if let Some(successors) = forward_edges.get(&node) {
+                let mut is_predecessor_of_end_node = false;
+                for successor in successors {
+                    if successor == COMMON_END_NODE_NAME {
+                        is_predecessor_of_end_node = true;
+                        break;
+                    }
                 }
-                let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
-                let panic_value = ast::Bool::from_bool(solver.get_context(), is_panic);
-                let panic_assignment = panic_var._eq(&panic_value);
-                node_var = panic_assignment.implies(&node_var);
+                if is_predecessor_of_end_node {
+                    let mut is_panic = false;
+                    if is_panic_block(&get_basic_block_by_name(&function, &node)) == IsCleanup::YES {
+                        is_panic = true;
+                    }
+                    let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
+                    let panic_value = ast::Bool::from_bool(solver.get_context(), is_panic);
+                    let panic_assignment = panic_var._eq(&panic_value);
+                    node_var = panic_assignment.implies(&node_var);
+                }
             }
         }
 
@@ -467,7 +467,7 @@ fn main() {
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_function_name = demangle(&current_function.get_name().to_str().unwrap()).to_string();
-        if current_function_name.contains(&file_name[file_name.find("/").unwrap()+1..file_name.find(".").unwrap()])
+        if current_function_name.contains(&file_name[file_name.rfind("/").unwrap()+1..file_name.rfind(".").unwrap()])
                 && !current_function_name.contains("::main") {
             // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));

@@ -52,3 +52,10 @@ A human-readable LLVM IR format can be created by using the following:
 ```zsh
 rustc --emit=llvm-ir <file-name>.rs
 ```
+
+## Create LLVM IR from Test Files
+
+To compile all of the test rust files into LLVM bytecode files, run the following help script in the project root:
+```zsh
+./help.sh
+```

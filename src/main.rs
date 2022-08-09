@@ -2,10 +2,10 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 
 use inkwell::basic_block::BasicBlock;
-use inkwell::values::{FunctionValue, InstructionValue, InstructionOpcode, BasicValueEnum};
+use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue};
 use rustc_demangle::demangle;
 use z3::{
-    ast::{self, Ast, Bool, Int},
+    ast::{Ast, Bool, Int, BV},
     SatResult,
 };
 use z3::{Config, Solver};
@@ -242,10 +242,36 @@ fn backward_topological_sort(function: &FunctionValue) -> Vec<String> {
 }
 
 
-fn get_var_name(basic_value_enum: &BasicValueEnum) -> String {
-    // TODO: Resolve issue with return values from call not having a name
-    // TODO: Support other value types
-    return String::from(basic_value_enum.into_int_value().get_name().to_str().unwrap());
+fn get_field_to_extract(instruction: &InstructionValue) -> String {
+    let instruction_string = instruction.to_string();
+    return String::from(&instruction_string[instruction_string.rfind(" ").unwrap()+1..instruction_string.rfind("\"").unwrap()]);
+}
+
+
+fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
+    // handle const literal
+    let llvm_str = value.print_to_string();
+    let str = llvm_str.to_str().unwrap();
+    // println!("{:?}", str);
+    if !str.contains("%") {
+        let var_name = str.split_whitespace().nth(1).unwrap();
+        if var_name.eq("true") {
+            let true_const = Bool::new_const(solver.get_context(), format!("const_{}", var_name));
+            solver.assert(&true_const._eq(&Bool::from_bool(solver.get_context(), true)));
+        } else if var_name.eq("false") {
+            let false_const = Bool::new_const(solver.get_context(), format!("const_{}", var_name));
+            solver.assert(&false_const._eq(&Bool::from_bool(solver.get_context(), false)));
+        } else {
+            let parsed_num = var_name.parse::<i32>().unwrap();
+            let num_const = Int::new_const(solver.get_context(), format!("const_{}", var_name));
+            solver.assert(&num_const._eq(&Int::from_i64(solver.get_context(), parsed_num.into())));
+        }
+        return String::from(format!("const_{}", var_name));
+    }
+    let start_index = str.find("%").unwrap();
+    let end_index = str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or(str[start_index..].len()) + start_index;
+    let var_name = String::from(&str[start_index..end_index]);
+    return String::from(var_name);
 }
 
 
@@ -255,7 +281,7 @@ fn get_entry_condition<'a>(
     predecessor: &str,
     node: &str,
 ) -> Bool<'a> {
-    let mut entry_condition = ast::Bool::from_bool(solver.get_context(), true);
+    let mut entry_condition = Bool::from_bool(solver.get_context(), true);
     if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor)).get_terminator() {
         let opcode = terminator.get_opcode();
         let num_operands = terminator.get_num_operands();
@@ -272,10 +298,10 @@ fn get_entry_condition<'a>(
                         target_val = true;
                     }
                     let target_val_var =
-                        ast::Bool::from_bool(solver.get_context(), target_val);
-                    let switch_var = ast::Bool::new_const(
+                        Bool::from_bool(solver.get_context(), target_val);
+                    let switch_var = Bool::new_const(
                         solver.get_context(),
-                        get_var_name(&discriminant),
+                        get_var_name(&discriminant, &solver),
                     );
                     entry_condition = switch_var._eq(&target_val_var);
                 } else {
@@ -311,26 +337,142 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     let solver = Solver::new(&ctx);
 
     for node in backward_sorted_nodes {
-        let mut successor_conditions = ast::Bool::from_bool(solver.get_context(), true);
+        let mut successor_conditions = Bool::from_bool(solver.get_context(), true);
         if let Some(successors) = forward_edges.get(&node) {
             for successor in successors {
                 let successor_var =
-                    ast::Bool::new_const(solver.get_context(), format!("node_{}", successor));
+                    Bool::new_const(solver.get_context(), String::from(successor));
                 successor_conditions =
-                    ast::Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
+                    Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
             }
         }
         let mut node_var = successor_conditions;
 
         if node == COMMON_END_NODE_NAME.to_string() {
-            let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
-            node_var = ast::Bool::and(solver.get_context(), &[&panic_var.not(), &node_var]);
+            let panic_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
+            node_var = Bool::and(solver.get_context(), &[&panic_var.not(), &node_var]);
         } else {
             // Parse statements in the basic block
             let mut prev_instruction = get_basic_block_by_name(&function, &node).get_last_instruction();
 
             while let Some(current_instruction) = prev_instruction {
                 // TODO: Process current instruction
+                let opcode = current_instruction.get_opcode();
+                match &opcode {
+                    InstructionOpcode::Unreachable => {
+                        // NO-OP
+                    }
+                    InstructionOpcode::Call => {
+                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction)
+                    }
+                    InstructionOpcode::Return => {
+                        // NO-OP
+                    }
+                    InstructionOpcode::Load => {
+                        // TODO: Support types other than i32* here
+                        let operand = current_instruction.get_operand(0).unwrap().left().unwrap();
+                        if !current_instruction.get_type().to_string().eq("\"i32\"") {
+                            println!("Currently unsuppported type {:?} for load operand", current_instruction.get_type().to_string())
+                        }
+                        let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let rvalue_var_name = get_var_name(&operand, &solver);
+                        let lvalue_var = Int::new_const(
+                            solver.get_context(),
+                            lvalue_var_name
+                        );
+                        let rvalue_var = Int::new_const(
+                            solver.get_context(),
+                            rvalue_var_name
+                        );
+                        let assignment = lvalue_var._eq(&rvalue_var);
+                        node_var = assignment.implies(&node_var);
+                    }
+                    InstructionOpcode::Store => {
+                        // TODO: Support types other than i32* here
+                        let operand = current_instruction.get_operand(0).unwrap().left().unwrap();
+                        if !operand.get_type().to_string().eq("\"i32\"") {
+                            println!("Currently unsuppported type {:?} for store operand", operand.get_type().to_string())
+                        }
+                        let lvalue_var_name = get_var_name(&operand, &solver);
+                        let rvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let lvalue_var = Int::new_const(
+                            solver.get_context(),
+                            lvalue_var_name
+                        );
+                        let rvalue_var = Int::new_const(
+                            solver.get_context(),
+                            rvalue_var_name
+                        );
+                        let assignment = lvalue_var._eq(&rvalue_var);
+                        node_var = assignment.implies(&node_var);
+                    }
+                    InstructionOpcode::Br => {
+                        // NO-OP
+                    }
+                    InstructionOpcode::Xor => {
+                        let operand1_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
+                        let operand2_var_name = get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap(), &solver);
+                        if !current_instruction.get_type().to_string().eq("\"i1\"") {
+                            println!("Currently unsuppported type {:?} for xor operand", current_instruction.get_type().to_string())
+                        }
+                        let operand1_var = Bool::new_const(
+                            solver.get_context(),
+                            operand1_var_name
+                        );
+                        let operand2_var = Bool::new_const(
+                            solver.get_context(),
+                            operand2_var_name
+                        );
+                        let rvalue_var = operand1_var.xor(&operand2_var);
+                        let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let lvalue_var = Bool::new_const(
+                            solver.get_context(),
+                            lvalue_var_name
+                        );
+                        let assignment = lvalue_var._eq(&rvalue_var);
+                        node_var = assignment.implies(&node_var);
+                    }
+                    InstructionOpcode::ICmp => {
+                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction)
+                    }
+                    InstructionOpcode::ExtractValue => {
+                        let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let operand = current_instruction.get_operand(0).unwrap().left().unwrap();
+                        let rvalue_var_name = format!("{}.{}", get_var_name(&operand, &solver), get_field_to_extract(&current_instruction));
+                        if current_instruction.get_type().to_string().eq("\"i1\"") {
+                            let lvalue_var = Bool::new_const(
+                                solver.get_context(),
+                                lvalue_var_name
+                            );
+                            let rvalue_var = Bool::new_const(
+                                solver.get_context(),
+                                rvalue_var_name
+                            );
+                            let assignment = lvalue_var._eq(&rvalue_var);
+                            node_var = assignment.implies(&node_var);       
+                        } else if current_instruction.get_type().to_string().eq("\"i32\"") {
+                            let lvalue_var = Int::new_const(
+                                solver.get_context(),
+                                lvalue_var_name
+                            );
+                            let rvalue_var = Int::new_const(
+                                solver.get_context(),
+                                rvalue_var_name
+                            );
+                            let assignment = lvalue_var._eq(&rvalue_var);
+                            node_var = assignment.implies(&node_var);    
+                        } else {
+                            println!("Currently unsuppported type {:?} for extract value", operand.get_type().to_string())
+                        } 
+                    }
+                    InstructionOpcode::Alloca => {
+                        // NO-OP
+                    }
+                    _ => {
+                        println!("Opcode {:?} is not supported as a statement for code gen", opcode);
+                    }
+                }
+
                 prev_instruction = current_instruction.get_previous_instruction();
             }
 
@@ -348,8 +490,8 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                     if is_panic_block(&get_basic_block_by_name(&function, &node)) == IsCleanup::YES {
                         is_panic = true;
                     }
-                    let panic_var = ast::Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
-                    let panic_value = ast::Bool::from_bool(solver.get_context(), is_panic);
+                    let panic_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
+                    let panic_value = Bool::from_bool(solver.get_context(), is_panic);
                     let panic_assignment = panic_var._eq(&panic_value);
                     node_var = panic_assignment.implies(&node_var);
                 }
@@ -357,42 +499,41 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
         }
 
         let mut entry_conditions_set = false;
-        let mut entry_conditions = ast::Bool::from_bool(solver.get_context(), true);
+        let mut entry_conditions = Bool::from_bool(solver.get_context(), true);
         if let Some(predecessors) = backward_edges.get(&node) {
             if predecessors.len() > 0 {
                 for predecessor in predecessors {
                     // get conditions
                     let entry_condition = get_entry_condition(&solver, &function, &predecessor, &node);
-                    entry_conditions = ast::Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
+                    entry_conditions = Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
                 }
                 entry_conditions_set = true;
             }
         }  
         if !entry_conditions_set {
-            entry_conditions = ast::Bool::from_bool(solver.get_context(), true);
+            entry_conditions = Bool::from_bool(solver.get_context(), true);
         }
         node_var = entry_conditions.implies(&node_var);
 
-        let named_node_var = ast::Bool::new_const(solver.get_context(), format!("node_{}", node));
+        let named_node_var = Bool::new_const(solver.get_context(), String::from(node));
         solver.assert(&named_node_var._eq(&node_var));
     }
 
     // // constrain int inputs
     for input in function.get_params() {
-        // let arg = ast::Int::new_const(&solver.get_context(), format!("_{}", (i + 1).to_string()));
         // TODO: Support other input types
-        let arg = ast::Int::new_const(&solver.get_context(), input.into_int_value().get_name().to_str().unwrap());
+        let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver));
         let min_int =
-            ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+            Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
         let max_int =
-            ast::Int::from_bv(&ast::BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+            Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
         solver
-            .assert(&ast::Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+            .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
     }
 
     let start_node = function.get_first_basic_block().unwrap();
     let start_node_var_name = start_node.get_name().to_str().unwrap();
-    let start_node_var = ast::Bool::new_const(solver.get_context(), String::from(start_node_var_name));
+    let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
     solver.assert(&start_node_var.not());
     println!("{:?}", solver);
 

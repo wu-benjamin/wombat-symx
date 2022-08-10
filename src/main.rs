@@ -3,7 +3,8 @@ use std::env;
 
 use inkwell::IntPredicate;
 use inkwell::basic_block::BasicBlock;
-use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue};
+use inkwell::passes::{PassManager, PassManagerBuilder};
+use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use rustc_demangle::demangle;
 use z3::{
     ast::{Ast, Bool, Int, BV},
@@ -291,12 +292,16 @@ fn get_entry_condition<'a>(
                 if num_operands == 1 {
                     // Unconditionally go to node
                 } else if num_operands == 3 {
-                    let mut target_val = false;
+                    let mut target_val = true;
                     let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                     let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
                     let successor_basic_block_name_1 = String::from(successor_basic_block_1.get_name().to_str().unwrap());
+                    // println!("\n--------- {:?}", successor_basic_block_name_1);
+                    // println!("--------- {:?}", String::from(terminator.get_operand(2).unwrap().right().unwrap().get_name().to_str().unwrap()));
+                    // println!("--------- {:?}", String::from(node));
+                    // println!("--------- {:?}\n", terminator);
                     if successor_basic_block_name_1.eq(&String::from(node)) {
-                        target_val = true;
+                        target_val = false;
                     }
                     let target_val_var =
                         Bool::from_bool(solver.get_context(), target_val);
@@ -349,6 +354,61 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
         }
         let mut node_var = successor_conditions;
 
+        if let Some(successors) = forward_edges.get(&node) {
+            for successor in successors {
+                // look at all phi functions
+                if successor.eq(COMMON_END_NODE_NAME) {
+                    continue;
+                }
+                let mut next_instruction = get_basic_block_by_name(&function, &successor).get_first_instruction();
+                while let Some(current_instruction) = next_instruction {
+                    let opcode = current_instruction.get_opcode();
+                    match &opcode {
+                        InstructionOpcode::Phi => {
+                            let phi_instruction: PhiValue = current_instruction.try_into().unwrap();
+                            for incoming_index in 0..phi_instruction.count_incoming() {
+                                let incoming = phi_instruction.get_incoming(incoming_index).unwrap();
+                                if incoming.1.get_name().to_str().unwrap().eq(&node) {
+                                    let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                                    let rvalue_var_name = get_var_name(&incoming.0, &solver);
+                                    if current_instruction.get_type().to_string().eq("\"i1\"") {
+                                        let lvalue_var = Bool::new_const(
+                                            solver.get_context(),
+                                            lvalue_var_name
+                                        );
+                                        let rvalue_var = Bool::new_const(
+                                            solver.get_context(),
+                                            rvalue_var_name
+                                        );
+                                        let assignment = lvalue_var._eq(&rvalue_var);
+                                        node_var = assignment.implies(&node_var);       
+                                    } else if current_instruction.get_type().to_string().eq("\"i32\"") {
+                                        let lvalue_var = Int::new_const(
+                                            solver.get_context(),
+                                            lvalue_var_name
+                                        );
+                                        let rvalue_var = Int::new_const(
+                                            solver.get_context(),
+                                            rvalue_var_name
+                                        );
+                                        let assignment = lvalue_var._eq(&rvalue_var);
+                                        println!("BOOGA LOOGA: {:?}", assignment);
+                                        node_var = assignment.implies(&node_var);
+                                    } else {
+                                        println!("Currently unsuppported type {:?} for extract value", incoming.0.get_type().to_string())
+                                    } 
+                                }
+                            }
+                        }
+                        _ => {
+                            // NO-OP
+                        }
+                    }
+                    next_instruction = current_instruction.get_next_instruction();
+                }
+            }
+        }
+
         if node == COMMON_END_NODE_NAME.to_string() {
             let panic_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
             node_var = Bool::and(solver.get_context(), &[&panic_var.not(), &node_var]);
@@ -377,7 +437,6 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
 
                         match call_operation_name {
                             "llvm.smul.with.overflow.i32" => {
-                                let lvalue_var_name = get_var_name(&current_instruction, &solver);
                                 let operand1_name = get_var_name(
                                     &current_instruction.get_operand(0).unwrap().left().unwrap(),
                                     &solver
@@ -386,16 +445,51 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                                     &current_instruction.get_operand(1).unwrap().left().unwrap(),
                                     &solver
                                 );
-                                let rvalue_var = Int::mul(solver.get_context(), &[
+
+                                let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_1);
+                                let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
+                                let rvalue_var_1 = Int::mul(solver.get_context(), &[
                                     &Int::new_const(solver.get_context(), operand1_name),
                                     &Int::new_const(solver.get_context(), operand2_name)
                                 ]);
                                 
-                                let assignment = Int::new_const(solver.get_context(), lvalue_var_name)._eq(&rvalue_var);
+                                let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
+
+                                let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_2);
+                                let min_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+                                let max_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+                                let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
+                                
+                                let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
+                                let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
                                 node_var = assignment.implies(&node_var);
                             }
+                            "llvm.expect.i1" => {
+                                let lvalue_var_name = get_var_name(
+                                    &current_instruction,
+                                    &solver
+                                );
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let rvalue_var = Bool::new_const(solver.get_context(), operand1_name)._eq(&Bool::new_const(solver.get_context(), operand2_name));
+                                let assignment = Bool::new_const(solver.get_context(), lvalue_var_name)._eq(&rvalue_var);
+                                node_var = assignment.implies(&node_var);
+                            }
+                            "_ZN4core9panicking5panic17he60bb304466ccbafE" => {
+                                // NO-OP
+                            }
                             _ => {
-                                println!("Unsupported Call function");
+                                println!("Unsupported Call function {:?}", call_operation_name);
                             }
                         }
                     }
@@ -448,7 +542,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                             rvalue_var_name
                         );
                         let assignment = lvalue_var._eq(&rvalue_var);
-                        println!("\tCreated operation: {:?}", assignment);
+                        // println!("\tCreated operation: {:?}", assignment);
                         node_var = assignment.implies(&node_var);
                     }
                     InstructionOpcode::Br => {
@@ -555,6 +649,9 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                         } 
                     }
                     InstructionOpcode::Alloca => {
+                        // NO-OP
+                    }
+                    InstructionOpcode::Phi => {
                         // NO-OP
                     }
                     _ => {
@@ -699,6 +796,12 @@ fn main() {
         let current_function_name = demangle(&current_function.get_name().to_str().unwrap()).to_string();
         if current_function_name.contains(&file_name[file_name.rfind("/").unwrap()+1..file_name.rfind(".").unwrap()])
                 && !current_function_name.contains("::main") {
+            let pass_manager_builder = PassManagerBuilder::create();
+            let pass_manager = PassManager::create(&module);
+            pass_manager.add_promote_memory_to_register_pass();
+            pass_manager_builder.populate_function_pass_manager(&pass_manager);
+            pass_manager.run_on(&current_function);
+
             // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
             pretty_print_function(&current_function);

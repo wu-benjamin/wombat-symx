@@ -1,11 +1,11 @@
-fn neg_abs(mut x: i32) -> i32 {
-    if x > 0 {
-        x = -1 * x;
-    }
+// fn neg_abs(mut x: i32) -> i32 {
+//     if x > 0 {
+//         x = -1 * x;
+//     }
 
-    assert!(x <= 0);
-    x
-}
+//     assert!(x <= 0);
+//     x
+// }
 
 fn abs(mut x: i32) -> i32 {
     if x < 0 {
@@ -18,6 +18,6 @@ fn abs(mut x: i32) -> i32 {
 
 fn main() {
     println!("Hello, world!");
-    neg_abs(5);
+    // neg_abs(5);
     abs(5);
 }

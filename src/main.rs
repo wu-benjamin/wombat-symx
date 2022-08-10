@@ -486,6 +486,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                         
 
                         // Split by the sub-instruction (denoting the type of comparison)
+                        // TODO: can signed & unsigned comparisons be combined?
                         let icmp_type = current_instruction.get_icmp_predicate().unwrap();
                         match &icmp_type {
                             IntPredicate::EQ => {

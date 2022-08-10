@@ -424,12 +424,12 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                     InstructionOpcode::Store => {
                         // TODO: Support types other than i32* here
                         // TODO: Alloca seems to cause issues with multiple elements accessing this stored value
-                        println!("---------------- Need to Implement------------------\n{:?}", current_instruction);
-                        println!("\tNumber of operands: {:?}", current_instruction.get_num_operands());
-                        for i in 0..current_instruction.get_num_operands() {
-                            println!("\t\t{:?}", current_instruction.get_operand(i));
-                        }
-                        println!("\t\tptr value: {:?}", get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value().as_any_value_enum(), &solver));
+                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction);
+                        // println!("\tNumber of operands: {:?}", current_instruction.get_num_operands());
+                        // for i in 0..current_instruction.get_num_operands() {
+                        //     println!("\t\t{:?}", current_instruction.get_operand(i));
+                        // }
+                        // println!("\t\tptr value: {:?}", get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value().as_any_value_enum(), &solver));
 
                         let operand1 = current_instruction.get_operand(0).unwrap().left().unwrap();
                         if !operand1.get_type().to_string().eq("\"i32\"") {

@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::env;
 
+use inkwell::IntPredicate;
 use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue};
 use rustc_demangle::demangle;
@@ -363,7 +364,40 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                         // NO-OP
                     }
                     InstructionOpcode::Call => {
-                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction)
+                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction);
+                        // println!("\tNumber of operands: {:?}", current_instruction.get_num_operands());
+                        // for i in 0..current_instruction.get_num_operands() {
+                        //     println!("\t\t{:?}", current_instruction.get_operand(i));
+                        // }
+
+                        let call_operand = &current_instruction.get_operand(current_instruction.get_num_operands()-1)
+                            .unwrap().left().unwrap().into_pointer_value();
+                        let call_operation_name = call_operand.get_name().to_str().unwrap();
+                        // println!("\tCALL OPERATION: {:?}", call_operation_name);
+
+                        match call_operation_name {
+                            "llvm.smul.with.overflow.i32" => {
+                                let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let rvalue_var = Int::mul(solver.get_context(), &[
+                                    &Int::new_const(solver.get_context(), operand1_name),
+                                    &Int::new_const(solver.get_context(), operand2_name)
+                                ]);
+                                
+                                let assignment = Int::new_const(solver.get_context(), lvalue_var_name)._eq(&rvalue_var);
+                                node_var = assignment.implies(&node_var);
+                            }
+                            _ => {
+                                println!("Unsupported Call function");
+                            }
+                        }
                     }
                     InstructionOpcode::Return => {
                         // NO-OP
@@ -389,12 +423,22 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                     }
                     InstructionOpcode::Store => {
                         // TODO: Support types other than i32* here
-                        let operand = current_instruction.get_operand(0).unwrap().left().unwrap();
-                        if !operand.get_type().to_string().eq("\"i32\"") {
-                            println!("Currently unsuppported type {:?} for store operand", operand.get_type().to_string())
+                        // TODO: Alloca seems to cause issues with multiple elements accessing this stored value
+                        println!("---------------- Need to Implement------------------\n{:?}", current_instruction);
+                        println!("\tNumber of operands: {:?}", current_instruction.get_num_operands());
+                        for i in 0..current_instruction.get_num_operands() {
+                            println!("\t\t{:?}", current_instruction.get_operand(i));
                         }
-                        let lvalue_var_name = get_var_name(&operand, &solver);
-                        let rvalue_var_name = get_var_name(&current_instruction, &solver);
+                        println!("\t\tptr value: {:?}", get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value().as_any_value_enum(), &solver));
+
+                        let operand1 = current_instruction.get_operand(0).unwrap().left().unwrap();
+                        if !operand1.get_type().to_string().eq("\"i32\"") {
+                            println!("Currently unsuppported type {:?} for store operand", operand1.get_type().to_string())
+                        }
+                        let operand2 = current_instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value();
+                        
+                        let lvalue_var_name = get_var_name(&operand1, &solver);
+                        let rvalue_var_name = get_var_name(&operand2, &solver);
                         let lvalue_var = Int::new_const(
                             solver.get_context(),
                             lvalue_var_name
@@ -404,6 +448,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                             rvalue_var_name
                         );
                         let assignment = lvalue_var._eq(&rvalue_var);
+                        println!("\tCreated operation: {:?}", assignment);
                         node_var = assignment.implies(&node_var);
                     }
                     InstructionOpcode::Br => {
@@ -433,7 +478,50 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                         node_var = assignment.implies(&node_var);
                     }
                     InstructionOpcode::ICmp => {
-                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction)
+                        let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let lvalue_var = Bool::new_const(solver.get_context(), lvalue_var_name);
+                        let operand1 = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
+                        let operand2 = get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap(), &solver);
+                        let rvalue_operation;
+                        
+
+                        // Split by the sub-instruction (denoting the type of comparison)
+                        let icmp_type = current_instruction.get_icmp_predicate().unwrap();
+                        match &icmp_type {
+                            IntPredicate::EQ => {
+                                rvalue_operation = Int::new_const(&solver.get_context(), operand1)._eq(
+                                    &Int::new_const(&solver.get_context(), operand2)
+                                );
+                            }
+                            IntPredicate::NE => {
+                                rvalue_operation = Int::new_const(&solver.get_context(), operand1)._eq(
+                                    &Int::new_const(&solver.get_context(), operand2)
+                                ).not();
+                            }
+                            IntPredicate::SGE | IntPredicate::UGE => {
+                                rvalue_operation = Int::new_const(&solver.get_context(), operand1).ge(
+                                    &Int::new_const(&solver.get_context(), operand2)
+                                );
+                            }
+                            IntPredicate::SGT | IntPredicate::UGT => {
+                                rvalue_operation = Int::new_const(&solver.get_context(), operand1).gt(
+                                    &Int::new_const(&solver.get_context(), operand2)
+                                );
+                            }
+                            IntPredicate::SLE | IntPredicate::ULE => {
+                                rvalue_operation = Int::new_const(&solver.get_context(), operand1).le(
+                                    &Int::new_const(&solver.get_context(), operand2)
+                                );
+                            }
+                            IntPredicate::SLT | IntPredicate::ULT => {
+                                rvalue_operation = Int::new_const(&solver.get_context(), operand1).lt(
+                                    &Int::new_const(&solver.get_context(), operand2)
+                                );
+                            }
+                        }
+
+                        let assignment = lvalue_var._eq(&rvalue_operation);
+                        node_var = assignment.implies(&node_var);
                     }
                     InstructionOpcode::ExtractValue => {
                         let lvalue_var_name = get_var_name(&current_instruction, &solver);
@@ -538,7 +626,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     println!("{:?}", solver);
 
     // Attempt resolving the model (and obtaining the respective arg values if panic found)
-    println!("Resolved value: {:?}", solver.check());
+    println!("Function safety: {}", if solver.check() == SatResult::Sat {"unsafe"} else {"safe"});
 
     if solver.check() == SatResult::Sat {
         // TODO: Identify concrete function params for Sat case

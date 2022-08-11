@@ -553,6 +553,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                                 node_var = assignment.implies(&node_var);
                             }
                             "_ZN4core9panicking5panic17he60bb304466ccbafE" => {
+                                // TODO: Find stable function name
                                 // NO-OP
                             }
                             _ => {

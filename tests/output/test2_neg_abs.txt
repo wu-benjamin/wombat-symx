@@ -1,26 +1,26 @@
 Functions in "tests/test2_neg_abs.bc":
-	"std::sys_common::backtrace::__rust_begin_short_backtrace::h453091943a0e104b" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h453091943a0e104bE"
-	"std::rt::lang_start::h018194599fe7931e" == "_ZN3std2rt10lang_start17h018194599fe7931eE"
-	"std::rt::lang_start::{{closure}}::hf4fa45595868fc4a" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17hf4fa45595868fc4aE"
-	"std::sys::unix::process::process_common::ExitCode::as_i32::h2feb8834646b32b6" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217h2feb8834646b32b6E"
-	"std::process::ExitCode::to_i32::hd66daa771b2592cc" == "_ZN3std7process8ExitCode6to_i3217hd66daa771b2592ccE"
-	"core::ops::function::FnOnce::call_once{{vtable.shim}}::hd8ebf1f26b08af95" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17hd8ebf1f26b08af95E"
-	"core::ops::function::FnOnce::call_once::h2edfba1fdcdc7fad" == "_ZN4core3ops8function6FnOnce9call_once17h2edfba1fdcdc7fadE"
-	"core::ops::function::FnOnce::call_once::ha1da11f37e2f73e4" == "_ZN4core3ops8function6FnOnce9call_once17ha1da11f37e2f73e4E"
-	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::h48ba752404ae2419" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17h48ba752404ae2419E"
-	"core::hint::black_box::hcc63372e6f8b2d42" == "_ZN4core4hint9black_box17hcc63372e6f8b2d42E"
-	"<() as std::process::Termination>::report::h29691115e9eb3ecd" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17h29691115e9eb3ecdE"
-	"<std::process::ExitCode as std::process::Termination>::report::hfd0da5273f7a0831" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17hfd0da5273f7a0831E"
-	"test2_neg_abs::neg_abs::h592470c6b5d02a54" == "_ZN13test2_neg_abs7neg_abs17h592470c6b5d02a54E"
-	"test2_neg_abs::main::h7bcd26289bc4eeb9" == "_ZN13test2_neg_abs4main17h7bcd26289bc4eeb9E"
+	"core::ops::function::FnOnce::call_once{{vtable.shim}}::h93b417d8379bc9e1" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17h93b417d8379bc9e1E"
+	"core::ops::function::FnOnce::call_once::h5f27585c0b949649" == "_ZN4core3ops8function6FnOnce9call_once17h5f27585c0b949649E"
+	"core::ops::function::FnOnce::call_once::hbd7368a9910d0953" == "_ZN4core3ops8function6FnOnce9call_once17hbd7368a9910d0953E"
+	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::h26e5e11699600fde" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17h26e5e11699600fdeE"
+	"test2_neg_abs::neg_abs::h0e261c655a35011c" == "_ZN13test2_neg_abs7neg_abs17h0e261c655a35011cE"
+	"test2_neg_abs::main::he1db7e4ddf232d14" == "_ZN13test2_neg_abs4main17he1db7e4ddf232d14E"
+	"core::hint::black_box::ha6435616af6d251a" == "_ZN4core4hint9black_box17ha6435616af6d251aE"
+	"std::process::ExitCode::to_i32::h9ab4de229c485931" == "_ZN3std7process8ExitCode6to_i3217h9ab4de229c485931E"
+	"<() as std::process::Termination>::report::h5273042754227aa5" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17h5273042754227aa5E"
+	"<std::process::ExitCode as std::process::Termination>::report::h18c51dc71a120743" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17h18c51dc71a120743E"
+	"std::rt::lang_start::h3edefbaddcdf1864" == "_ZN3std2rt10lang_start17h3edefbaddcdf1864E"
+	"std::rt::lang_start::{{closure}}::h9191c2fe610c4734" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h9191c2fe610c4734E"
+	"std::sys_common::backtrace::__rust_begin_short_backtrace::h7b76609c54771fa9" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h7b76609c54771fa9E"
+	"std::sys::unix::process::process_common::ExitCode::as_i32::h3efe1b46d8ad6aa1" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217h3efe1b46d8ad6aa1E"
 	"rust_eh_personality" == "rust_eh_personality"
-	"std::rt::lang_start_internal::hbbfe6e663b24763e" == "_ZN3std2rt19lang_start_internal17hbbfe6e663b24763eE"
 	"llvm.smul.with.overflow.i32" == "llvm.smul.with.overflow.i32"
 	"llvm.expect.i1" == "llvm.expect.i1"
-	"core::panicking::panic::h5978a1941192adf2" == "_ZN4core9panicking5panic17h5978a1941192adf2E"
+	"core::panicking::panic::he60bb304466ccbaf" == "_ZN4core9panicking5panic17he60bb304466ccbafE"
+	"std::rt::lang_start_internal::h358b6d58e23c88c7" == "_ZN3std2rt19lang_start_internal17h358b6d58e23c88c7E"
 	"main" == "main"
 
-Backward Symbolic Execution in test2_neg_abs::neg_abs::h592470c6b5d02a54
+Backward Symbolic Execution in test2_neg_abs::neg_abs::h0e261c655a35011c
 Number of Nodes: 6
 Arg count: 1
 Basic Blocks:
@@ -45,7 +45,7 @@ Basic Blocks:
 		Last statement is a terminator
 	Basic Block: "panic"
 		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc33 to %\\\"core::panic::location::Location\\\"*)) #7\""
+		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.0 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc26 to %\\\"core::panic::location::Location\\\"*)) #7\""
 		Statement: "\"  unreachable\""
 		Last statement is a terminator
 	Basic Block: "bb5"
@@ -54,17 +54,17 @@ Basic Blocks:
 		Last statement is a terminator
 	Basic Block: "bb4"
 		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc34 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc36 to %\\\"core::panic::location::Location\\\"*)) #7\""
+		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc27 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc29 to %\\\"core::panic::location::Location\\\"*)) #7\""
 		Statement: "\"  unreachable\""
 		Last statement is a terminator
 
 Start node: "start"
-	Successor to start node: "bb1"
 	Successor to start node: "bb3"
+	Successor to start node: "bb1"
 Forward edges:
-	{"panic": {"common_end"}, "start": {"bb3", "bb1"}, "bb4": {"common_end"}, "bb5": {"common_end"}, "bb3": {"bb5", "bb4"}, "bb1": {"bb3", "panic"}}
+	{"panic": {"common_end"}, "bb3": {"bb4", "bb5"}, "bb5": {"common_end"}, "bb4": {"common_end"}, "bb1": {"bb3", "panic"}, "start": {"bb1", "bb3"}}
 Backward edges:
-	{"bb5": {"bb3"}, "bb4": {"bb3"}, "bb3": {"start", "bb1"}, "common_end": {"panic", "bb4", "bb5"}, "start": {}, "bb1": {"start"}, "panic": {"bb1"}}
+	{"bb5": {"bb3"}, "bb4": {"bb3"}, "start": {}, "bb1": {"start"}, "bb3": {"start", "bb1"}, "common_end": {"bb4", "panic", "bb5"}, "panic": {"bb1"}}
 Forward sorted nodes:
 	["start", "bb1", "panic", "bb3", "bb5", "bb4", "common_end"]
 Backward sorted nodes:
@@ -111,7 +111,7 @@ Backward sorted nodes:
                    (- (bv2int #x80000000) 4294967296)
                    (bv2int #x80000000))))
       (a!3 (=> (= %_5.1 %1.1)
-               (=> (=> (= %_5.1 false) (= %x.0 %_5.0)) (and true panic bb3)))))
+               (=> (=> (= %_5.1 false) (= %x.0 %_5.0)) (and true bb3 panic)))))
 (let ((a!4 (=> (and (= %1.0 (* const_-1 %0)) (= %1.1 (or a!1 a!2)))
                (=> (= %_5.0 %1.0) a!3))))
   (= bb1 (=> (and true (= %_2 true)) a!4)))))

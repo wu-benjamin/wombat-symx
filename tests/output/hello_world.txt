@@ -1,31 +1,31 @@
 Functions in "tests/hello_world.bc":
-	"std::sys_common::backtrace::__rust_begin_short_backtrace::h463c5e9d6426f6eb" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h463c5e9d6426f6ebE"
-	"std::rt::lang_start::hc4ff6974eca67170" == "_ZN3std2rt10lang_start17hc4ff6974eca67170E"
-	"std::rt::lang_start::{{closure}}::hf548129ed611a221" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17hf548129ed611a221E"
-	"std::sys::unix::process::process_common::ExitCode::as_i32::hcbc8672a51e68f6b" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217hcbc8672a51e68f6bE"
-	"std::process::ExitCode::to_i32::h89f92752736ddf97" == "_ZN3std7process8ExitCode6to_i3217h89f92752736ddf97E"
-	"core::fmt::Arguments::new_v1::h9aa9099dc5f244e9" == "_ZN4core3fmt9Arguments6new_v117h9aa9099dc5f244e9E"
-	"core::ops::function::FnOnce::call_once{{vtable.shim}}::hca4bbfc935423e0f" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17hca4bbfc935423e0fE"
-	"core::ops::function::FnOnce::call_once::h503d095807bb3dc9" == "_ZN4core3ops8function6FnOnce9call_once17h503d095807bb3dc9E"
-	"core::ops::function::FnOnce::call_once::h6e1938723ad73994" == "_ZN4core3ops8function6FnOnce9call_once17h6e1938723ad73994E"
-	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::hfed55327f6020ece" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17hfed55327f6020eceE"
-	"core::hint::black_box::h50cef79d40c3462e" == "_ZN4core4hint9black_box17h50cef79d40c3462eE"
-	"<() as std::process::Termination>::report::hdf75f789e0489d6c" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17hdf75f789e0489d6cE"
-	"<std::process::ExitCode as std::process::Termination>::report::h05e18a8b6ad4506e" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17h05e18a8b6ad4506eE"
-	"hello_world::neg_abs::hb2886d3f531a44e1" == "_ZN11hello_world7neg_abs17hb2886d3f531a44e1E"
-	"hello_world::abs::h45934470d8fae709" == "_ZN11hello_world3abs17h45934470d8fae709E"
-	"hello_world::main::hcc99803fed07ec29" == "_ZN11hello_world4main17hcc99803fed07ec29E"
+	"core::ops::function::FnOnce::call_once{{vtable.shim}}::h4f2883cb1fbca2de" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17h4f2883cb1fbca2deE"
+	"core::ops::function::FnOnce::call_once::h1c934d058eb870db" == "_ZN4core3ops8function6FnOnce9call_once17h1c934d058eb870dbE"
+	"core::ops::function::FnOnce::call_once::hdb6e5c8ade31ab7f" == "_ZN4core3ops8function6FnOnce9call_once17hdb6e5c8ade31ab7fE"
+	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::h395cf0253d04149f" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17h395cf0253d04149fE"
+	"hello_world::neg_abs::h8bd18ec7b7f1f032" == "_ZN11hello_world7neg_abs17h8bd18ec7b7f1f032E"
+	"hello_world::abs::h0f9f1fc5a72fe454" == "_ZN11hello_world3abs17h0f9f1fc5a72fe454E"
+	"hello_world::main::h7ed1515f9f05833a" == "_ZN11hello_world4main17h7ed1515f9f05833aE"
+	"core::hint::black_box::h507be7578e2ddc1b" == "_ZN4core4hint9black_box17h507be7578e2ddc1bE"
+	"std::process::ExitCode::to_i32::h35746aa7794bc1e6" == "_ZN3std7process8ExitCode6to_i3217h35746aa7794bc1e6E"
+	"<() as std::process::Termination>::report::hde5afdf3b8b780db" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17hde5afdf3b8b780dbE"
+	"<std::process::ExitCode as std::process::Termination>::report::h99d918cee2ee23a5" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17h99d918cee2ee23a5E"
+	"std::rt::lang_start::h707569142668674d" == "_ZN3std2rt10lang_start17h707569142668674dE"
+	"std::rt::lang_start::{{closure}}::hac2bbcdcbb1fc269" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17hac2bbcdcbb1fc269E"
+	"std::sys_common::backtrace::__rust_begin_short_backtrace::h0ad69f867619bbb8" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h0ad69f867619bbb8E"
+	"core::fmt::Arguments::new_v1::h8e82873a2745ebdb" == "_ZN4core3fmt9Arguments6new_v117h8e82873a2745ebdbE"
+	"std::sys::unix::process::process_common::ExitCode::as_i32::h2f98c62ac71ea12c" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217h2f98c62ac71ea12cE"
 	"rust_eh_personality" == "rust_eh_personality"
-	"std::rt::lang_start_internal::hbbfe6e663b24763e" == "_ZN3std2rt19lang_start_internal17hbbfe6e663b24763eE"
-	"core::panicking::panic_fmt::hffc63a015c61fdde" == "_ZN4core9panicking9panic_fmt17hffc63a015c61fddeE"
-	"llvm.memset.p0i8.i64" == "llvm.memset.p0i8.i64"
 	"llvm.smul.with.overflow.i32" == "llvm.smul.with.overflow.i32"
 	"llvm.expect.i1" == "llvm.expect.i1"
-	"core::panicking::panic::h5978a1941192adf2" == "_ZN4core9panicking5panic17h5978a1941192adf2E"
-	"std::io::stdio::_print::he4f4a0b06776efdb" == "_ZN3std2io5stdio6_print17he4f4a0b06776efdbE"
+	"core::panicking::panic::he60bb304466ccbaf" == "_ZN4core9panicking5panic17he60bb304466ccbafE"
+	"std::io::stdio::_print::h56750a7b9b0c9427" == "_ZN3std2io5stdio6_print17h56750a7b9b0c9427E"
+	"std::rt::lang_start_internal::h358b6d58e23c88c7" == "_ZN3std2rt19lang_start_internal17h358b6d58e23c88c7E"
+	"core::panicking::panic_fmt::h4fe1013b011ef602" == "_ZN4core9panicking9panic_fmt17h4fe1013b011ef602E"
+	"llvm.memset.p0i8.i64" == "llvm.memset.p0i8.i64"
 	"main" == "main"
 
-Backward Symbolic Execution in hello_world::neg_abs::hb2886d3f531a44e1
+Backward Symbolic Execution in hello_world::neg_abs::h8bd18ec7b7f1f032
 Number of Nodes: 6
 Arg count: 1
 Basic Blocks:
@@ -50,7 +50,7 @@ Basic Blocks:
 		Last statement is a terminator
 	Basic Block: "panic"
 		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc49 to %\\\"core::panic::location::Location\\\"*)) #8\""
+		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.0 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc38 to %\\\"core::panic::location::Location\\\"*)) #8\""
 		Statement: "\"  unreachable\""
 		Last statement is a terminator
 	Basic Block: "bb5"
@@ -59,7 +59,7 @@ Basic Blocks:
 		Last statement is a terminator
 	Basic Block: "bb4"
 		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc50 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc52 to %\\\"core::panic::location::Location\\\"*)) #8\""
+		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc39 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc41 to %\\\"core::panic::location::Location\\\"*)) #8\""
 		Statement: "\"  unreachable\""
 		Last statement is a terminator
 
@@ -67,9 +67,9 @@ Start node: "start"
 	Successor to start node: "bb1"
 	Successor to start node: "bb3"
 Forward edges:
-	{"bb4": {"common_end"}, "bb5": {"common_end"}, "bb3": {"bb4", "bb5"}, "start": {"bb3", "bb1"}, "bb1": {"panic", "bb3"}, "panic": {"common_end"}}
+	{"panic": {"common_end"}, "bb4": {"common_end"}, "bb1": {"panic", "bb3"}, "start": {"bb3", "bb1"}, "bb5": {"common_end"}, "bb3": {"bb4", "bb5"}}
 Backward edges:
-	{"bb3": {"bb1", "start"}, "panic": {"bb1"}, "bb5": {"bb3"}, "bb4": {"bb3"}, "bb1": {"start"}, "start": {}, "common_end": {"panic", "bb5", "bb4"}}
+	{"bb4": {"bb3"}, "bb5": {"bb3"}, "common_end": {"panic", "bb4", "bb5"}, "start": {}, "bb3": {"bb1", "start"}, "bb1": {"start"}, "panic": {"bb1"}}
 Forward sorted nodes:
 	["start", "bb1", "panic", "bb3", "bb5", "bb4", "common_end"]
 Backward sorted nodes:
@@ -83,8 +83,8 @@ Backward sorted nodes:
 (declare-fun const_0 () Int)
 (declare-fun %_7 () Bool)
 (declare-fun %x.0 () Int)
-(declare-fun %_2 () Bool)
 (declare-fun %_5.1 () Bool)
+(declare-fun %_2 () Bool)
 (declare-fun bb3 () Bool)
 (declare-fun panic () Bool)
 (declare-fun const_-1 () Int)
@@ -103,7 +103,7 @@ Backward sorted nodes:
 (assert (= const_0 0))
 (assert (let ((a!1 (=> (= %_7 (<= %x.0 const_0))
                (=> (= %_6 (xor %_7 const_true)) (and true bb4 bb5)))))
-  (= bb3 (=> (and true (= %_5.1 false) (= %_2 false)) a!1))))
+  (= bb3 (=> (and true (= %_2 false) (= %_5.1 false)) a!1))))
 (assert (= panic
    (=> (and true (= %_5.1 true)) (=> (= panic_var true) (and true common_end)))))
 (assert (= const_-1 (- 1)))
@@ -116,13 +116,13 @@ Backward sorted nodes:
                    (- (bv2int #x80000000) 4294967296)
                    (bv2int #x80000000))))
       (a!3 (=> (= %_5.1 %1.1)
-               (=> (=> (= %_5.1 false) (= %x.0 %_5.0)) (and true panic bb3)))))
+               (=> (=> (= %_5.1 false) (= %x.0 %_5.0)) (and true bb3 panic)))))
 (let ((a!4 (=> (and (= %1.0 (* const_-1 %0)) (= %1.1 (or a!1 a!2)))
                (=> (= %_5.0 %1.0) a!3))))
   (= bb1 (=> (and true (= %_2 true)) a!4)))))
 (assert (= const_0 0))
 (assert (let ((a!1 (=> (= %_2 (> %0 const_0))
-               (=> (=> (= %_2 false) (= %x.0 %0)) (and true bb3 bb1)))))
+               (=> (=> (= %_2 false) (= %x.0 %0)) (and true bb1 bb3)))))
   (= start (=> true a!1))))
 (assert (let ((a!1 (>= %0
                (ite (bvslt #x80000000 #x00000000)
@@ -140,7 +140,7 @@ Function safety: safe
 ************************************
 
 
-Backward Symbolic Execution in hello_world::abs::h45934470d8fae709
+Backward Symbolic Execution in hello_world::abs::h0f9f1fc5a72fe454
 Number of Nodes: 6
 Arg count: 1
 Basic Blocks:
@@ -165,7 +165,7 @@ Basic Blocks:
 		Last statement is a terminator
 	Basic Block: "panic"
 		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc54 to %\\\"core::panic::location::Location\\\"*)) #8\""
+		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.0 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc43 to %\\\"core::panic::location::Location\\\"*)) #8\""
 		Statement: "\"  unreachable\""
 		Last statement is a terminator
 	Basic Block: "bb5"
@@ -174,17 +174,17 @@ Basic Blocks:
 		Last statement is a terminator
 	Basic Block: "bb4"
 		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc55 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc57 to %\\\"core::panic::location::Location\\\"*)) #8\""
+		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc44 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc46 to %\\\"core::panic::location::Location\\\"*)) #8\""
 		Statement: "\"  unreachable\""
 		Last statement is a terminator
 
 Start node: "start"
-	Successor to start node: "bb1"
 	Successor to start node: "bb3"
+	Successor to start node: "bb1"
 Forward edges:
-	{"bb1": {"panic", "bb3"}, "bb3": {"bb5", "bb4"}, "panic": {"common_end"}, "bb4": {"common_end"}, "start": {"bb1", "bb3"}, "bb5": {"common_end"}}
+	{"bb3": {"bb5", "bb4"}, "bb5": {"common_end"}, "panic": {"common_end"}, "bb4": {"common_end"}, "start": {"bb3", "bb1"}, "bb1": {"bb3", "panic"}}
 Backward edges:
-	{"panic": {"bb1"}, "bb3": {"start", "bb1"}, "bb1": {"start"}, "bb5": {"bb3"}, "bb4": {"bb3"}, "common_end": {"panic", "bb4", "bb5"}, "start": {}}
+	{"bb1": {"start"}, "common_end": {"panic", "bb4", "bb5"}, "bb3": {"bb1", "start"}, "panic": {"bb1"}, "start": {}, "bb5": {"bb3"}, "bb4": {"bb3"}}
 Forward sorted nodes:
 	["start", "bb1", "panic", "bb3", "bb5", "bb4", "common_end"]
 Backward sorted nodes:
@@ -198,8 +198,8 @@ Backward sorted nodes:
 (declare-fun const_0 () Int)
 (declare-fun %_7 () Bool)
 (declare-fun %x.0 () Int)
-(declare-fun %_2 () Bool)
 (declare-fun %_5.1 () Bool)
+(declare-fun %_2 () Bool)
 (declare-fun bb3 () Bool)
 (declare-fun panic () Bool)
 (declare-fun const_-1 () Int)
@@ -217,8 +217,8 @@ Backward sorted nodes:
 (assert (= const_true true))
 (assert (= const_0 0))
 (assert (let ((a!1 (=> (= %_7 (>= %x.0 const_0))
-               (=> (= %_6 (xor %_7 const_true)) (and true bb4 bb5)))))
-  (= bb3 (=> (and true (= %_5.1 false) (= %_2 false)) a!1))))
+               (=> (= %_6 (xor %_7 const_true)) (and true bb5 bb4)))))
+  (= bb3 (=> (and true (= %_2 false) (= %_5.1 false)) a!1))))
 (assert (= panic
    (=> (and true (= %_5.1 true)) (=> (= panic_var true) (and true common_end)))))
 (assert (= const_-1 (- 1)))
@@ -237,7 +237,7 @@ Backward sorted nodes:
   (= bb1 (=> (and true (= %_2 true)) a!4)))))
 (assert (= const_0 0))
 (assert (let ((a!1 (=> (= %_2 (< %0 const_0))
-               (=> (=> (= %_2 false) (= %x.0 %0)) (and true bb1 bb3)))))
+               (=> (=> (= %_2 false) (= %x.0 %0)) (and true bb3 bb1)))))
   (= start (=> true a!1))))
 (assert (let ((a!1 (>= %0
                (ite (bvslt #x80000000 #x00000000)

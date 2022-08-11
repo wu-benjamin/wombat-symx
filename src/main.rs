@@ -362,6 +362,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                 }
                 let condition = get_entry_condition(&solver, &function, &node, &successor);
                 let mut next_instruction = get_basic_block_by_name(&function, &successor).get_first_instruction();
+                // TODO: double-check direction for parsing nodes (iterate in reverse?)
                 while let Some(current_instruction) = next_instruction {
                     let opcode = current_instruction.get_opcode();
                     match &opcode {

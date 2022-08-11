@@ -5,6 +5,7 @@ fn unsafe_foo(c1: bool, c2: bool, x: i32) -> i32 {
     assert!(r > x);
     r
 }
+
 // spec foo {
 //     ensures r > x;
 // }
@@ -21,7 +22,6 @@ fn safe_foo(c1: bool, c2: bool, mut x: i32) -> i32 {
 }
 
 fn main() {
-    // println!("{}", foo(false, true, 13))
     unsafe_foo(false, true, 13);
     safe_foo(false, true, 13);
 }

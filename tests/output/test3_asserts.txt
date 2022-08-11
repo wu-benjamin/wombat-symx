@@ -1,0 +1,164 @@
+Functions in "tests/test3_asserts.bc":
+	"std::sys_common::backtrace::__rust_begin_short_backtrace::hf3342a622b07dcdb" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17hf3342a622b07dcdbE"
+	"std::rt::lang_start::h3f16ac9a3cb23dc0" == "_ZN3std2rt10lang_start17h3f16ac9a3cb23dc0E"
+	"std::rt::lang_start::{{closure}}::h8051d1e742bc9124" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h8051d1e742bc9124E"
+	"std::sys::unix::process::process_common::ExitCode::as_i32::h9a79e7dcae7f23d8" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217h9a79e7dcae7f23d8E"
+	"std::process::ExitCode::to_i32::hafd0198941a32c7e" == "_ZN3std7process8ExitCode6to_i3217hafd0198941a32c7eE"
+	"core::ops::function::FnOnce::call_once{{vtable.shim}}::h96dfcf58f85762cc" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17h96dfcf58f85762ccE"
+	"core::ops::function::FnOnce::call_once::h242dd62c5c1374e6" == "_ZN4core3ops8function6FnOnce9call_once17h242dd62c5c1374e6E"
+	"core::ops::function::FnOnce::call_once::hf427975072f2b538" == "_ZN4core3ops8function6FnOnce9call_once17hf427975072f2b538E"
+	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::h4d67dc958481682c" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17h4d67dc958481682cE"
+	"core::hint::black_box::ha608bdd48c526c34" == "_ZN4core4hint9black_box17ha608bdd48c526c34E"
+	"<() as std::process::Termination>::report::h21fdc78bdd0f4d45" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17h21fdc78bdd0f4d45E"
+	"<std::process::ExitCode as std::process::Termination>::report::hf9c6fa4e182f2ec4" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17hf9c6fa4e182f2ec4E"
+	"test3_asserts::assert_safe::ha4e1109c7db230f4" == "_ZN13test3_asserts11assert_safe17ha4e1109c7db230f4E"
+	"test3_asserts::assert_unsafe::h9723f028aa55605f" == "_ZN13test3_asserts13assert_unsafe17h9723f028aa55605fE"
+	"test3_asserts::main::hea3b04014ff1e901" == "_ZN13test3_asserts4main17hea3b04014ff1e901E"
+	"rust_eh_personality" == "rust_eh_personality"
+	"std::rt::lang_start_internal::hbbfe6e663b24763e" == "_ZN3std2rt19lang_start_internal17hbbfe6e663b24763eE"
+	"core::panicking::panic::h5978a1941192adf2" == "_ZN4core9panicking5panic17h5978a1941192adf2E"
+	"main" == "main"
+
+Backward Symbolic Execution in test3_asserts::assert_safe::ha4e1109c7db230f4
+Number of Nodes: 3
+Arg count: 1
+Basic Blocks:
+	Basic Block: "start"
+		is_cleanup: NO
+		Statement: "\"  br i1 false, label %bb1, label %bb2\""
+		Last statement is a terminator
+	Basic Block: "bb2"
+		is_cleanup: NO
+		Statement: "\"  ret void\""
+		Last statement is a terminator
+	Basic Block: "bb1"
+		is_cleanup: YES
+		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc32 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc34 to %\\\"core::panic::location::Location\\\"*)) #5\""
+		Statement: "\"  unreachable\""
+		Last statement is a terminator
+
+Start node: "start"
+	Successor to start node: "bb2"
+	Successor to start node: "bb1"
+Forward edges:
+	{"start": {"bb1", "bb2"}, "bb2": {"common_end"}, "bb1": {"common_end"}}
+Backward edges:
+	{"common_end": {"bb1", "bb2"}, "bb2": {"start"}, "bb1": {"start"}, "start": {}}
+Forward sorted nodes:
+	["start", "bb2", "bb1", "common_end"]
+Backward sorted nodes:
+	["common_end", "bb1", "bb2", "start"]
+(declare-fun panic_var () Bool)
+(declare-fun common_end () Bool)
+(declare-fun const_false () Bool)
+(declare-fun bb1 () Bool)
+(declare-fun bb2 () Bool)
+(declare-fun start () Bool)
+(declare-fun %x () Int)
+(assert (= common_end (=> (and true true true) (and (not panic_var) true))))
+(assert (= const_false false))
+(assert (= bb1
+   (=> (and true (= const_false true))
+       (=> (= panic_var true) (and true common_end)))))
+(assert (= const_false false))
+(assert (= bb2
+   (=> (and true (= const_false false))
+       (=> (= panic_var false) (and true common_end)))))
+(assert (= const_false false))
+(assert (= const_false false))
+(assert (= start (=> true (and true bb1 bb2))))
+(assert (let ((a!1 (>= %x
+               (ite (bvslt #x80000000 #x00000000)
+                    (- (bv2int #x80000000) 4294967296)
+                    (bv2int #x80000000))))
+      (a!2 (<= %x
+               (ite (bvslt #x7fffffff #x00000000)
+                    (- (bv2int #x7fffffff) 4294967296)
+                    (bv2int #x7fffffff)))))
+  (and a!1 a!2)))
+(assert (not start))
+
+Function safety: safe
+
+************************************
+
+
+Backward Symbolic Execution in test3_asserts::assert_unsafe::h9723f028aa55605f
+Number of Nodes: 3
+Arg count: 1
+Basic Blocks:
+	Basic Block: "start"
+		is_cleanup: NO
+		Statement: "\"  %_3 = icmp slt i32 %x, 13\""
+		Statement: "\"  %_2 = xor i1 %_3, true\""
+		Statement: "\"  br i1 %_2, label %bb1, label %bb2\""
+		Last statement is a terminator
+	Basic Block: "bb2"
+		is_cleanup: NO
+		Statement: "\"  ret void\""
+		Last statement is a terminator
+	Basic Block: "bb1"
+		is_cleanup: YES
+		Statement: "\"  call void @_ZN4core9panicking5panic17h5978a1941192adf2E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc35 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc37 to %\\\"core::panic::location::Location\\\"*)) #5\""
+		Statement: "\"  unreachable\""
+		Last statement is a terminator
+
+Start node: "start"
+	Successor to start node: "bb2"
+	Successor to start node: "bb1"
+Forward edges:
+	{"bb1": {"common_end"}, "start": {"bb1", "bb2"}, "bb2": {"common_end"}}
+Backward edges:
+	{"bb1": {"start"}, "common_end": {"bb2", "bb1"}, "bb2": {"start"}, "start": {}}
+Forward sorted nodes:
+	["start", "bb2", "bb1", "common_end"]
+Backward sorted nodes:
+	["common_end", "bb1", "bb2", "start"]
+(declare-fun panic_var () Bool)
+(declare-fun common_end () Bool)
+(declare-fun %_2 () Bool)
+(declare-fun bb1 () Bool)
+(declare-fun bb2 () Bool)
+(declare-fun const_true () Bool)
+(declare-fun const_13 () Int)
+(declare-fun %_3 () Bool)
+(declare-fun %x () Int)
+(declare-fun start () Bool)
+(assert (= common_end (=> (and true true true) (and (not panic_var) true))))
+(assert (= bb1
+   (=> (and true (= %_2 true)) (=> (= panic_var true) (and true common_end)))))
+(assert (= bb2
+   (=> (and true (= %_2 false)) (=> (= panic_var false) (and true common_end)))))
+(assert (= const_true true))
+(assert (= const_13 13))
+(assert (let ((a!1 (=> (= %_3 (< %x const_13))
+               (=> (= %_2 (xor %_3 const_true)) (and true bb1 bb2)))))
+  (= start (=> true a!1))))
+(assert (let ((a!1 (>= %x
+               (ite (bvslt #x80000000 #x00000000)
+                    (- (bv2int #x80000000) 4294967296)
+                    (bv2int #x80000000))))
+      (a!2 (<= %x
+               (ite (bvslt #x7fffffff #x00000000)
+                    (- (bv2int #x7fffffff) 4294967296)
+                    (bv2int #x7fffffff)))))
+  (and a!1 a!2)))
+(assert (not start))
+
+Function safety: unsafe
+
+%x -> 2147479549
+panic_var -> true
+%_2 -> true
+%_3 -> false
+start -> false
+const_13 -> 13
+const_true -> true
+bb2 -> true
+bb1 -> false
+common_end -> false
+
+
+************************************
+
+

@@ -617,7 +617,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                         let operand1_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
                         let operand2_var_name = get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap(), &solver);
                         if !current_instruction.get_type().to_string().eq("\"i1\"") {
-                            println!("Currently unsuppported type {:?} for xor operand", current_instruction.get_type().to_string())
+                            println!("Currently unsuppported type {:?} for xor operand", current_instruction.get_type().to_string());
                         }
                         let operand1_var = Bool::new_const(
                             solver.get_context(),
@@ -718,6 +718,92 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                     }
                     InstructionOpcode::Phi => {
                         // NO-OP
+                    }
+                    InstructionOpcode::Trunc => {
+                        let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let operand_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
+                        println!("Trunc: {:?}", lvalue_var_name);
+                        println!("Trunc: {:?}", operand_var_name);
+                        println!("Trunc: {:?}", current_instruction);
+                        let lvalue_var = Bool::new_const(
+                            solver.get_context(),
+                            lvalue_var_name
+                        );
+                        let operand_var = Int::new_const(
+                            solver.get_context(),
+                            operand_var_name
+                        );
+                        let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 32), true);
+                        let assignment = lvalue_var._eq(&operand_var._eq(&const_0).not());
+                        node_var = assignment.implies(&node_var);                        
+                        println!("Trunc is only partially supported (always i1)");
+                    }
+                    InstructionOpcode::Select => {
+                        let discriminant = current_instruction.get_operand(0).unwrap().left().unwrap();
+                        let discriminant_name = get_var_name(&discriminant, &solver);
+                        let operand_1_var_name = get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap(), &solver);
+                        let operand_2_var_name = get_var_name(&current_instruction.get_operand(2).unwrap().left().unwrap(), &solver);
+                        if !discriminant.get_type().to_string().eq("\"i1\"") {
+                            println!("Currently unsuppported type {:?} for select discriminant", discriminant.get_type().to_string());
+                            continue;
+                        }
+                        let discriminant_var = Bool::new_const(
+                            solver.get_context(),
+                            discriminant_name
+                        );
+                        if current_instruction.get_type().to_string().eq("\"i1\"") {
+                            let operand_1_var = Bool::new_const(
+                                solver.get_context(),
+                                operand_1_var_name
+                            );
+                            let operand_2_var = Bool::new_const(
+                                solver.get_context(),
+                                operand_2_var_name
+                            );                            
+                            let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_1_var));
+                            let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_2_var));
+                            node_var = Bool::and(solver.get_context(), &[&select_1.implies(&node_var), &select_2.implies(&node_var)]);
+                        } else if current_instruction.get_type().to_string().eq("\"i32\"") || current_instruction.get_type().to_string().eq("\"i8\"") {
+                            if current_instruction.get_type().to_string().eq("\"i8\"") {
+                                println!("i8 is only partially supported for select statements (treated as i32)");
+                            }
+                            let operand_1_var = Int::new_const(
+                                solver.get_context(),
+                                operand_1_var_name
+                            );
+                            let operand_2_var = Int::new_const(
+                                solver.get_context(),
+                                operand_2_var_name
+                            );                            
+                            let select_1 = discriminant_var.implies(&Int::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_1_var));
+                            let select_2 = discriminant_var.not().implies(&Int::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_2_var));
+                            let assignment = Bool::and(solver.get_context(), &[&select_1, &select_2]);
+                            node_var = assignment.implies(&node_var);
+                        } else {
+                            println!("Currently unsuppported type {:?} for select", current_instruction.get_type().to_string());
+                        }
+                    }
+                    InstructionOpcode::ZExt => {
+                        let lvalue_var_name = get_var_name(&current_instruction, &solver);
+                        let operand_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
+                        println!("ZExt: {:?}", lvalue_var_name);
+                        println!("ZExt: {:?}", operand_var_name);
+                        println!("ZExt: {:?}", current_instruction);
+                        let lvalue_var = Int::new_const(
+                            solver.get_context(),
+                            lvalue_var_name
+                        );
+                        let operand_var = Bool::new_const(
+                            solver.get_context(),
+                            operand_var_name
+                        );
+                        let const_1 = Int::from_bv(&BV::from_i64(solver.get_context(), 1, 32), true);
+                        let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 32), true);
+                        let cast_1 = operand_var.implies(&lvalue_var._eq(&const_1));
+                        let cast_2 = operand_var.not().implies(&lvalue_var._eq(&const_0));
+                        let assignment = Bool::and(solver.get_context(), &[&cast_1, &cast_2]);
+                        node_var = assignment.implies(&node_var);                        
+                        println!("ZExt is only partially supported (always i32)");
                     }
                     _ => {
                         println!("Opcode {:?} is not supported as a statement for code gen", opcode);

@@ -1,0 +1,4 @@
+cargo run ./tests/test1_abs.bc
+cargo run ./tests/test2_neg_abs.bc
+cargo run ./tests/test3_asserts.bc
+cargo run ./tests/test4_foo.bc

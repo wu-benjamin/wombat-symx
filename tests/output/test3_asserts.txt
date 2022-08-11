@@ -41,9 +41,9 @@ Start node: "start"
 	Successor to start node: "bb2"
 	Successor to start node: "bb1"
 Forward edges:
-	{"bb2": {"common_end"}, "start": {"bb1", "bb2"}, "bb1": {"common_end"}}
+	{"start": {"bb1", "bb2"}, "bb1": {"common_end"}, "bb2": {"common_end"}}
 Backward edges:
-	{"start": {}, "bb2": {"start"}, "bb1": {"start"}, "common_end": {"bb1", "bb2"}}
+	{"common_end": {"bb2", "bb1"}, "start": {}, "bb2": {"start"}, "bb1": {"start"}}
 Forward sorted nodes:
 	["start", "bb2", "bb1", "common_end"]
 Backward sorted nodes:
@@ -107,9 +107,9 @@ Start node: "start"
 	Successor to start node: "bb2"
 	Successor to start node: "bb1"
 Forward edges:
-	{"start": {"bb2", "bb1"}, "bb2": {"common_end"}, "bb1": {"common_end"}}
+	{"bb2": {"common_end"}, "start": {"bb2", "bb1"}, "bb1": {"common_end"}}
 Backward edges:
-	{"start": {}, "bb1": {"start"}, "common_end": {"bb2", "bb1"}, "bb2": {"start"}}
+	{"start": {}, "bb1": {"start"}, "common_end": {"bb1", "bb2"}, "bb2": {"start"}}
 Forward sorted nodes:
 	["start", "bb2", "bb1", "common_end"]
 Backward sorted nodes:

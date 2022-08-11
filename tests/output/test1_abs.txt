@@ -59,12 +59,12 @@ Basic Blocks:
 		Last statement is a terminator
 
 Start node: "start"
-	Successor to start node: "bb1"
 	Successor to start node: "bb3"
+	Successor to start node: "bb1"
 Forward edges:
-	{"bb1": {"bb3", "panic"}, "bb3": {"bb4", "bb5"}, "start": {"bb3", "bb1"}, "bb5": {"common_end"}, "bb4": {"common_end"}, "panic": {"common_end"}}
+	{"panic": {"common_end"}, "start": {"bb3", "bb1"}, "bb5": {"common_end"}, "bb4": {"common_end"}, "bb1": {"bb3", "panic"}, "bb3": {"bb4", "bb5"}}
 Backward edges:
-	{"start": {}, "common_end": {"bb5", "panic", "bb4"}, "bb4": {"bb3"}, "bb5": {"bb3"}, "bb1": {"start"}, "panic": {"bb1"}, "bb3": {"start", "bb1"}}
+	{"bb5": {"bb3"}, "bb3": {"bb1", "start"}, "common_end": {"bb4", "bb5", "panic"}, "bb4": {"bb3"}, "start": {}, "panic": {"bb1"}, "bb1": {"start"}}
 Forward sorted nodes:
 	["start", "bb1", "panic", "bb3", "bb5", "bb4", "common_end"]
 Backward sorted nodes:
@@ -111,7 +111,7 @@ Backward sorted nodes:
                    (- (bv2int #x80000000) 4294967296)
                    (bv2int #x80000000))))
       (a!3 (=> (= %_5.1 %1.1)
-               (=> (=> (= %_5.1 false) (= %x.0 %_5.0)) (and true panic bb3)))))
+               (=> (=> (= %_5.1 false) (= %x.0 %_5.0)) (and true bb3 panic)))))
 (let ((a!4 (=> (and (= %1.0 (* const_-1 %0)) (= %1.1 (or a!1 a!2)))
                (=> (= %_5.0 %1.0) a!3))))
   (= bb1 (=> (and true (= %_2 true)) a!4)))))

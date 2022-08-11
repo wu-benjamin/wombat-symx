@@ -6,6 +6,7 @@ use inkwell::basic_block::BasicBlock;
 use inkwell::passes::{PassManager, PassManagerBuilder};
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use rustc_demangle::demangle;
+use tracing::debug;
 use z3::{
     ast::{Ast, Bool, Int, BV},
     SatResult,
@@ -555,7 +556,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                                 // NO-OP
                             }
                             _ => {
-                                println!("Unsupported Call function {:?}", call_operation_name);
+                                debug!("Unsupported Call function {:?}", call_operation_name);
                             }
                         }
                     }
@@ -899,6 +900,7 @@ fn print_file_functions(module: &InkwellModule) -> () {
         println!("\t{:?} == {:?}", demangle(current_function.get_name().to_str().unwrap()).to_string(), current_function.get_name());
         next_function = current_function.get_next_function();
     }
+    println!("");
 }
 
 
@@ -924,6 +926,7 @@ fn pretty_print_function(function: &FunctionValue) -> () {
             println!("\t\tNo terminator")
         }
     }
+    println!("");
 
     let first_basic_block = function.get_first_basic_block().unwrap();
     println!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
@@ -972,7 +975,7 @@ fn main() {
             let backward_sorted_nodes = backward_topological_sort(&current_function);
             println!("Backward sorted nodes:\n\t{:?}", backward_sorted_nodes);
             backward_symbolic_execution(&current_function);
-            println!("\n\n************************************\n\n");
+            println!("\n************************************\n\n");
         }
         next_function = current_function.get_next_function();
     }

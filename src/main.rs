@@ -360,6 +360,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                 if successor.eq(COMMON_END_NODE_NAME) {
                     continue;
                 }
+                let condition = get_entry_condition(&solver, &function, &node, &successor);
                 let mut next_instruction = get_basic_block_by_name(&function, &successor).get_first_instruction();
                 while let Some(current_instruction) = next_instruction {
                     let opcode = current_instruction.get_opcode();
@@ -380,7 +381,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                                             solver.get_context(),
                                             rvalue_var_name
                                         );
-                                        let assignment = lvalue_var._eq(&rvalue_var);
+                                        let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
                                         node_var = assignment.implies(&node_var);       
                                     } else if current_instruction.get_type().to_string().eq("\"i32\"") {
                                         let lvalue_var = Int::new_const(
@@ -391,8 +392,8 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                                             solver.get_context(),
                                             rvalue_var_name
                                         );
-                                        let assignment = lvalue_var._eq(&rvalue_var);
-                                        println!("BOOGA LOOGA: {:?}", assignment);
+                                        let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
+                                        // println!("BOOGA LOOGA: {:?}", assignment);
                                         node_var = assignment.implies(&node_var);
                                     } else {
                                         println!("Currently unsuppported type {:?} for extract value", incoming.0.get_type().to_string())
@@ -436,6 +437,70 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
                         // println!("\tCALL OPERATION: {:?}", call_operation_name);
 
                         match call_operation_name {
+                            "llvm.sadd.with.overflow.i32" => {
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+
+                                let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_1);
+                                let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
+                                let rvalue_var_1 = Int::add(solver.get_context(), &[
+                                    &Int::new_const(solver.get_context(), operand1_name),
+                                    &Int::new_const(solver.get_context(), operand2_name)
+                                ]);
+                                
+                                let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
+
+                                let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_2);
+                                let min_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+                                let max_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+                                let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
+                                
+                                let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
+                                let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
+                                node_var = assignment.implies(&node_var);
+                            }
+                            "llvm.ssub.with.overflow.i32" => {
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+
+                                let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_1);
+                                let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
+                                let rvalue_var_1 = Int::sub(solver.get_context(), &[
+                                    &Int::new_const(solver.get_context(), operand1_name),
+                                    &Int::new_const(solver.get_context(), operand2_name)
+                                ]);
+                                
+                                let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
+
+                                let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_2);
+                                let min_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+                                let max_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+                                let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
+                                
+                                let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
+                                let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
+                                node_var = assignment.implies(&node_var);
+                            }
                             "llvm.smul.with.overflow.i32" => {
                                 let operand1_name = get_var_name(
                                     &current_instruction.get_operand(0).unwrap().left().unwrap(),
@@ -708,13 +773,19 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     // // constrain int inputs
     for input in function.get_params() {
         // TODO: Support other input types
-        let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver));
-        let min_int =
-            Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
-        let max_int =
-            Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
-        solver
-            .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        if input.get_type().to_string().eq("\"i1\"") {
+            continue;
+        } else if input.get_type().to_string().eq("\"i32\"") {
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver));
+            let min_int =
+                Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
+            let max_int =
+                Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+            solver
+                .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        } else {
+            println!("Currently unsuppported type {:?} for input parameter", input.get_type().to_string())
+        }
     }
 
     let start_node = function.get_first_basic_block().unwrap();
@@ -814,6 +885,7 @@ fn main() {
             let backward_sorted_nodes = backward_topological_sort(&current_function);
             println!("Backward sorted nodes:\n\t{:?}", backward_sorted_nodes);
             backward_symbolic_execution(&current_function);
+            println!("\n\n************************************\n\n");
         }
         next_function = current_function.get_next_function();
     }

@@ -1,7 +1,9 @@
 use std::collections::{HashMap, HashSet};
-use std::env;
+use std::path::Path;
 
-use inkwell::IntPredicate;
+use clap::Parser;
+
+use inkwell::{IntPredicate, module};
 use inkwell::basic_block::BasicBlock;
 use inkwell::passes::{PassManager, PassManagerBuilder};
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
@@ -17,7 +19,6 @@ use z3::Context as Z3Context;
 use inkwell::context::Context as InkwellContext;
 use inkwell::module::Module as InkwellModule;
 use inkwell::memory_buffer::MemoryBuffer;
-use std::path::Path;
 
 const COMMON_END_NODE_NAME: &str = "common_end";
 const PANIC_VAR_NAME: &str = "panic_var";
@@ -28,6 +29,22 @@ enum IsCleanup {
     YES,
     NO,
     UNKNOWN,
+}
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// Enable debug printing
+    #[clap(short, long)]
+    debug: bool,
+
+    /// Enable printing functions at beginning
+    #[clap(short, long)]
+    print_functions: bool,
+
+    /// Set file name to perform symbolic execution on
+    #[clap(default_value="./tests/hello_world.bc")]
+    file_name: String,
 }
 
 
@@ -940,18 +957,31 @@ fn pretty_print_function(function: &FunctionValue) -> () {
 
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let mut file_name = String::from("tests/hello_world.bc");
-    if args.len() > 1 {
-        // Use custom user file
-        file_name = args[1].to_string();
-    }
+    let features = Args::parse();
+    let file_name = String::from(&features.file_name);
 
     let path = Path::new(&file_name);
+    if !path.is_file() {
+        println!("{:?} is an invalid file. Please provide a valid file.", file_name);
+        return;
+    }
+
     let context = InkwellContext::create();
     let buffer = MemoryBuffer::create_from_file(&path).unwrap();
-    let module = InkwellModule::parse_bitcode_from_buffer(&buffer, &context).unwrap();
-    print_file_functions(&module);
+    let module_result = InkwellModule::parse_bitcode_from_buffer(&buffer, &context);
+    
+    // Ensure that the module is valid (ie. is a valid bitcode file)
+    if module_result.is_err() {
+        println!("{:?} is not a valid LLVM bitcode file. Please pass in a valid bc file.", file_name);
+        return;
+    }
+    let module = module_result.unwrap();
+
+    
+    // Only print file functions if `print_function` flag provided
+    if features.print_functions {
+        print_file_functions(&module);  
+    }
 
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {

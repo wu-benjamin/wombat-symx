@@ -3,12 +3,14 @@ use std::path::Path;
 
 use clap::Parser;
 
-use inkwell::{IntPredicate, module};
+use inkwell::{IntPredicate};
 use inkwell::basic_block::BasicBlock;
 use inkwell::passes::{PassManager, PassManagerBuilder};
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use rustc_demangle::demangle;
-use tracing::debug;
+use tracing::{debug, warn};
+use tracing_core::Level;
+use tracing_subscriber::FmtSubscriber;
 use z3::{
     ast::{Ast, Bool, Int, BV},
     SatResult,
@@ -890,7 +892,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
             solver
                 .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
         } else {
-            println!("Currently unsuppported type {:?} for input parameter", input.get_type().to_string())
+            warn!("Currently unsuppported type {:?} for input parameter", input.get_type().to_string())
         }
     }
 
@@ -898,7 +900,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     let start_node_var_name = start_node.get_name().to_str().unwrap();
     let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
     solver.assert(&start_node_var.not());
-    println!("{:?}", solver);
+    debug!("{:?}", solver);
 
     // Attempt resolving the model (and obtaining the respective arg values if panic found)
     println!("Function safety: {}", if solver.check() == SatResult::Sat {"unsafe"} else {"safe"});
@@ -923,45 +925,54 @@ fn print_file_functions(module: &InkwellModule) -> () {
 
 
 fn pretty_print_function(function: &FunctionValue) -> () {
-    println!("Number of Nodes: {}", function.count_basic_blocks());
-    println!("Arg count: {}", function.count_params());
+    debug!("Number of Nodes: {}", function.count_basic_blocks());
+    debug!("Arg count: {}", function.count_params());
     // No local decl available to print
-    println!("Basic Blocks:");
+    debug!("Basic Blocks:");
     for bb in function.get_basic_blocks() {
-        println!("\tBasic Block: {:?}", bb.get_name().to_str().unwrap());
-        println!("\t\tis_cleanup: {:?}", is_panic_block(&bb));
+        debug!("\tBasic Block: {:?}", bb.get_name().to_str().unwrap());
+        debug!("\t\tis_cleanup: {:?}", is_panic_block(&bb));
         let mut next_instruction = bb.get_first_instruction();
         let has_terminator = bb.get_terminator().is_some();
 
         while let Some(current_instruction) = next_instruction {
-            println!("\t\tStatement: {:?}", current_instruction.to_string());
+            debug!("\t\tStatement: {:?}", current_instruction.to_string());
             next_instruction = current_instruction.get_next_instruction();
         }
 
         if has_terminator {
-            println!("\t\tLast statement is a terminator")
+            debug!("\t\tLast statement is a terminator")
         } else {
-            println!("\t\tNo terminator")
+            debug!("\t\tNo terminator")
         }
     }
-    println!("");
+    debug!("");
 
     let first_basic_block = function.get_first_basic_block().unwrap();
-    println!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
+    debug!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
     let forward_edges = get_forward_edges(function);
     let successors = forward_edges.get(first_basic_block.get_name().to_str().unwrap()).unwrap();
     for successor in successors {
-        println!("\tSuccessor to start node: {:?}", successor);
+        debug!("\tSuccessor to start node: {:?}", successor);
     }
 }
 
 
 fn main() {
     let features = Args::parse();
+    
+    // Set-up the tracing debug level
+    let subscriber = if features.debug {
+        FmtSubscriber::builder().with_max_level(Level::DEBUG).finish()
+    } else {
+        FmtSubscriber::builder().with_max_level(Level::WARN).finish()
+    };
+    let _guard = tracing::subscriber::set_default(subscriber);
+    
     let file_name = String::from(&features.file_name);
-
     let path = Path::new(&file_name);
     if !path.is_file() {
+        // TODO: do we want these error printlns to be tracing::errors?
         println!("{:?} is an invalid file. Please provide a valid file.", file_name);
         return;
     }
@@ -996,15 +1007,16 @@ fn main() {
 
             // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
+            // TODO: might be worth adding extra feature to print basic block statements anyways
             pretty_print_function(&current_function);
             let forward_edges = get_forward_edges(&current_function);
-            println!("Forward edges:\n\t{:?}", forward_edges);
+            debug!("Forward edges:\t{:?}", forward_edges);
             let backward_edges = get_backward_edges(&current_function);
-            println!("Backward edges:\n\t{:?}", backward_edges);
+            debug!("Backward edges:\t{:?}", backward_edges);
             let forward_sorted_nodes = forward_topological_sort(&current_function);
-            println!("Forward sorted nodes:\n\t{:?}", forward_sorted_nodes);
+            debug!("Forward sorted nodes:\t{:?}", forward_sorted_nodes);
             let backward_sorted_nodes = backward_topological_sort(&current_function);
-            println!("Backward sorted nodes:\n\t{:?}", backward_sorted_nodes);
+            debug!("Backward sorted nodes:\t{:?}", backward_sorted_nodes);
             backward_symbolic_execution(&current_function);
             println!("\n************************************\n\n");
         }

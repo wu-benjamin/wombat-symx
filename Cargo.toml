@@ -11,6 +11,7 @@ either = "1.7.0"
 inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm13-0"] }
 rustc-demangle = "0.1"
 tracing = "0.1"
+tracing-core = "0.1.22"
 tracing-subscriber = "0.2.0"
 z3 = {version="0.11.2", features = ["static-link-z3"]}
 

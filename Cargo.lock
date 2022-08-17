@@ -841,6 +841,7 @@ dependencies = [
  "inkwell",
  "rustc-demangle",
  "tracing",
+ "tracing-core",
  "tracing-subscriber",
  "z3",
 ]

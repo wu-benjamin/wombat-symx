@@ -297,6 +297,33 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
 }
 
 
+fn get_function_argument_names<'a>(function: &'a FunctionValue) -> Vec<String> {
+    // TODO: only supports i32s
+    let mut arg_names = Vec::<String>::new();
+    for param in &function.get_params() {
+        let param_int_value = param.into_int_value();
+        if param_int_value.get_name().to_str().unwrap() == "" {
+            // Var name is empty, find in start basic block
+            let temp_name = get_var_name(&param_int_value.as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
+            let start_block = function.get_first_basic_block().unwrap();
+            let mut instr = start_block.get_first_instruction();
+            while instr.is_some() {
+                if instr.unwrap().get_opcode() == InstructionOpcode::Store && temp_name == get_var_name(&instr.unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new()))) {
+                    arg_names.push(get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new()))))
+                }
+                instr = instr.unwrap().get_next_instruction();
+            }
+
+        } else {
+            arg_names.push(param_int_value.get_name().to_str().unwrap().to_string());
+        }
+    }
+
+    debug!("Function arg names: {:?}", arg_names);
+    arg_names
+}
+
+
 fn get_entry_condition<'a>(
     solver: &'a Solver<'_>,
     function: &'a FunctionValue,
@@ -351,7 +378,7 @@ fn get_entry_condition<'a>(
 }
 
 
-fn backward_symbolic_execution(function: &FunctionValue) -> () {
+fn backward_symbolic_execution(function: &FunctionValue, arg_names: &Vec<String>) -> () {
     //! Perform backward symbolic execution on a function given the llvm-ir function object
     let forward_edges = get_forward_edges(&function);
     let backward_edges = get_backward_edges(&function);
@@ -903,11 +930,17 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     debug!("{:?}", solver);
 
     // Attempt resolving the model (and obtaining the respective arg values if panic found)
-    println!("Function safety: {}", if solver.check() == SatResult::Sat {"unsafe"} else {"safe"});
+    println!("\nFunction safety: {}", if solver.check() == SatResult::Sat {"unsafe"} else {"safe"});
 
     if solver.check() == SatResult::Sat {
         // TODO: Identify concrete function params for Sat case
-        println!("\n{:?}", solver.get_model().unwrap());
+        let model = solver.get_model().unwrap();
+        debug!("\n{:?}", model);
+        println!("\nArgument values:");
+        for arg in arg_names {
+            let arg_z3 = Int::new_const(solver.get_context(), arg.as_str());
+            println!("\t{:?} = {:?}", arg, model.eval(&arg_z3, true));
+        }
     }
 }
 
@@ -999,6 +1032,7 @@ fn main() {
         let current_function_name = demangle(&current_function.get_name().to_str().unwrap()).to_string();
         if current_function_name.contains(&file_name[file_name.rfind("/").unwrap()+1..file_name.rfind(".").unwrap()])
                 && !current_function_name.contains("::main") {
+            let func_arg_names = get_function_argument_names(&current_function);
             let pass_manager_builder = PassManagerBuilder::create();
             let pass_manager = PassManager::create(&module);
             pass_manager.add_promote_memory_to_register_pass();
@@ -1007,6 +1041,13 @@ fn main() {
 
             // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
+            // Name does not exist in params if argument is mutable
+            for param in current_function.get_params() {
+                println!("!!!!!!!!!!! {:?}", param);
+                // if param.into_int_value().get_name().to_str().unwrap() == "" {
+                    println!("+++++++++{:?}", get_var_name(&param.into_int_value().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new()))))
+                    // }
+            }
             // TODO: might be worth adding extra feature to print basic block statements anyways
             pretty_print_function(&current_function);
             let forward_edges = get_forward_edges(&current_function);
@@ -1017,7 +1058,7 @@ fn main() {
             debug!("Forward sorted nodes:\t{:?}", forward_sorted_nodes);
             let backward_sorted_nodes = backward_topological_sort(&current_function);
             debug!("Backward sorted nodes:\t{:?}", backward_sorted_nodes);
-            backward_symbolic_execution(&current_function);
+            backward_symbolic_execution(&current_function, &func_arg_names);
             println!("\n************************************\n\n");
         }
         next_function = current_function.get_next_function();

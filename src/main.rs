@@ -1,12 +1,16 @@
 use std::collections::{HashMap, HashSet};
-use std::env;
+use std::path::Path;
 
-use inkwell::IntPredicate;
+use clap::Parser;
+
+use inkwell::{IntPredicate};
 use inkwell::basic_block::BasicBlock;
 use inkwell::passes::{PassManager, PassManagerBuilder};
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use rustc_demangle::demangle;
-use tracing::debug;
+use tracing::{debug, warn};
+use tracing_core::Level;
+use tracing_subscriber::FmtSubscriber;
 use z3::{
     ast::{Ast, Bool, Int, BV},
     SatResult,
@@ -17,7 +21,6 @@ use z3::Context as Z3Context;
 use inkwell::context::Context as InkwellContext;
 use inkwell::module::Module as InkwellModule;
 use inkwell::memory_buffer::MemoryBuffer;
-use std::path::Path;
 
 const COMMON_END_NODE_NAME: &str = "common_end";
 const PANIC_VAR_NAME: &str = "panic_var";
@@ -28,6 +31,22 @@ enum IsCleanup {
     YES,
     NO,
     UNKNOWN,
+}
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// Enable debug printing
+    #[clap(short, long)]
+    debug: bool,
+
+    /// Enable printing functions at beginning
+    #[clap(short, long)]
+    print_functions: bool,
+
+    /// Set file name to perform symbolic execution on
+    #[clap(default_value="./tests/hello_world.bc")]
+    file_name: String,
 }
 
 
@@ -278,6 +297,34 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
 }
 
 
+fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<String, String> {
+    // TODO: only supports i32s
+    let mut arg_names = HashMap::<String, String>::new();
+    for param in &function.get_params() {
+        let param_int_value = param.into_int_value();
+        if param_int_value.get_name().to_str().unwrap() == "" {
+            // Var name is empty, find in start basic block
+            let alias_name = &get_var_name(&param_int_value.as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
+            let start_block = function.get_first_basic_block().unwrap();
+            let mut instr = start_block.get_first_instruction();
+            while instr.is_some() {
+                if instr.unwrap().get_opcode() == InstructionOpcode::Store && alias_name.to_string() == get_var_name(&instr.unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new()))) {
+                    let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
+                    arg_names.insert(arg_name[1..].to_string(), alias_name.to_string());
+                }
+                instr = instr.unwrap().get_next_instruction();
+            }
+        } else {
+            let arg_name = &param_int_value.get_name().to_str().unwrap().to_string();
+            arg_names.insert(arg_name.to_string(), arg_name.to_string());
+        }
+    }
+
+    debug!("Function arg names: {:?}", arg_names);
+    arg_names
+}
+
+
 fn get_entry_condition<'a>(
     solver: &'a Solver<'_>,
     function: &'a FunctionValue,
@@ -332,7 +379,7 @@ fn get_entry_condition<'a>(
 }
 
 
-fn backward_symbolic_execution(function: &FunctionValue) -> () {
+fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<String, String>) -> () {
     //! Perform backward symbolic execution on a function given the llvm-ir function object
     let forward_edges = get_forward_edges(&function);
     let backward_edges = get_backward_edges(&function);
@@ -873,7 +920,7 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
             solver
                 .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
         } else {
-            println!("Currently unsuppported type {:?} for input parameter", input.get_type().to_string())
+            warn!("Currently unsuppported type {:?} for input parameter", input.get_type().to_string())
         }
     }
 
@@ -881,14 +928,20 @@ fn backward_symbolic_execution(function: &FunctionValue) -> () {
     let start_node_var_name = start_node.get_name().to_str().unwrap();
     let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
     solver.assert(&start_node_var.not());
-    println!("{:?}", solver);
+    debug!("{:?}", solver);
 
     // Attempt resolving the model (and obtaining the respective arg values if panic found)
-    println!("Function safety: {}", if solver.check() == SatResult::Sat {"unsafe"} else {"safe"});
+    println!("\nFunction safety: {}", if solver.check() == SatResult::Sat {"unsafe"} else {"safe"});
 
     if solver.check() == SatResult::Sat {
         // TODO: Identify concrete function params for Sat case
-        println!("\n{:?}", solver.get_model().unwrap());
+        let model = solver.get_model().unwrap();
+        debug!("\n{:?}", model);
+        println!("\nArgument values:");
+        for (arg_name, alias_name) in arg_names {
+            let arg_z3 = Int::new_const(solver.get_context(), alias_name.as_str());
+            println!("\t{:?} = {:?}", &arg_name, model.eval(&arg_z3, true).unwrap());
+        }
     }
 }
 
@@ -906,58 +959,83 @@ fn print_file_functions(module: &InkwellModule) -> () {
 
 
 fn pretty_print_function(function: &FunctionValue) -> () {
-    println!("Number of Nodes: {}", function.count_basic_blocks());
-    println!("Arg count: {}", function.count_params());
+    debug!("Number of Nodes: {}", function.count_basic_blocks());
+    debug!("Arg count: {}", function.count_params());
     // No local decl available to print
-    println!("Basic Blocks:");
+    debug!("Basic Blocks:");
     for bb in function.get_basic_blocks() {
-        println!("\tBasic Block: {:?}", bb.get_name().to_str().unwrap());
-        println!("\t\tis_cleanup: {:?}", is_panic_block(&bb));
+        debug!("\tBasic Block: {:?}", bb.get_name().to_str().unwrap());
+        debug!("\t\tis_cleanup: {:?}", is_panic_block(&bb));
         let mut next_instruction = bb.get_first_instruction();
         let has_terminator = bb.get_terminator().is_some();
 
         while let Some(current_instruction) = next_instruction {
-            println!("\t\tStatement: {:?}", current_instruction.to_string());
+            debug!("\t\tStatement: {:?}", current_instruction.to_string());
             next_instruction = current_instruction.get_next_instruction();
         }
 
         if has_terminator {
-            println!("\t\tLast statement is a terminator")
+            debug!("\t\tLast statement is a terminator")
         } else {
-            println!("\t\tNo terminator")
+            debug!("\t\tNo terminator")
         }
     }
-    println!("");
+    debug!("");
 
     let first_basic_block = function.get_first_basic_block().unwrap();
-    println!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
+    debug!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
     let forward_edges = get_forward_edges(function);
     let successors = forward_edges.get(first_basic_block.get_name().to_str().unwrap()).unwrap();
     for successor in successors {
-        println!("\tSuccessor to start node: {:?}", successor);
+        debug!("\tSuccessor to start node: {:?}", successor);
     }
 }
 
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let mut file_name = String::from("tests/hello_world.bc");
-    if args.len() > 1 {
-        // Use custom user file
-        file_name = args[1].to_string();
+    let features = Args::parse();
+    
+    // Set-up the tracing debug level
+    let subscriber = if features.debug {
+        FmtSubscriber::builder().with_max_level(Level::DEBUG).finish()
+    } else {
+        FmtSubscriber::builder().with_max_level(Level::WARN).finish()
+    };
+    let _guard = tracing::subscriber::set_default(subscriber);
+    
+    let file_name = String::from(&features.file_name);
+    let path = Path::new(&file_name);
+    if !path.is_file() {
+        // TODO: do we want these error printlns to be tracing::errors?
+        println!("{:?} is an invalid file. Please provide a valid file.", file_name);
+        return;
     }
 
-    let path = Path::new(&file_name);
     let context = InkwellContext::create();
     let buffer = MemoryBuffer::create_from_file(&path).unwrap();
-    let module = InkwellModule::parse_bitcode_from_buffer(&buffer, &context).unwrap();
-    print_file_functions(&module);
+    let module_result = InkwellModule::parse_bitcode_from_buffer(&buffer, &context);
+    
+    // Ensure that the module is valid (ie. is a valid bitcode file)
+    if module_result.is_err() {
+        println!("{:?} is not a valid LLVM bitcode file. Please pass in a valid bc file.", file_name);
+        return;
+    }
+    let module = module_result.unwrap();
+
+    
+    // Only print file functions if `print_function` flag provided
+    if features.print_functions {
+        print_file_functions(&module);  
+    }
 
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_function_name = demangle(&current_function.get_name().to_str().unwrap()).to_string();
         if current_function_name.contains(&file_name[file_name.rfind("/").unwrap()+1..file_name.rfind(".").unwrap()])
                 && !current_function_name.contains("::main") {
+            // Get function argument names before removing store/alloca instructions
+            let func_arg_names = get_function_argument_names(&current_function);
+            
             let pass_manager_builder = PassManagerBuilder::create();
             let pass_manager = PassManager::create(&module);
             pass_manager.add_promote_memory_to_register_pass();
@@ -966,16 +1044,17 @@ fn main() {
 
             // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
+            // TODO: might be worth adding extra feature to print basic block statements anyways
             pretty_print_function(&current_function);
             let forward_edges = get_forward_edges(&current_function);
-            println!("Forward edges:\n\t{:?}", forward_edges);
+            debug!("Forward edges:\t{:?}", forward_edges);
             let backward_edges = get_backward_edges(&current_function);
-            println!("Backward edges:\n\t{:?}", backward_edges);
+            debug!("Backward edges:\t{:?}", backward_edges);
             let forward_sorted_nodes = forward_topological_sort(&current_function);
-            println!("Forward sorted nodes:\n\t{:?}", forward_sorted_nodes);
+            debug!("Forward sorted nodes:\t{:?}", forward_sorted_nodes);
             let backward_sorted_nodes = backward_topological_sort(&current_function);
-            println!("Backward sorted nodes:\n\t{:?}", backward_sorted_nodes);
-            backward_symbolic_execution(&current_function);
+            debug!("Backward sorted nodes:\t{:?}", backward_sorted_nodes);
+            backward_symbolic_execution(&current_function, &func_arg_names);
             println!("\n************************************\n\n");
         }
         next_function = current_function.get_next_function();

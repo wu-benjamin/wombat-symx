@@ -31,19 +31,22 @@ To build the project, use:
 ```
 cargo build
 ```
-To create the bytecode files required by the symbolic executor from the test Rust source files, use:
-```
-./help.sh
-```
 
 ## Runtime Execution
 
-To run the project, use:
-```
-cargo run [bc-file-path]
+To see an overview of run commands, use the following:
+```bash
+cargo run -- --help
 ```
 
-If no `bc-file-path` is provided, then the program will default to `tests/hello_world.rs` under the `neg_abs` function.
+To run the project, use:
+```
+cargo run -- [bc-file-path]
+```
+
+If no `bc-file-path` is provided, then the program will default to `tests/hello_world.rs` (in which case, `--` can be ignored with no other options).
+
+
 
 ## Creating LLVM IR files
 
@@ -57,9 +60,27 @@ A human-readable LLVM IR format can be created by using the following:
 rustc --emit=llvm-ir <file-name>.rs
 ```
 
-## Create LLVM IR from Test Files
+### Support Scripts
 
-To compile all of the test rust files into LLVM bytecode files, run the following help script in the project root:
-```zsh
-./help.sh
+There are a few scripts to help build the programs in `tests/`. Run the bash scripts in the project root.
+
+#### build-tests.sh
+
+Run the following script to emit bytecode & human-readable LLVM for the test programs.
+```bash
+./build-tests.sh
+```
+
+#### cleanup-tests.sh
+
+Run the following script to cleanup and delete all LLVM output files in the tests folder.
+```bash
+./cleanup-tests.sh
+```
+
+#### output-tests-dump.sh
+
+Run the following script to dump the output of Wombat-SymX for all test files to `tests/output/`.
+```bash
+./output-tests-dump.sh
 ```

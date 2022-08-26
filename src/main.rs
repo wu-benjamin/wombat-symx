@@ -344,10 +344,6 @@ fn get_entry_condition<'a>(
                     let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                     let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
                     let successor_basic_block_name_1 = String::from(successor_basic_block_1.get_name().to_str().unwrap());
-                    // println!("\n--------- {:?}", successor_basic_block_name_1);
-                    // println!("--------- {:?}", String::from(terminator.get_operand(2).unwrap().right().unwrap().get_name().to_str().unwrap()));
-                    // println!("--------- {:?}", String::from(node));
-                    // println!("--------- {:?}\n", terminator);
                     if successor_basic_block_name_1.eq(&String::from(node)) {
                         target_val = false;
                     }
@@ -409,9 +405,8 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                     continue;
                 }
                 let condition = get_entry_condition(&solver, &function, &node, &successor);
-                let mut next_instruction = get_basic_block_by_name(&function, &successor).get_first_instruction();
-                // TODO: double-check direction for parsing nodes (iterate in reverse?)
-                while let Some(current_instruction) = next_instruction {
+                let mut prev_instruction = get_basic_block_by_name(&function, &successor).get_last_instruction();
+                while let Some(current_instruction) = prev_instruction {
                     let opcode = current_instruction.get_opcode();
                     match &opcode {
                         InstructionOpcode::Phi => {
@@ -442,7 +437,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                             rvalue_var_name
                                         );
                                         let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
-                                        // println!("BOOGA LOOGA: {:?}", assignment);
                                         node_var = assignment.implies(&node_var);
                                     } else {
                                         println!("Currently unsuppported type {:?} for extract value", incoming.0.get_type().to_string())
@@ -454,7 +448,7 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                             // NO-OP
                         }
                     }
-                    next_instruction = current_instruction.get_next_instruction();
+                    prev_instruction = current_instruction.get_previous_instruction();
                 }
             }
         }
@@ -467,23 +461,16 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
             let mut prev_instruction = get_basic_block_by_name(&function, &node).get_last_instruction();
 
             while let Some(current_instruction) = prev_instruction {
-                // TODO: Process current instruction
+                // Process current instruction
                 let opcode = current_instruction.get_opcode();
                 match &opcode {
                     InstructionOpcode::Unreachable => {
                         // NO-OP
                     }
                     InstructionOpcode::Call => {
-                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction);
-                        // println!("\tNumber of operands: {:?}", current_instruction.get_num_operands());
-                        // for i in 0..current_instruction.get_num_operands() {
-                        //     println!("\t\t{:?}", current_instruction.get_operand(i));
-                        // }
-
                         let call_operand = &current_instruction.get_operand(current_instruction.get_num_operands()-1)
                             .unwrap().left().unwrap().into_pointer_value();
                         let call_operation_name = call_operand.get_name().to_str().unwrap();
-                        // println!("\tCALL OPERATION: {:?}", call_operation_name);
 
                         match call_operation_name {
                             "llvm.sadd.with.overflow.i32" => {
@@ -529,7 +516,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                 );
 
                                 let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_1);
                                 let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                                 let rvalue_var_1 = Int::sub(solver.get_context(), &[
                                     &Int::new_const(solver.get_context(), operand1_name),
@@ -539,7 +525,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                 let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
                                 let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_2);
                                 let min_int =
                                     Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                                 let max_int =
@@ -561,7 +546,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                 );
 
                                 let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_1);
                                 let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                                 let rvalue_var_1 = Int::mul(solver.get_context(), &[
                                     &Int::new_const(solver.get_context(), operand1_name),
@@ -571,7 +555,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                 let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
                                 let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_2);
                                 let min_int =
                                     Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                                 let max_int =
@@ -632,14 +615,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                     }
                     InstructionOpcode::Store => {
                         // TODO: Support types other than i32* here
-                        // TODO: Alloca seems to cause issues with multiple elements accessing this stored value
-                        // println!("---------------- Need to Implement------------------\n{:?}", current_instruction);
-                        // println!("\tNumber of operands: {:?}", current_instruction.get_num_operands());
-                        // for i in 0..current_instruction.get_num_operands() {
-                        //     println!("\t\t{:?}", current_instruction.get_operand(i));
-                        // }
-                        // println!("\t\tptr value: {:?}", get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value().as_any_value_enum(), &solver));
-
                         let operand1 = current_instruction.get_operand(0).unwrap().left().unwrap();
                         if !operand1.get_type().to_string().eq("\"i32\"") {
                             println!("Currently unsuppported type {:?} for store operand", operand1.get_type().to_string())
@@ -657,7 +632,6 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                             rvalue_var_name
                         );
                         let assignment = lvalue_var._eq(&rvalue_var);
-                        // println!("\tCreated operation: {:?}", assignment);
                         node_var = assignment.implies(&node_var);
                     }
                     InstructionOpcode::Br => {
@@ -906,7 +880,7 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
         solver.assert(&named_node_var._eq(&node_var));
     }
 
-    // // constrain int inputs
+    // constrain int inputs
     for input in function.get_params() {
         // TODO: Support other input types
         if input.get_type().to_string().eq("\"i1\"") {
@@ -1044,7 +1018,6 @@ fn main() {
 
             // Do not process main function for now
             println!("Backward Symbolic Execution in {:?}", demangle(current_function.get_name().to_str().unwrap()));
-            // TODO: might be worth adding extra feature to print basic block statements anyways
             pretty_print_function(&current_function);
             let forward_edges = get_forward_edges(&current_function);
             debug!("Forward edges:\t{:?}", forward_edges);

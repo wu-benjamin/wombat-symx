@@ -1,117 +1,98 @@
-Functions in "tests/test4_foo.bc":
-	"core::ops::function::FnOnce::call_once{{vtable.shim}}::h868f6195e66ff1a4" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17h868f6195e66ff1a4E"
-	"core::ops::function::FnOnce::call_once::h90e4c70663aeb093" == "_ZN4core3ops8function6FnOnce9call_once17h90e4c70663aeb093E"
-	"core::ops::function::FnOnce::call_once::ha95e80e535ad5cec" == "_ZN4core3ops8function6FnOnce9call_once17ha95e80e535ad5cecE"
-	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::h0f1a72614ba0ca70" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17h0f1a72614ba0ca70E"
-	"test4_foo::unsafe_foo::had11b3c65ace6f20" == "_ZN9test4_foo10unsafe_foo17had11b3c65ace6f20E"
-	"test4_foo::safe_foo::h475493205a384ec3" == "_ZN9test4_foo8safe_foo17h475493205a384ec3E"
-	"test4_foo::main::hca33cd06c2fb5143" == "_ZN9test4_foo4main17hca33cd06c2fb5143E"
-	"core::hint::black_box::h962dac21d9191591" == "_ZN4core4hint9black_box17h962dac21d9191591E"
-	"std::process::ExitCode::to_i32::h69fbacc0118f9c61" == "_ZN3std7process8ExitCode6to_i3217h69fbacc0118f9c61E"
-	"<() as std::process::Termination>::report::h250a1b31ee385c8b" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17h250a1b31ee385c8bE"
-	"<std::process::ExitCode as std::process::Termination>::report::ha85612edf3a8a962" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17ha85612edf3a8a962E"
-	"std::rt::lang_start::h1b441e91727cf33f" == "_ZN3std2rt10lang_start17h1b441e91727cf33fE"
-	"std::rt::lang_start::{{closure}}::h4c3e022d4bd72eb0" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h4c3e022d4bd72eb0E"
-	"std::sys_common::backtrace::__rust_begin_short_backtrace::h06d5f5959534a048" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h06d5f5959534a048E"
-	"std::sys::unix::process::process_common::ExitCode::as_i32::he4e8ac0168fc736b" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217he4e8ac0168fc736bE"
-	"rust_eh_personality" == "rust_eh_personality"
-	"llvm.sadd.with.overflow.i32" == "llvm.sadd.with.overflow.i32"
-	"llvm.expect.i1" == "llvm.expect.i1"
-	"core::panicking::panic::he60bb304466ccbaf" == "_ZN4core9panicking5panic17he60bb304466ccbafE"
-	"llvm.ssub.with.overflow.i32" == "llvm.ssub.with.overflow.i32"
-	"std::rt::lang_start_internal::h358b6d58e23c88c7" == "_ZN3std2rt19lang_start_internal17h358b6d58e23c88c7E"
-	"main" == "main"
-
-Backward Symbolic Execution in test4_foo::unsafe_foo::had11b3c65ace6f20
-Number of Nodes: 13
-Arg count: 3
-Basic Blocks:
-	Basic Block: "start"
-		is_cleanup: NO
-		Statement: "\"  br i1 %c1, label %bb1, label %bb3\""
-		Last statement is a terminator
-	Basic Block: "bb3"
-		is_cleanup: NO
-		Statement: "\"  %0 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %x, i32 4)\""
-		Statement: "\"  %_8.0 = extractvalue { i32, i1 } %0, 0\""
-		Statement: "\"  %_8.1 = extractvalue { i32, i1 } %0, 1\""
-		Statement: "\"  br i1 %_8.1, label %panic1, label %bb5, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "bb1"
-		is_cleanup: NO
-		Statement: "\"  %1 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %x, i32 3)\""
-		Statement: "\"  %_6.0 = extractvalue { i32, i1 } %1, 0\""
-		Statement: "\"  %_6.1 = extractvalue { i32, i1 } %1, 1\""
-		Statement: "\"  br i1 %_6.1, label %panic, label %bb5, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "panic"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([28 x i8]* @str.0 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc35 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb5"
-		is_cleanup: NO
-		Statement: "\"  %r.0 = phi i32 [ %_6.0, %bb1 ], [ %_8.0, %bb3 ]\""
-		Statement: "\"  br i1 %c2, label %bb6, label %bb8\""
-		Last statement is a terminator
-	Basic Block: "panic1"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([28 x i8]* @str.0 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc37 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb8"
-		is_cleanup: NO
-		Statement: "\"  %2 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 2)\""
-		Statement: "\"  %_14.0 = extractvalue { i32, i1 } %2, 0\""
-		Statement: "\"  %_14.1 = extractvalue { i32, i1 } %2, 1\""
-		Statement: "\"  br i1 %_14.1, label %panic3, label %bb10, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "bb6"
-		is_cleanup: NO
-		Statement: "\"  %3 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 1)\""
-		Statement: "\"  %_12.0 = extractvalue { i32, i1 } %3, 0\""
-		Statement: "\"  %_12.1 = extractvalue { i32, i1 } %3, 1\""
-		Statement: "\"  br i1 %_12.1, label %panic2, label %bb10, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "panic2"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc39 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb10"
-		is_cleanup: NO
-		Statement: "\"  %_9.0 = phi i32 [ %_12.0, %bb6 ], [ %_14.0, %bb8 ]\""
-		Statement: "\"  %_16 = icmp sgt i32 %_9.0, %x\""
-		Statement: "\"  %_15 = xor i1 %_16, true\""
-		Statement: "\"  br i1 %_15, label %bb11, label %bb12\""
-		Last statement is a terminator
-	Basic Block: "panic3"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc41 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb12"
-		is_cleanup: NO
-		Statement: "\"  ret i32 %_9.0\""
-		Last statement is a terminator
-	Basic Block: "bb11"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [23 x i8] }>* @alloc53 to [0 x i8]*), i64 23, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc44 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-
-Start node: "start"
-	Successor to start node: "bb1"
-	Successor to start node: "bb3"
-Forward edges:
-	{"bb10": {"bb11", "bb12"}, "bb11": {"common_end"}, "start": {"bb1", "bb3"}, "panic1": {"common_end"}, "bb5": {"bb6", "bb8"}, "panic": {"common_end"}, "bb3": {"bb5", "panic1"}, "bb6": {"panic2", "bb10"}, "bb12": {"common_end"}, "bb8": {"bb10", "panic3"}, "bb1": {"panic", "bb5"}, "panic2": {"common_end"}, "panic3": {"common_end"}}
-Backward edges:
-	{"bb11": {"bb10"}, "panic1": {"bb3"}, "panic3": {"bb8"}, "start": {}, "panic": {"bb1"}, "bb8": {"bb5"}, "bb3": {"start"}, "bb5": {"bb3", "bb1"}, "bb6": {"bb5"}, "panic2": {"bb6"}, "bb12": {"bb10"}, "common_end": {"panic3", "panic1", "bb11", "bb12", "panic", "panic2"}, "bb1": {"start"}, "bb10": {"bb8", "bb6"}}
-Forward sorted nodes:
-	["start", "bb3", "bb1", "panic", "bb5", "panic1", "bb8", "bb6", "panic2", "bb10", "panic3", "bb12", "bb11", "common_end"]
-Backward sorted nodes:
-	["common_end", "bb11", "bb12", "panic3", "bb10", "panic2", "bb6", "bb8", "panic1", "bb5", "panic", "bb1", "bb3", "start"]
-(declare-fun panic_var () Bool)
+[2mAug 26 13:37:22.579[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "c1", address: 0x60000141d580, is_const: false, is_null: false, is_undef: false, llvm_value: "i1 %c1", llvm_type: "i1" } }
+[2mAug 26 13:37:22.580[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "c2", address: 0x60000141d5a8, is_const: false, is_null: false, is_undef: false, llvm_value: "i1 %c2", llvm_type: "i1" } }
+[2mAug 26 13:37:22.580[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x60000141d5d0, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
+[2mAug 26 13:37:22.580[0m [34mDEBUG[0m wombat_symx: Function arg names: {"c1": "c1", "c2": "c2", "x": "x"}
+Backward Symbolic Execution in test4_foo::unsafe_foo::h00d60cba65e71887
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 13
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: Arg count: 3
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %c1, label %bb1, label %bb3\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb3"
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %0 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %x, i32 4)\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_8.0 = extractvalue { i32, i1 } %0, 0\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_8.1 = extractvalue { i32, i1 } %0, 1\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_8.1, label %panic1, label %bb5, !prof !2\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %1 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %x, i32 3)\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_6.0 = extractvalue { i32, i1 } %1, 0\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_6.1 = extractvalue { i32, i1 } %1, 1\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_6.1, label %panic, label %bb5, !prof !2\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic"
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([28 x i8]* @str.1 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc44 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb5"
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %r.0 = phi i32 [ %_6.0, %bb1 ], [ %_8.0, %bb3 ]\""
+[2mAug 26 13:37:22.581[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %c2, label %bb6, label %bb8\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic1"
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([28 x i8]* @str.1 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc46 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb8"
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %2 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 2)\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_14.0 = extractvalue { i32, i1 } %2, 0\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_14.1 = extractvalue { i32, i1 } %2, 1\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_14.1, label %panic3, label %bb10, !prof !2\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb6"
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %3 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 1)\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_12.0 = extractvalue { i32, i1 } %3, 0\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_12.1 = extractvalue { i32, i1 } %3, 1\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_12.1, label %panic2, label %bb10, !prof !2\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic2"
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([33 x i8]* @str.2 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc48 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb10"
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_9.0 = phi i32 [ %_12.0, %bb6 ], [ %_14.0, %bb8 ]\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_16 = icmp sgt i32 %_9.0, %x\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_15 = xor i1 %_16, true\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_15, label %bb11, label %bb12\""
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic3"
+[2mAug 26 13:37:22.582[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([33 x i8]* @str.2 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc50 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb12"
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret i32 %_9.0\""
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb11"
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast (<{ [23 x i8] }>* @alloc62 to [0 x i8]*), i64 23, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc53 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: Start node: "start"
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb3"
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"bb8": {"bb10", "panic3"}, "bb12": {"common_end"}, "bb5": {"bb8", "bb6"}, "bb3": {"panic1", "bb5"}, "start": {"bb1", "bb3"}, "panic": {"common_end"}, "bb1": {"bb5", "panic"}, "bb6": {"bb10", "panic2"}, "bb10": {"bb12", "bb11"}, "bb11": {"common_end"}, "panic3": {"common_end"}, "panic1": {"common_end"}, "panic2": {"common_end"}}
+[2mAug 26 13:37:22.583[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"panic3": {"bb8"}, "panic2": {"bb6"}, "bb12": {"bb10"}, "bb3": {"start"}, "panic1": {"bb3"}, "common_end": {"bb11", "panic3", "bb12", "panic", "panic1", "panic2"}, "bb11": {"bb10"}, "bb8": {"bb5"}, "start": {}, "bb10": {"bb8", "bb6"}, "bb1": {"start"}, "bb6": {"bb5"}, "bb5": {"bb1", "bb3"}, "panic": {"bb1"}}
+[2mAug 26 13:37:22.584[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb3", "bb1", "panic", "bb5", "panic1", "bb8", "bb6", "panic2", "bb10", "panic3", "bb12", "bb11", "common_end"]
+[2mAug 26 13:37:22.584[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb11", "bb12", "panic3", "bb10", "panic2", "bb6", "bb8", "panic1", "bb5", "panic", "bb1", "bb3", "start"]
+[2mAug 26 13:37:22.614[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.615[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.615[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.616[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.616[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.618[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
 (declare-fun common_end () Bool)
 (declare-fun %_15 () Bool)
 (declare-fun bb11 () Bool)
@@ -164,8 +145,8 @@ Backward sorted nodes:
    (=> (and true (= %_14.1 true)) (=> (= panic_var true) (and true common_end)))))
 (assert (= const_true true))
 (assert (let ((a!1 (=> (= %_16 (> %_9.0 %x))
-               (=> (= %_15 (xor %_16 const_true)) (and true bb11 bb12)))))
-  (= bb10 (=> (and true (= %_12.1 false) (= %_14.1 false)) a!1))))
+               (=> (= %_15 (xor %_16 const_true)) (and true bb12 bb11)))))
+  (= bb10 (=> (and true (= %_14.1 false) (= %_12.1 false)) a!1))))
 (assert (= panic2
    (=> (and true (= %_12.1 true)) (=> (= panic_var true) (and true common_end)))))
 (assert (= const_1 1))
@@ -200,7 +181,7 @@ Backward sorted nodes:
   (= bb8 (=> (and true (= %c2 false)) a!4)))))
 (assert (= panic1
    (=> (and true (= %_8.1 true)) (=> (= panic_var true) (and true common_end)))))
-(assert (= bb5 (=> (and true (= %_8.1 false) (= %_6.1 false)) (and true bb8 bb6))))
+(assert (= bb5 (=> (and true (= %_6.1 false) (= %_8.1 false)) (and true bb6 bb8))))
 (assert (= panic
    (=> (and true (= %_6.1 true)) (=> (= panic_var true) (and true common_end)))))
 (assert (= const_3 3))
@@ -213,7 +194,7 @@ Backward sorted nodes:
                    (- (bv2int #x80000000) 4294967296)
                    (bv2int #x80000000))))
       (a!3 (=> (= %_6.1 %1.1)
-               (=> (=> (= %_6.1 false) (= %r.0 %_6.0)) (and true panic bb5)))))
+               (=> (=> (= %_6.1 false) (= %r.0 %_6.0)) (and true bb5 panic)))))
 (let ((a!4 (=> (and (= %1.0 (+ %x const_3)) (= %1.1 (or a!1 a!2)))
                (=> (= %_6.0 %1.0) a!3))))
   (= bb1 (=> (and true (= %c1 true)) a!4)))))
@@ -227,7 +208,7 @@ Backward sorted nodes:
                    (- (bv2int #x80000000) 4294967296)
                    (bv2int #x80000000))))
       (a!3 (=> (= %_8.1 %0.1)
-               (=> (=> (= %_8.1 false) (= %r.0 %_8.0)) (and true panic1 bb5)))))
+               (=> (=> (= %_8.1 false) (= %r.0 %_8.0)) (and true bb5 panic1)))))
 (let ((a!4 (=> (and (= %0.0 (+ %x const_4)) (= %0.1 (or a!1 a!2)))
                (=> (= %_8.0 %0.0) a!3))))
   (= bb3 (=> (and true (= %c1 false)) a!4)))))
@@ -243,9 +224,10 @@ Backward sorted nodes:
   (and a!1 a!2)))
 (assert (not start))
 
-Function safety: unsafe
 
-%_9.0 -> (- 2147483652)
+Function safety: unsafe
+[2mAug 26 13:37:22.682[0m [34mDEBUG[0m wombat_symx: 
+%_9.0 -> 2147483645
 %_16 -> true
 panic_var -> true
 %_15 -> false
@@ -254,21 +236,21 @@ panic_var -> true
 %c2 -> false
 %3.1 -> false
 %_6.1 -> false
-%2.0 -> (- 2147483650)
+%2.0 -> 2147483647
 %3.0 -> 0
-%2.1 -> true
+%2.1 -> false
 %1.1 -> false
 %x -> 2147483644
 %c1 -> false
-%_14.0 -> (- 2147483651)
-%r.0 -> (- 2147483647)
+%_14.0 -> 2147483648
+%r.0 -> 2147483648
 %_8.1 -> true
-%_12.0 -> (- 1)
+%_12.0 -> 2147483646
 %0.1 -> true
-%_8.0 -> 2147483648
-%0.0 -> 2147483648
 %_6.0 -> 2147483647
 %1.0 -> 2147483647
+%_8.0 -> 2147483648
+%0.0 -> 2147483648
 start -> false
 bb3 -> false
 const_4 -> 4
@@ -290,101 +272,111 @@ bb11 -> true
 common_end -> false
 
 
+Argument values:
+	"c1" = 0
+	"c2" = 0
+	"x" = 0
+
 ************************************
 
 
-Backward Symbolic Execution in test4_foo::safe_foo::h475493205a384ec3
-Number of Nodes: 13
-Arg count: 3
-Basic Blocks:
-	Basic Block: "start"
-		is_cleanup: NO
-		Statement: "\"  %_4 = icmp sgt i32 %0, 2147483643\""
-		Statement: "\"  %spec.select = select i1 %_4, i32 2147483643, i32 %0\""
-		Statement: "\"  br i1 %c1, label %bb3, label %bb5\""
-		Last statement is a terminator
-	Basic Block: "bb5"
-		is_cleanup: NO
-		Statement: "\"  %1 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %spec.select, i32 4)\""
-		Statement: "\"  %_11.0 = extractvalue { i32, i1 } %1, 0\""
-		Statement: "\"  %_11.1 = extractvalue { i32, i1 } %1, 1\""
-		Statement: "\"  br i1 %_11.1, label %panic1, label %bb7, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "bb3"
-		is_cleanup: NO
-		Statement: "\"  %2 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %spec.select, i32 3)\""
-		Statement: "\"  %_9.0 = extractvalue { i32, i1 } %2, 0\""
-		Statement: "\"  %_9.1 = extractvalue { i32, i1 } %2, 1\""
-		Statement: "\"  br i1 %_9.1, label %panic, label %bb7, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "panic"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([28 x i8]* @str.0 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc46 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb7"
-		is_cleanup: NO
-		Statement: "\"  %r.0 = phi i32 [ %_9.0, %bb3 ], [ %_11.0, %bb5 ]\""
-		Statement: "\"  br i1 %c2, label %bb8, label %bb10\""
-		Last statement is a terminator
-	Basic Block: "panic1"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([28 x i8]* @str.0 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc48 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb10"
-		is_cleanup: NO
-		Statement: "\"  %3 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 2)\""
-		Statement: "\"  %_17.0 = extractvalue { i32, i1 } %3, 0\""
-		Statement: "\"  %_17.1 = extractvalue { i32, i1 } %3, 1\""
-		Statement: "\"  br i1 %_17.1, label %panic3, label %bb12, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "bb8"
-		is_cleanup: NO
-		Statement: "\"  %4 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 1)\""
-		Statement: "\"  %_15.0 = extractvalue { i32, i1 } %4, 0\""
-		Statement: "\"  %_15.1 = extractvalue { i32, i1 } %4, 1\""
-		Statement: "\"  br i1 %_15.1, label %panic2, label %bb12, !prof !2\""
-		Last statement is a terminator
-	Basic Block: "panic2"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc50 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb12"
-		is_cleanup: NO
-		Statement: "\"  %_12.0 = phi i32 [ %_15.0, %bb8 ], [ %_17.0, %bb10 ]\""
-		Statement: "\"  %_19 = icmp sgt i32 %_12.0, %spec.select\""
-		Statement: "\"  %_18 = xor i1 %_19, true\""
-		Statement: "\"  br i1 %_18, label %bb13, label %bb14\""
-		Last statement is a terminator
-	Basic Block: "panic3"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.1 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc52 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-	Basic Block: "bb14"
-		is_cleanup: NO
-		Statement: "\"  ret i32 %_12.0\""
-		Last statement is a terminator
-	Basic Block: "bb13"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [23 x i8] }>* @alloc53 to [0 x i8]*), i64 23, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc55 to %\\\"core::panic::location::Location\\\"*)) #7\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-
-Start node: "start"
-	Successor to start node: "bb3"
-	Successor to start node: "bb5"
-Forward edges:
-	{"bb13": {"common_end"}, "start": {"bb3", "bb5"}, "panic": {"common_end"}, "bb3": {"bb7", "panic"}, "bb10": {"panic3", "bb12"}, "panic1": {"common_end"}, "bb14": {"common_end"}, "bb5": {"bb7", "panic1"}, "panic2": {"common_end"}, "bb12": {"bb14", "bb13"}, "bb7": {"bb10", "bb8"}, "bb8": {"panic2", "bb12"}, "panic3": {"common_end"}}
-Backward edges:
-	{"panic3": {"bb10"}, "start": {}, "bb5": {"start"}, "bb10": {"bb7"}, "bb12": {"bb8", "bb10"}, "bb3": {"start"}, "panic1": {"bb5"}, "panic": {"bb3"}, "bb14": {"bb12"}, "bb13": {"bb12"}, "bb7": {"bb5", "bb3"}, "bb8": {"bb7"}, "common_end": {"bb14", "panic1", "panic", "panic3", "bb13", "panic2"}, "panic2": {"bb8"}}
-Forward sorted nodes:
-	["start", "bb5", "bb3", "panic", "bb7", "panic1", "bb10", "bb8", "panic2", "bb12", "panic3", "bb14", "bb13", "common_end"]
-Backward sorted nodes:
-	["common_end", "bb13", "bb14", "panic3", "bb12", "panic2", "bb8", "bb10", "panic1", "bb7", "panic", "bb3", "bb5", "start"]
-(declare-fun panic_var () Bool)
+[2mAug 26 13:37:22.685[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "c1", address: 0x60000141d600, is_const: false, is_null: false, is_undef: false, llvm_value: "i1 %c1", llvm_type: "i1" } }
+[2mAug 26 13:37:22.685[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "c2", address: 0x60000141d628, is_const: false, is_null: false, is_undef: false, llvm_value: "i1 %c2", llvm_type: "i1" } }
+[2mAug 26 13:37:22.685[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "", address: 0x60000141d650, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %0", llvm_type: "i32" } }
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: Function arg names: {"c1": "c1", "x": "%0", "c2": "c2"}
+Backward Symbolic Execution in test4_foo::safe_foo::h9494736b6e05cc50
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 13
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: Arg count: 3
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_4 = icmp sgt i32 %0, 2147483643\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %spec.select = select i1 %_4, i32 2147483643, i32 %0\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %c1, label %bb3, label %bb5\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb5"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %1 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %spec.select, i32 4)\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_11.0 = extractvalue { i32, i1 } %1, 0\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_11.1 = extractvalue { i32, i1 } %1, 1\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_11.1, label %panic1, label %bb7, !prof !2\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb3"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %2 = call { i32, i1 } @llvm.sadd.with.overflow.i32(i32 %spec.select, i32 3)\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_9.0 = extractvalue { i32, i1 } %2, 0\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_9.1 = extractvalue { i32, i1 } %2, 1\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_9.1, label %panic, label %bb7, !prof !2\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([28 x i8]* @str.1 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc55 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb7"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %r.0 = phi i32 [ %_9.0, %bb3 ], [ %_11.0, %bb5 ]\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %c2, label %bb8, label %bb10\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic1"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([28 x i8]* @str.1 to [0 x i8]*), i64 28, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc57 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb10"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %3 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 2)\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_17.0 = extractvalue { i32, i1 } %3, 0\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_17.1 = extractvalue { i32, i1 } %3, 1\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_17.1, label %panic3, label %bb12, !prof !2\""
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb8"
+[2mAug 26 13:37:22.698[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %4 = call { i32, i1 } @llvm.ssub.with.overflow.i32(i32 %r.0, i32 1)\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_15.0 = extractvalue { i32, i1 } %4, 0\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_15.1 = extractvalue { i32, i1 } %4, 1\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_15.1, label %panic2, label %bb12, !prof !2\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic2"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([33 x i8]* @str.2 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc59 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb12"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_12.0 = phi i32 [ %_15.0, %bb8 ], [ %_17.0, %bb10 ]\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_19 = icmp sgt i32 %_12.0, %spec.select\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_18 = xor i1 %_19, true\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_18, label %bb13, label %bb14\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "panic3"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast ([33 x i8]* @str.2 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc61 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb14"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret i32 %_12.0\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb13"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast (<{ [23 x i8] }>* @alloc62 to [0 x i8]*), i64 23, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc64 to %\\\"core::panic::location::Location\\\"*)) #7\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: Start node: "start"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb5"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb3"
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"panic2": {"common_end"}, "bb13": {"common_end"}, "bb5": {"bb7", "panic1"}, "start": {"bb5", "bb3"}, "bb12": {"bb14", "bb13"}, "panic3": {"common_end"}, "bb10": {"bb12", "panic3"}, "bb3": {"panic", "bb7"}, "bb7": {"bb8", "bb10"}, "panic1": {"common_end"}, "bb8": {"bb12", "panic2"}, "panic": {"common_end"}, "bb14": {"common_end"}}
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"panic3": {"bb10"}, "bb5": {"start"}, "bb7": {"bb5", "bb3"}, "panic1": {"bb5"}, "common_end": {"bb13", "panic", "panic3", "panic1", "panic2", "bb14"}, "bb3": {"start"}, "panic": {"bb3"}, "bb10": {"bb7"}, "bb8": {"bb7"}, "panic2": {"bb8"}, "start": {}, "bb12": {"bb8", "bb10"}, "bb14": {"bb12"}, "bb13": {"bb12"}}
+[2mAug 26 13:37:22.699[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb5", "bb3", "panic", "bb7", "panic1", "bb10", "bb8", "panic2", "bb12", "panic3", "bb14", "bb13", "common_end"]
+[2mAug 26 13:37:22.700[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb13", "bb14", "panic3", "bb12", "panic2", "bb8", "bb10", "panic1", "bb7", "panic", "bb3", "bb5", "start"]
+[2mAug 26 13:37:22.716[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.716[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.716[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.717[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.717[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:22.718[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
 (declare-fun common_end () Bool)
 (declare-fun %_18 () Bool)
 (declare-fun bb13 () Bool)
@@ -440,7 +432,7 @@ Backward sorted nodes:
    (=> (and true (= %_17.1 true)) (=> (= panic_var true) (and true common_end)))))
 (assert (= const_true true))
 (assert (let ((a!1 (=> (= %_19 (> %_12.0 %spec.select))
-               (=> (= %_18 (xor %_19 const_true)) (and true bb13 bb14)))))
+               (=> (= %_18 (xor %_19 const_true)) (and true bb14 bb13)))))
   (= bb12 (=> (and true (= %_17.1 false) (= %_15.1 false)) a!1))))
 (assert (= panic2
    (=> (and true (= %_15.1 true)) (=> (= panic_var true) (and true common_end)))))
@@ -455,7 +447,7 @@ Backward sorted nodes:
                    (bv2int #x80000000))))
       (a!3 (=> (= %_15.1 %4.1)
                (=> (=> (= %_15.1 false) (= %_12.0 %_15.0))
-                   (and true panic2 bb12)))))
+                   (and true bb12 panic2)))))
 (let ((a!4 (=> (and (= %4.0 (- %r.0 const_1)) (= %4.1 (or a!1 a!2)))
                (=> (= %_15.0 %4.0) a!3))))
   (= bb8 (=> (and true (= %c2 true)) a!4)))))
@@ -503,7 +495,7 @@ Backward sorted nodes:
                    (- (bv2int #x80000000) 4294967296)
                    (bv2int #x80000000))))
       (a!3 (=> (= %_11.1 %1.1)
-               (=> (=> (= %_11.1 false) (= %r.0 %_11.0)) (and true bb7 panic1)))))
+               (=> (=> (= %_11.1 false) (= %r.0 %_11.0)) (and true panic1 bb7)))))
 (let ((a!4 (=> (and (= %1.0 (+ %spec.select const_4)) (= %1.1 (or a!1 a!2)))
                (=> (= %_11.0 %1.0) a!3))))
   (= bb5 (=> (and true (= %c1 false)) a!4)))))
@@ -524,6 +516,7 @@ Backward sorted nodes:
                     (bv2int #x7fffffff)))))
   (and a!1 a!2)))
 (assert (not start))
+
 
 Function safety: safe
 

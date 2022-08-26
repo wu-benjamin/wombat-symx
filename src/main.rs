@@ -317,7 +317,7 @@ fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<Strin
             }
         } else {
             let arg_name = &param_int_value.get_name().to_str().unwrap().to_string();
-            arg_names.insert(arg_name.to_string(), arg_name.to_string());
+            arg_names.insert(arg_name.to_string(), format!("{}{}", "%", arg_name.to_string()));
         }
     }
 

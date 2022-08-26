@@ -1,54 +1,32 @@
-Functions in "tests/test3_asserts.bc":
-	"core::ops::function::FnOnce::call_once{{vtable.shim}}::hf3a1993e3fe9426d" == "_ZN4core3ops8function6FnOnce40call_once$u7b$$u7b$vtable.shim$u7d$$u7d$17hf3a1993e3fe9426dE"
-	"core::ops::function::FnOnce::call_once::h009855b30cb3c77a" == "_ZN4core3ops8function6FnOnce9call_once17h009855b30cb3c77aE"
-	"core::ops::function::FnOnce::call_once::hb239899562fe176a" == "_ZN4core3ops8function6FnOnce9call_once17hb239899562fe176aE"
-	"core::ptr::drop_in_place<std::rt::lang_start<()>::{{closure}}>::hffe72102866e3dcd" == "_ZN4core3ptr85drop_in_place$LT$std..rt..lang_start$LT$$LP$$RP$$GT$..$u7b$$u7b$closure$u7d$$u7d$$GT$17hffe72102866e3dcdE"
-	"test3_asserts::assert_safe::h22e8e16c80721f4f" == "_ZN13test3_asserts11assert_safe17h22e8e16c80721f4fE"
-	"test3_asserts::assert_unsafe::h4829fc9cc207eed5" == "_ZN13test3_asserts13assert_unsafe17h4829fc9cc207eed5E"
-	"test3_asserts::main::h14636495a2b254a9" == "_ZN13test3_asserts4main17h14636495a2b254a9E"
-	"core::hint::black_box::h12fd67fa773d9286" == "_ZN4core4hint9black_box17h12fd67fa773d9286E"
-	"std::process::ExitCode::to_i32::h624dd44735fb2030" == "_ZN3std7process8ExitCode6to_i3217h624dd44735fb2030E"
-	"<() as std::process::Termination>::report::h8dbeae18de59968d" == "_ZN54_$LT$$LP$$RP$$u20$as$u20$std..process..Termination$GT$6report17h8dbeae18de59968dE"
-	"<std::process::ExitCode as std::process::Termination>::report::h20d913fec2ffecc8" == "_ZN68_$LT$std..process..ExitCode$u20$as$u20$std..process..Termination$GT$6report17h20d913fec2ffecc8E"
-	"std::rt::lang_start::hce8291c47bf80b40" == "_ZN3std2rt10lang_start17hce8291c47bf80b40E"
-	"std::rt::lang_start::{{closure}}::h99f02b0442321977" == "_ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h99f02b0442321977E"
-	"std::sys_common::backtrace::__rust_begin_short_backtrace::h9683db560d73eee7" == "_ZN3std10sys_common9backtrace28__rust_begin_short_backtrace17h9683db560d73eee7E"
-	"std::sys::unix::process::process_common::ExitCode::as_i32::h0464395d433a386d" == "_ZN3std3sys4unix7process14process_common8ExitCode6as_i3217h0464395d433a386dE"
-	"rust_eh_personality" == "rust_eh_personality"
-	"core::panicking::panic::he60bb304466ccbaf" == "_ZN4core9panicking5panic17he60bb304466ccbafE"
-	"std::rt::lang_start_internal::h358b6d58e23c88c7" == "_ZN3std2rt19lang_start_internal17h358b6d58e23c88c7E"
-	"main" == "main"
-
-Backward Symbolic Execution in test3_asserts::assert_safe::h22e8e16c80721f4f
-Number of Nodes: 3
-Arg count: 1
-Basic Blocks:
-	Basic Block: "start"
-		is_cleanup: NO
-		Statement: "\"  br i1 false, label %bb1, label %bb2\""
-		Last statement is a terminator
-	Basic Block: "bb2"
-		is_cleanup: NO
-		Statement: "\"  ret void\""
-		Last statement is a terminator
-	Basic Block: "bb1"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\\\"core::panic::location::Location\\\"*)) #5\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-
-Start node: "start"
-	Successor to start node: "bb2"
-	Successor to start node: "bb1"
-Forward edges:
-	{"start": {"bb1", "bb2"}, "bb1": {"common_end"}, "bb2": {"common_end"}}
-Backward edges:
-	{"common_end": {"bb2", "bb1"}, "start": {}, "bb2": {"start"}, "bb1": {"start"}}
-Forward sorted nodes:
-	["start", "bb2", "bb1", "common_end"]
-Backward sorted nodes:
-	["common_end", "bb1", "bb2", "start"]
-(declare-fun panic_var () Bool)
+[2mAug 26 13:37:21.905[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x600001854750, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: Function arg names: {"x": "x"}
+Backward Symbolic Execution in test3_asserts::assert_safe::h3245bea366a77de7
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 3
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: Arg count: 1
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 false, label %bb1, label %bb2\""
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb2"
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret void\""
+[2mAug 26 13:37:21.906[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc32 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc34 to %\\\"core::panic::location::Location\\\"*)) #5\""
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: Start node: "start"
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb2"
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"bb2": {"common_end"}, "start": {"bb1", "bb2"}, "bb1": {"common_end"}}
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"bb2": {"start"}, "bb1": {"start"}, "start": {}, "common_end": {"bb2", "bb1"}}
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb2", "bb1", "common_end"]
+[2mAug 26 13:37:21.907[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb1", "bb2", "start"]
+[2mAug 26 13:37:21.938[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:21.939[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
 (declare-fun common_end () Bool)
 (declare-fun const_false () Bool)
 (declare-fun bb1 () Bool)
@@ -66,7 +44,7 @@ Backward sorted nodes:
        (=> (= panic_var false) (and true common_end)))))
 (assert (= const_false false))
 (assert (= const_false false))
-(assert (= start (=> true (and true bb2 bb1))))
+(assert (= start (=> true (and true bb1 bb2))))
 (assert (let ((a!1 (>= %x
                (ite (bvslt #x80000000 #x00000000)
                     (- (bv2int #x80000000) 4294967296)
@@ -78,43 +56,43 @@ Backward sorted nodes:
   (and a!1 a!2)))
 (assert (not start))
 
+
 Function safety: safe
 
 ************************************
 
 
-Backward Symbolic Execution in test3_asserts::assert_unsafe::h4829fc9cc207eed5
-Number of Nodes: 3
-Arg count: 1
-Basic Blocks:
-	Basic Block: "start"
-		is_cleanup: NO
-		Statement: "\"  %_3 = icmp slt i32 %x, 13\""
-		Statement: "\"  %_2 = xor i1 %_3, true\""
-		Statement: "\"  br i1 %_2, label %bb1, label %bb2\""
-		Last statement is a terminator
-	Basic Block: "bb2"
-		is_cleanup: NO
-		Statement: "\"  ret void\""
-		Last statement is a terminator
-	Basic Block: "bb1"
-		is_cleanup: YES
-		Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\\\"core::panic::location::Location\\\"*)) #5\""
-		Statement: "\"  unreachable\""
-		Last statement is a terminator
-
-Start node: "start"
-	Successor to start node: "bb2"
-	Successor to start node: "bb1"
-Forward edges:
-	{"bb2": {"common_end"}, "start": {"bb2", "bb1"}, "bb1": {"common_end"}}
-Backward edges:
-	{"start": {}, "bb1": {"start"}, "common_end": {"bb1", "bb2"}, "bb2": {"start"}}
-Forward sorted nodes:
-	["start", "bb2", "bb1", "common_end"]
-Backward sorted nodes:
-	["common_end", "bb1", "bb2", "start"]
-(declare-fun panic_var () Bool)
+[2mAug 26 13:37:21.968[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x600001854780, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
+[2mAug 26 13:37:21.968[0m [34mDEBUG[0m wombat_symx: Function arg names: {"x": "x"}
+Backward Symbolic Execution in test3_asserts::assert_unsafe::h4dabeaceeee8bc13
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 3
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Arg count: 1
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_3 = icmp slt i32 %x, 13\""
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_2 = xor i1 %_3, true\""
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_2, label %bb1, label %bb2\""
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb2"
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret void\""
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h734191398fe45ec9E([0 x i8]* align 1 bitcast (<{ [24 x i8] }>* @alloc35 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* align 8 bitcast (<{ i8*, [16 x i8] }>* @alloc37 to %\\\"core::panic::location::Location\\\"*)) #5\""
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Start node: "start"
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb2"
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"bb1": {"common_end"}, "bb2": {"common_end"}, "start": {"bb2", "bb1"}}
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"start": {}, "common_end": {"bb1", "bb2"}, "bb1": {"start"}, "bb2": {"start"}}
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb2", "bb1", "common_end"]
+[2mAug 26 13:37:21.969[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb1", "bb2", "start"]
+[2mAug 26 13:37:21.985[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h734191398fe45ec9E"
+[2mAug 26 13:37:21.986[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
 (declare-fun common_end () Bool)
 (declare-fun %_2 () Bool)
 (declare-fun bb1 () Bool)
@@ -145,8 +123,9 @@ Backward sorted nodes:
   (and a!1 a!2)))
 (assert (not start))
 
-Function safety: unsafe
 
+Function safety: unsafe
+[2mAug 26 13:37:22.022[0m [34mDEBUG[0m wombat_symx: 
 %x -> 2147479549
 panic_var -> true
 %_2 -> true
@@ -158,6 +137,9 @@ bb2 -> true
 bb1 -> false
 common_end -> false
 
+
+Argument values:
+	"x" = 0
 
 ************************************
 

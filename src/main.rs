@@ -302,6 +302,7 @@ fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<Strin
     let mut arg_names = HashMap::<String, String>::new();
     for param in &function.get_params() {
         let param_int_value = param.into_int_value();
+        debug!("Func param instr: {:?}", param_int_value);
         if param_int_value.get_name().to_str().unwrap() == "" {
             // Var name is empty, find in start basic block
             let alias_name = &get_var_name(&param_int_value.as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));

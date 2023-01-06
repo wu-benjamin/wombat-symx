@@ -134,6 +134,11 @@ fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String
                         let successor_basic_block_name = String::from(successor_basic_block.get_name().to_str().unwrap());
                         node_edges.insert(String::from(successor_basic_block_name));
                     } else if num_operands == 3 {
+                        println!("IF STATEMENT");
+                        println!("terminator is {:?}", terminator);
+                        for x in 0..num_operands {
+                            println!("Operand {:?} is {:?}", x, terminator.get_operand(x));
+                        }
                         // Conditional branch
                         let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
                         let successor_basic_block_name_1 = String::from(successor_basic_block_1.get_name().to_str().unwrap());
@@ -146,7 +151,19 @@ fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String
                     }
                 }
                 InstructionOpcode::Switch => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    println!("SWITCH STATEMENT");
+                    println!("terminator is {:?}", terminator);
+                    for x in 0..num_operands {
+                        println!("Operand {:?} is {:?}", x, terminator.get_operand(x));
+                    }
+                    println!("Number of operands is {:?}", num_operands);
+                    for operand in 0..num_operands {
+                        if operand % 2 == 1 {
+                            let successor_basic_block = terminator.get_operand(operand).unwrap().right().unwrap();
+                            let successor_basic_block_name = String::from(successor_basic_block.get_name().to_str().unwrap());
+                            node_edges.insert(String::from(successor_basic_block_name));
+                        }
+                    }
                 }
                 InstructionOpcode::IndirectBr => {
                     println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
@@ -274,7 +291,7 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
     // handle const literal
     let llvm_str = value.print_to_string();
     let str = llvm_str.to_str().unwrap();
-    // println!("{:?}", str);
+    println!("TEST 123 {:?}", str);
     if !str.contains("%") {
         let var_name = str.split_whitespace().nth(1).unwrap();
         if var_name.eq("true") {
@@ -341,6 +358,9 @@ fn get_entry_condition<'a>(
                 if num_operands == 1 {
                     // Unconditionally go to node
                 } else if num_operands == 3 {
+                    println!("IF HAS NUM OPERANDS {:?}", num_operands);
+                    println!("IF HAS TERMINATOR {:?}", terminator);
+                    println!("IF HAS NODE {:?}", node);
                     let mut target_val = true;
                     let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                     let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
@@ -354,10 +374,54 @@ fn get_entry_condition<'a>(
                         solver.get_context(),
                         get_var_name(&discriminant, &solver),
                     );
+                    println!("IF HAS TARGET VAL {:?}", target_val);
+                    println!("IF HAS TARGET VAL VAR {:?}", target_val_var);
+                    println!("IF HAS SWITCH VAR {:?}", switch_var);
+                    println!("IF HAS DISCRIMINANT {:?}", discriminant);
+
                     entry_condition = switch_var._eq(&target_val_var);
+                    println!("IF HAS ENTRY CONDITION {:?}", entry_condition);
+
                 } else {
                     println!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
                 }
+            }
+            InstructionOpcode::Switch => {
+                println!("SWITCH HAS NUM OPERANDS {:?}", num_operands);
+                println!("SWITCH HAS TERMINATOR {:?}", terminator);
+                println!("SWITCH HAS NODE {:?}", node);
+                let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
+                let mut target_val = terminator.get_operand(0).unwrap().left().unwrap();
+                for i in 0..num_operands {
+                    if i % 2 == 1 {
+                    println!("Operand {:?} is {:?}", i, terminator.get_operand(i).unwrap().right().unwrap());
+                    } else {
+                        println!("Operand {:?} is {:?}", i, terminator.get_operand(i).unwrap().left().unwrap());
+                    }
+                    if i % 2 == 1 {
+                        let basic_block = terminator.get_operand(i).unwrap().right().unwrap();
+                        let basic_block_name = String::from(basic_block.get_name().to_str().unwrap());
+                        if basic_block_name.eq(&String::from(node)) {
+                            target_val = terminator.get_operand(i-1).unwrap().left().unwrap();
+                            println!("FUCKKKKKKKKKKK");
+                            break;
+                        }
+                    }
+                }
+                let unwrapped_discriminant = discriminant.into_int_value();
+                let target_val_var = Int::new_const(solver.get_context(), get_var_name(&target_val, &solver));
+                let switch_var = Int::new_const(
+                    solver.get_context(),
+                    get_var_name(&discriminant, &solver),
+                );
+                println!("SWITCH HAS TARGET VAL {:?}", target_val);
+                println!("SWITCH HAS TARGET VAL VAR {:?}", target_val_var);
+                println!("SWITCH HAS SWITCH VAR {:?}", switch_var);
+                println!("SWITCH HAS DISCRIMINANT {:?}", discriminant);
+                println!("SWITCH HAS UNWRAPPED DISCRIMINANT {:?}", unwrapped_discriminant);
+
+                entry_condition = switch_var._eq(&target_val_var);
+                println!("SWITCH HAS ENTRY CONDITION {:?}", entry_condition);
             }
             InstructionOpcode::Return => {
                 // Unconditionally go to node
@@ -439,6 +503,17 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                         );
                                         let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
                                         node_var = assignment.implies(&node_var);
+                                    } else if current_instruction.get_type().to_string().eq("\"i64\"") {
+                                        let lvalue_var = Int::new_const(
+                                            solver.get_context(),
+                                            lvalue_var_name
+                                        );
+                                        let rvalue_var = Int::new_const(
+                                            solver.get_context(),
+                                            rvalue_var_name
+                                        );
+                                        let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
+                                        node_var = assignment.implies(&node_var);
                                     } else {
                                         println!("Currently unsuppported type {:?} for extract value", incoming.0.get_type().to_string())
                                     } 
@@ -506,6 +581,38 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                 let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
                                 node_var = assignment.implies(&node_var);
                             }
+                            "llvm.sadd.with.overflow.i64" => {
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+
+                                let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_1);
+                                let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
+                                let rvalue_var_1 = Int::add(solver.get_context(), &[
+                                    &Int::new_const(solver.get_context(), operand1_name),
+                                    &Int::new_const(solver.get_context(), operand2_name)
+                                ]);
+                                
+                                let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
+
+                                let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
+                                // println!("{:?}", lvalue_var_name_2);
+                                let min_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
+                                let max_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i64::MAX.into(), 64), true);
+                                let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
+                                
+                                let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
+                                let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
+                                node_var = assignment.implies(&node_var);
+                            }
                             "llvm.ssub.with.overflow.i32" => {
                                 let operand1_name = get_var_name(
                                     &current_instruction.get_operand(0).unwrap().left().unwrap(),
@@ -536,6 +643,36 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                 let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
                                 node_var = assignment.implies(&node_var);
                             }
+                            "llvm.ssub.with.overflow.i64" => {
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+
+                                let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
+                                let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
+                                let rvalue_var_1 = Int::sub(solver.get_context(), &[
+                                    &Int::new_const(solver.get_context(), operand1_name),
+                                    &Int::new_const(solver.get_context(), operand2_name)
+                                ]);
+                                
+                                let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
+
+                                let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
+                                let min_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
+                                let max_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i64::MAX.into(), 64), true);
+                                let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
+                                
+                                let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
+                                let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
+                                node_var = assignment.implies(&node_var);
+                            }
                             "llvm.smul.with.overflow.i32" => {
                                 let operand1_name = get_var_name(
                                     &current_instruction.get_operand(0).unwrap().left().unwrap(),
@@ -560,6 +697,36 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                                     Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                                 let max_int =
                                     Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
+                                let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
+                                
+                                let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
+                                let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
+                                node_var = assignment.implies(&node_var);
+                            }
+                            "llvm.smul.with.overflow.i64" => {
+                                let operand1_name = get_var_name(
+                                    &current_instruction.get_operand(0).unwrap().left().unwrap(),
+                                    &solver
+                                );
+                                let operand2_name = get_var_name(
+                                    &current_instruction.get_operand(1).unwrap().left().unwrap(),
+                                    &solver
+                                );
+
+                                let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
+                                let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
+                                let rvalue_var_1 = Int::mul(solver.get_context(), &[
+                                    &Int::new_const(solver.get_context(), operand1_name),
+                                    &Int::new_const(solver.get_context(), operand2_name)
+                                ]);
+                                
+                                let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
+
+                                let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
+                                let min_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
+                                let max_int =
+                                    Int::from_bv(&BV::from_i64(solver.get_context(), i64::MAX.into(), 64), true);
                                 let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
                                 
                                 let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
@@ -734,7 +901,18 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                             );
                             let assignment = lvalue_var._eq(&rvalue_var);
                             node_var = assignment.implies(&node_var);    
-                        } else {
+                        } else if current_instruction.get_type().to_string().eq("\"i64\"") {
+                            let lvalue_var = Int::new_const(
+                                solver.get_context(),
+                                lvalue_var_name
+                            );
+                            let rvalue_var = Int::new_const(
+                                solver.get_context(),
+                                rvalue_var_name
+                            );
+                            let assignment = lvalue_var._eq(&rvalue_var);
+                            node_var = assignment.implies(&node_var);    
+                        }  else {
                             println!("Currently unsuppported type {:?} for extract value", operand.get_type().to_string())
                         } 
                     }
@@ -758,7 +936,7 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                             solver.get_context(),
                             operand_var_name
                         );
-                        let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 32), true);
+                        let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 64), true);
                         let assignment = lvalue_var._eq(&operand_var._eq(&const_0).not());
                         node_var = assignment.implies(&node_var);                        
                         println!("Trunc is only partially supported (always i1)");
@@ -788,7 +966,7 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                             let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_1_var));
                             let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_2_var));
                             node_var = Bool::and(solver.get_context(), &[&select_1.implies(&node_var), &select_2.implies(&node_var)]);
-                        } else if current_instruction.get_type().to_string().eq("\"i32\"") || current_instruction.get_type().to_string().eq("\"i8\"") {
+                        } else if current_instruction.get_type().to_string().eq("\"i64\"") || current_instruction.get_type().to_string().eq("\"i32\"") || current_instruction.get_type().to_string().eq("\"i8\"") {
                             if current_instruction.get_type().to_string().eq("\"i8\"") {
                                 println!("i8 is only partially supported for select statements (treated as i32)");
                             }
@@ -894,7 +1072,15 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                 Int::from_bv(&BV::from_i64(solver.get_context(), i32::MAX.into(), 32), true);
             solver
                 .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
-        } else {
+        } else if input.get_type().to_string().eq("\"i64\"") {
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver));
+            let min_int =
+                Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
+            let max_int =
+                Int::from_bv(&BV::from_i64(solver.get_context(), i64::MAX.into(), 64), true);
+            solver
+                .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        }  else {
             warn!("Currently unsuppported type {:?} for input parameter", input.get_type().to_string())
         }
     }
@@ -993,6 +1179,7 @@ fn main() {
     // Ensure that the module is valid (ie. is a valid bitcode file)
     if module_result.is_err() {
         println!("{:?} is not a valid LLVM bitcode file. Please pass in a valid bc file.", file_name);
+        println!("{:?}", module_result);
         return;
     }
     let module = module_result.unwrap();

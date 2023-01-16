@@ -134,11 +134,6 @@ fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String
                         let successor_basic_block_name = String::from(successor_basic_block.get_name().to_str().unwrap());
                         node_edges.insert(String::from(successor_basic_block_name));
                     } else if num_operands == 3 {
-                        println!("IF STATEMENT");
-                        println!("terminator is {:?}", terminator);
-                        for x in 0..num_operands {
-                            println!("Operand {:?} is {:?}", x, terminator.get_operand(x));
-                        }
                         // Conditional branch
                         let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
                         let successor_basic_block_name_1 = String::from(successor_basic_block_1.get_name().to_str().unwrap());
@@ -151,12 +146,6 @@ fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String
                     }
                 }
                 InstructionOpcode::Switch => {
-                    println!("SWITCH STATEMENT");
-                    println!("terminator is {:?}", terminator);
-                    for x in 0..num_operands {
-                        println!("Operand {:?} is {:?}", x, terminator.get_operand(x));
-                    }
-                    println!("Number of operands is {:?}", num_operands);
                     for operand in 0..num_operands {
                         if operand % 2 == 1 {
                             let successor_basic_block = terminator.get_operand(operand).unwrap().right().unwrap();
@@ -291,7 +280,7 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
     // handle const literal
     let llvm_str = value.print_to_string();
     let str = llvm_str.to_str().unwrap();
-    println!("TEST 123 {:?}", str);
+    // println!("{:?}", str);
     if !str.contains("%") {
         let var_name = str.split_whitespace().nth(1).unwrap();
         if var_name.eq("true") {
@@ -358,9 +347,6 @@ fn get_entry_condition<'a>(
                 if num_operands == 1 {
                     // Unconditionally go to node
                 } else if num_operands == 3 {
-                    println!("IF HAS NUM OPERANDS {:?}", num_operands);
-                    println!("IF HAS TERMINATOR {:?}", terminator);
-                    println!("IF HAS NODE {:?}", node);
                     let mut target_val = true;
                     let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                     let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();

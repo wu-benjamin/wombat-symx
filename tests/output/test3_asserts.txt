@@ -1,124 +1,124 @@
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x5598f0246ed0, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: Function arg names: {"x": "%x"}
+[2mJan 15 20:18:36.539[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x55a7d6c9fed0, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
+[2mJan 15 20:18:36.539[0m [34mDEBUG[0m wombat_symx: Function arg names: {"x": "%x"}
 Backward Symbolic Execution in test3_asserts::assert_safe::h22e8e16c80721f4f
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 3
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: Arg count: 1
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 false, label %bb1, label %bb2\""
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb2"
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret void\""
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
-[2mJan 05 19:01:18.511[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\\\"core::panic::location::Location\\\"*)) #5\""
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: 
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: Start node: "start"
+[2mJan 15 20:18:36.539[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 3
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: Arg count: 1
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 false, label %bb1, label %bb2\""
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb2"
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret void\""
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\\\"core::panic::location::Location\\\"*)) #5\""
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: 
+[2mJan 15 20:18:36.540[0m [34mDEBUG[0m wombat_symx: Start node: "start"
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb2"
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.541[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb2"
+[2mJan 15 20:18:36.541[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"start": {"bb2", "bb1"}, "bb1": {"common_end"}, "bb2": {"common_end"}}
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.541[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"bb1": {"common_end"}, "start": {"bb1", "bb2"}, "bb2": {"common_end"}}
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"bb2": {"start"}, "start": {}, "bb1": {"start"}, "common_end": {"bb2", "bb1"}}
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.541[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"common_end": {"bb1", "bb2"}, "start": {}, "bb2": {"start"}, "bb1": {"start"}}
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.512[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb2", "bb1", "common_end"]
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.541[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb2", "bb1", "common_end"]
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.513[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb1", "bb2", "start"]
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.542[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb1", "bb2", "start"]
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f0242a10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f0242a60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.546[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h4241c5ccea17facaE"
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6c9ba10, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6c9ba60, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc25 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc27 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.581[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h4241c5ccea17facaE"
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb1"
 TEST 123 "i1 false"
 IF HAS TARGET VAL true
 IF HAS TARGET VAL VAR true
 IF HAS SWITCH VAR const_false
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= const_false true)
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb2"
 TEST 123 "i1 false"
 IF HAS TARGET VAL false
 IF HAS TARGET VAL VAR false
 IF HAS SWITCH VAR const_false
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= const_false false)
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb1"
 TEST 123 "i1 false"
 IF HAS TARGET VAL true
 IF HAS TARGET VAL VAR true
 IF HAS SWITCH VAR const_false
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= const_false true)
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f0249d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca2d00, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 false, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb2"
 TEST 123 "i1 false"
 IF HAS TARGET VAL false
 IF HAS TARGET VAL VAR false
 IF HAS SWITCH VAR const_false
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x5598f0238010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "", address: 0x55a7d6c91010, is_const: true, is_null: true, is_undef: false, llvm_value: "i1 false", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= const_false false)
 TEST 123 "i32 %x"
-[2mJan 05 19:01:18.549[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
+[2mJan 15 20:18:36.583[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
 (declare-fun common_end () Bool)
 (declare-fun const_false () Bool)
 (declare-fun bb1 () Bool)
@@ -154,127 +154,127 @@ Function safety: safe
 ************************************
 
 
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x5598f0246f00, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: Function arg names: {"x": "%x"}
+[2mJan 15 20:18:36.634[0m [34mDEBUG[0m wombat_symx: Func param instr: IntValue { int_value: Value { name: "x", address: 0x55a7d6c9ff00, is_const: false, is_null: false, is_undef: false, llvm_value: "i32 %x", llvm_type: "i32" } }
+[2mJan 15 20:18:36.634[0m [34mDEBUG[0m wombat_symx: Function arg names: {"x": "%x"}
 Backward Symbolic Execution in test3_asserts::assert_unsafe::h4829fc9cc207eed5
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 3
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: Arg count: 1
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_3 = icmp slt i32 %x, 13\""
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_2 = xor i1 %_3, true\""
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_2, label %bb1, label %bb2\""
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb2"
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret void\""
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\\\"core::panic::location::Location\\\"*)) #5\""
-[2mJan 05 19:01:18.591[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: 
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: Start node: "start"
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: Number of Nodes: 3
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: Arg count: 1
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: Basic Blocks:
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "start"
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_3 = icmp slt i32 %x, 13\""
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  %_2 = xor i1 %_3, true\""
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  br i1 %_2, label %bb1, label %bb2\""
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb2"
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: NO
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  ret void\""
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mJan 15 20:18:36.635[0m [34mDEBUG[0m wombat_symx: 	Basic Block: "bb1"
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 		is_cleanup: YES
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\\\"core::panic::location::Location\\\"*)) #5\""
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 		Statement: "\"  unreachable\""
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 		Last statement is a terminator
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: Start node: "start"
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb2"
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb1"
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: 	Successor to start node: "bb2"
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"bb1": {"common_end"}, "start": {"bb1", "bb2"}, "bb2": {"common_end"}}
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: Forward edges:	{"start": {"bb1", "bb2"}, "bb2": {"common_end"}, "bb1": {"common_end"}}
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"start": {}, "bb2": {"start"}, "bb1": {"start"}, "common_end": {"bb1", "bb2"}}
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.636[0m [34mDEBUG[0m wombat_symx: Backward edges:	{"start": {}, "common_end": {"bb2", "bb1"}, "bb2": {"start"}, "bb1": {"start"}}
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb2", "bb1", "common_end"]
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.637[0m [34mDEBUG[0m wombat_symx: Forward sorted nodes:	["start", "bb2", "bb1", "common_end"]
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.592[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb1", "bb2", "start"]
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.637[0m [34mDEBUG[0m wombat_symx: Backward sorted nodes:	["common_end", "bb1", "bb2", "start"]
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
 IF STATEMENT
-terminator is InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
-Operand 1 is Some(Right(BasicBlock { address: 0x5598f024a7d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
-Operand 2 is Some(Right(BasicBlock { address: 0x5598f024a820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
-[2mJan 05 19:01:18.623[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h4241c5ccea17facaE"
+terminator is InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+Operand 0 is Some(Left(IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })))
+Operand 1 is Some(Right(BasicBlock { address: 0x55a7d6ca37d0, is_const: false, llvm_value: "\nbb2:                                              ; preds = %start\n  ret void\n", llvm_type: "label" }))
+Operand 2 is Some(Right(BasicBlock { address: 0x55a7d6ca3820, is_const: false, llvm_value: "\nbb1:                                              ; preds = %start\n  call void @_ZN4core9panicking5panic17h4241c5ccea17facaE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc28 to [0 x i8]*), i64 24, %\"core::panic::location::Location\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc30 to %\"core::panic::location::Location\"*)) #5\n  unreachable\n", llvm_type: "label" }))
+[2mJan 15 20:18:36.671[0m [34mDEBUG[0m wombat_symx: Unsupported Call function "_ZN4core9panicking5panic17h4241c5ccea17facaE"
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb1"
 TEST 123 "  %_2 = xor i1 %_3, true"
 IF HAS TARGET VAL true
 IF HAS TARGET VAL VAR true
 IF HAS SWITCH VAR %_2
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= %_2 true)
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb2"
 TEST 123 "  %_2 = xor i1 %_3, true"
 IF HAS TARGET VAL false
 IF HAS TARGET VAL VAR false
 IF HAS SWITCH VAR %_2
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= %_2 false)
 IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
-IF HAS NODE "bb2"
-TEST 123 "  %_2 = xor i1 %_3, true"
-IF HAS TARGET VAL false
-IF HAS TARGET VAL VAR false
-IF HAS SWITCH VAR %_2
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
-IF HAS ENTRY CONDITION (= %_2 false)
-IF HAS NUM OPERANDS 3
-IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x5598f024aac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
 IF HAS NODE "bb1"
 TEST 123 "  %_2 = xor i1 %_3, true"
 IF HAS TARGET VAL true
 IF HAS TARGET VAL VAR true
 IF HAS SWITCH VAR %_2
-IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x5598f024aa10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
 IF HAS ENTRY CONDITION (= %_2 true)
+IF HAS NUM OPERANDS 3
+IF HAS TERMINATOR InstructionValue { instruction_value: Value { name: "", address: 0x55a7d6ca3ac0, is_const: false, is_null: false, is_undef: false, llvm_value: "  br i1 %_2, label %bb1, label %bb2", llvm_type: "void" } }
+IF HAS NODE "bb2"
+TEST 123 "  %_2 = xor i1 %_3, true"
+IF HAS TARGET VAL false
+IF HAS TARGET VAL VAR false
+IF HAS SWITCH VAR %_2
+IF HAS DISCRIMINANT IntValue(IntValue { int_value: Value { name: "_2", address: 0x55a7d6ca3a10, is_const: false, is_null: false, is_undef: false, llvm_value: "  %_2 = xor i1 %_3, true", llvm_type: "i1" } })
+IF HAS ENTRY CONDITION (= %_2 false)
 TEST 123 "  %_3 = icmp slt i32 %x, 13"
 TEST 123 "i1 true"
 TEST 123 "  %_2 = xor i1 %_3, true"
@@ -282,7 +282,7 @@ TEST 123 "  %_3 = icmp slt i32 %x, 13"
 TEST 123 "i32 %x"
 TEST 123 "i32 13"
 TEST 123 "i32 %x"
-[2mJan 05 19:01:18.626[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
+[2mJan 15 20:18:36.674[0m [34mDEBUG[0m wombat_symx: (declare-fun panic_var () Bool)
 (declare-fun common_end () Bool)
 (declare-fun %_2 () Bool)
 (declare-fun bb1 () Bool)
@@ -300,7 +300,7 @@ TEST 123 "i32 %x"
 (assert (= const_true true))
 (assert (= const_13 13))
 (assert (let ((a!1 (=> (= %_3 (< %x const_13))
-               (=> (= %_2 (xor %_3 const_true)) (and true bb2 bb1)))))
+               (=> (= %_2 (xor %_3 const_true)) (and true bb1 bb2)))))
   (= start (=> true a!1))))
 (assert (let ((a!1 (>= %x
                (ite (bvslt #x80000000 #x00000000)
@@ -315,7 +315,7 @@ TEST 123 "i32 %x"
 
 
 Function safety: unsafe
-[2mJan 05 19:01:18.690[0m [34mDEBUG[0m wombat_symx: 
+[2mJan 15 20:18:36.749[0m [34mDEBUG[0m wombat_symx: 
 %x -> 2147479549
 panic_var -> true
 %_2 -> true

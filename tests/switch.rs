@@ -1,23 +1,40 @@
-fn test(x_mut: i32) -> i32 {
-    if x_mut > 0 {
-        println!("Positive!")   
-    }
-    match x_mut{
-        1=>{println!("One");
-            x_mut
+fn test_safe(x: i32) -> i32 {
+    match x{
+        1=>{
+            i32::MAX - 4
         },  
-        2=>{println!("Two");
-            x_mut
+        2=>{
+            x+1
         },
-        3=>{println!("Three");
-            x_mut-1
-        },
-        _=>x_mut+1
+        2147483647=>{
+            x
+        }
+        _=>x+1
+    }
+}
+
+fn test_unsafe(x: i64) -> i64 {
+    if x > 1 {
+        let y = 2;
+        y
+    } else {
+        match x{
+            1=>{
+                x
+            },  
+            2=>{
+                x
+            },
+            3=>{
+                x-1
+            },
+            _=>x+1
+        }
     }
 }
 
 
 fn main() {
-    println!("Hello, world!");
-    test(5);
+    test_safe(5);
+    test_unsafe(5);
 }

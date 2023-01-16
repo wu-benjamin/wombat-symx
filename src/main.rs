@@ -374,54 +374,43 @@ fn get_entry_condition<'a>(
                         solver.get_context(),
                         get_var_name(&discriminant, &solver),
                     );
-                    println!("IF HAS TARGET VAL {:?}", target_val);
-                    println!("IF HAS TARGET VAL VAR {:?}", target_val_var);
-                    println!("IF HAS SWITCH VAR {:?}", switch_var);
-                    println!("IF HAS DISCRIMINANT {:?}", discriminant);
 
                     entry_condition = switch_var._eq(&target_val_var);
-                    println!("IF HAS ENTRY CONDITION {:?}", entry_condition);
 
                 } else {
                     println!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
                 }
             }
             InstructionOpcode::Switch => {
-                println!("SWITCH HAS NUM OPERANDS {:?}", num_operands);
-                println!("SWITCH HAS TERMINATOR {:?}", terminator);
-                println!("SWITCH HAS NODE {:?}", node);
                 let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                 let mut target_val = terminator.get_operand(0).unwrap().left().unwrap();
                 for i in 0..num_operands {
-                    if i % 2 == 1 {
-                    println!("Operand {:?} is {:?}", i, terminator.get_operand(i).unwrap().right().unwrap());
-                    } else {
-                        println!("Operand {:?} is {:?}", i, terminator.get_operand(i).unwrap().left().unwrap());
-                    }
                     if i % 2 == 1 {
                         let basic_block = terminator.get_operand(i).unwrap().right().unwrap();
                         let basic_block_name = String::from(basic_block.get_name().to_str().unwrap());
                         if basic_block_name.eq(&String::from(node)) {
                             target_val = terminator.get_operand(i-1).unwrap().left().unwrap();
-                            println!("FUCKKKKKKKKKKK");
                             break;
                         }
                     }
                 }
-                let unwrapped_discriminant = discriminant.into_int_value();
                 let target_val_var = Int::new_const(solver.get_context(), get_var_name(&target_val, &solver));
                 let switch_var = Int::new_const(
                     solver.get_context(),
                     get_var_name(&discriminant, &solver),
                 );
-                println!("SWITCH HAS TARGET VAL {:?}", target_val);
-                println!("SWITCH HAS TARGET VAL VAR {:?}", target_val_var);
-                println!("SWITCH HAS SWITCH VAR {:?}", switch_var);
-                println!("SWITCH HAS DISCRIMINANT {:?}", discriminant);
-                println!("SWITCH HAS UNWRAPPED DISCRIMINANT {:?}", unwrapped_discriminant);
 
                 entry_condition = switch_var._eq(&target_val_var);
-                println!("SWITCH HAS ENTRY CONDITION {:?}", entry_condition);
+                if target_val == terminator.get_operand(0).unwrap().left().unwrap() {
+                    for j in 2..num_operands {
+                        if j % 2 == 0 { 
+                            let temp_target_val = terminator.get_operand(j).unwrap().left().unwrap();
+                            let temp_target_val_var = Int::new_const(solver.get_context(), get_var_name(&temp_target_val, &solver));
+                            entry_condition = entry_condition._eq(&(switch_var._eq(&temp_target_val_var)).not());
+                        }
+                    }
+
+                }
             }
             InstructionOpcode::Return => {
                 // Unconditionally go to node
@@ -761,6 +750,9 @@ fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<Str
                     }
                     InstructionOpcode::Return => {
                         // NO-OP
+                    }
+                    InstructionOpcode::Switch => {
+                        
                     }
                     InstructionOpcode::Load => {
                         // TODO: Support types other than i32* here

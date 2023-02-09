@@ -44,9 +44,6 @@ To run the project, use:
 cargo run -- [bc-file-path]
 ```
 
-If no `bc-file-path` is provided, then the program will default to `tests/hello_world.rs` (in which case, `--` can be ignored with no other options).
-
-
 
 ## Creating LLVM IR files
 

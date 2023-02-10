@@ -423,18 +423,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                         );
                                         let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
                                         node_var = assignment.implies(&node_var);       
-                                    } else if current_instruction.get_type().to_string().eq("\"i32\"") {
-                                        let lvalue_var = Int::new_const(
-                                            solver.get_context(),
-                                            lvalue_var_name
-                                        );
-                                        let rvalue_var = Int::new_const(
-                                            solver.get_context(),
-                                            rvalue_var_name
-                                        );
-                                        let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
-                                        node_var = assignment.implies(&node_var);
-                                    } else if current_instruction.get_type().to_string().eq("\"i64\"") {
+                                    } else if current_instruction.get_type().is_int_type() {
                                         let lvalue_var = Int::new_const(
                                             solver.get_context(),
                                             lvalue_var_name

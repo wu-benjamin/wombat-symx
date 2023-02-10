@@ -134,6 +134,8 @@ fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &S
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function);
+        println!("{}", current_full_function_name);
+        // println!("{}", target_function_name_prefix);
         if current_full_function_name.find(target_function_name_prefix).is_some() {
             // Get function argument names before removing store/alloca instructions
             let func_arg_names = get_function_argument_names(&current_function);

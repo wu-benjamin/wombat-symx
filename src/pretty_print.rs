@@ -1,12 +1,12 @@
 pub fn print_file_functions(module: &InkwellModule) -> () {
     //! Iterates through all functions in the file and prints the demangled name
-    println!("Functions in {:?}:", module.get_name());
+    debug!("Functions in {:?}:", module.get_name());
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
-        println!("\t{:?} == {:?}", demangle(current_function.get_name().to_str().unwrap()).to_string(), current_function.get_name());
+        debug!("\t{:?} == {:?}", demangle(current_function.get_name().to_str().unwrap()).to_string(), current_function.get_name());
         next_function = current_function.get_next_function();
     }
-    println!("");
+    debug!("");
 }
 
 

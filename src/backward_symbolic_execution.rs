@@ -6,7 +6,7 @@ use inkwell::{IntPredicate};
 use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use inkwell::module::Module as InkwellModule;
-use tracing::{debug, warn};
+use tracing::{debug, warn, error};
 use z3::{
     ast::{Ast, Bool, Int, BV},
 };
@@ -46,7 +46,7 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String) -> Ba
     for bb in function.get_basic_blocks() {
         if name.eq(&String::from(bb.get_name().to_str().unwrap())) {
             if matched {
-                println!("Multiple basic blocks matched name {:?}", name);
+                warn!("Multiple basic blocks matched name {:?}", name);
             }
             matching_bb = Some(bb);
             matched = true;
@@ -94,12 +94,12 @@ fn is_panic_block(bb: &BasicBlock) -> IsCleanup {
                 return IsCleanup::YES;
             }
             _ => {
-                println!("Opcode {:?} is not supported as a terminator for panic detection", opcode);
+                warn!("Opcode {:?} is not supported as a terminator for panic detection", opcode);
                 return IsCleanup::UNKNOWN;
             }
         }
     } else {
-        println!("\tNo terminator found for panic detection");
+        warn!("\tNo terminator found for panic detection");
         return IsCleanup::UNKNOWN;
     }
 }
@@ -132,7 +132,7 @@ fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String
                         let successor_basic_block_name_2 = String::from(successor_basic_block_2.get_name().to_str().unwrap());
                         node_edges.insert(String::from(successor_basic_block_name_2));
                     } else {
-                        println!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
+                        warn!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
                     }
                 }
                 InstructionOpcode::Switch => {
@@ -145,35 +145,35 @@ fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String
                     }
                 }
                 InstructionOpcode::IndirectBr => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::Invoke => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::CallBr => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::Resume => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::CatchSwitch => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::CatchRet => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::CleanupRet => {
-                    println!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
+                    warn!("Support for terminator opcode {:?} is not yet implemented for edge generation", opcode);
                 }
                 InstructionOpcode::Unreachable => {
                     node_edges.insert(String::from(COMMON_END_NODE_NAME));
                 }
                 _ => {
-                    println!("Opcode {:?} is not supported as a terminator for edge generation", opcode);
+                    warn!("Opcode {:?} is not supported as a terminator for edge generation", opcode);
                 }
             }
         } else {
-            println!("\tNo terminator");
+            warn!("\tNo terminator");
         }
         all_edges.insert(basic_block_name, node_edges);
     }
@@ -244,7 +244,7 @@ fn forward_topological_sort(function: &FunctionValue) -> Vec<String> {
         match next_node {
             Some(..) => (),
             None => {
-                println!("CFG is cyclic which is not supported");
+                warn!("CFG is cyclic which is not supported");
                 break;
             }
         }
@@ -270,7 +270,6 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
     // handle const literal
     let llvm_str = value.print_to_string();
     let str = llvm_str.to_str().unwrap();
-    // println!("{:?}", str);
     if !str.contains("%") {
         let var_name = str.split_whitespace().nth(1).unwrap();
         if var_name.eq("true") {
@@ -280,7 +279,7 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
             let false_const = Bool::new_const(solver.get_context(), format!("const_{}", var_name));
             solver.assert(&false_const._eq(&Bool::from_bool(solver.get_context(), false)));
         } else {
-            let parsed_num = var_name.parse::<i32>().unwrap();
+            let parsed_num = var_name.parse::<i64>().unwrap();
             let num_const = Int::new_const(solver.get_context(), format!("const_{}", var_name));
             solver.assert(&num_const._eq(&Int::from_i64(solver.get_context(), parsed_num.into())));
         }
@@ -325,7 +324,7 @@ fn get_entry_condition<'a>(
                     entry_condition = switch_var._eq(&target_val_var);
 
                 } else {
-                    println!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
+                    warn!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
                 }
             }
             InstructionOpcode::Switch => {
@@ -366,11 +365,11 @@ fn get_entry_condition<'a>(
                 // Unconditionally go to node
             }
             _ => {
-                println!("Opcode {:?} is not supported as a terminator for computing node entry conditions", opcode);
+                warn!("Opcode {:?} is not supported as a terminator for computing node entry conditions", opcode);
             },
         }
     } else {
-        println!("\tNo terminator found when computing node entry conditions");
+        warn!("\tNo terminator found when computing node entry conditions");
     }
     return entry_condition;
 }
@@ -435,7 +434,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                         let assignment = condition.implies(&lvalue_var._eq(&rvalue_var));
                                         node_var = assignment.implies(&node_var);
                                     } else {
-                                        println!("Currently unsuppported type {:?} for extract value", incoming.0.get_type().to_string())
+                                        warn!("Currently unsuppported type {:?} for Phi", incoming.0.get_type().to_string())
                                     } 
                                 }
                             }
@@ -480,7 +479,6 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                 );
 
                                 let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_1);
                                 let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                                 let rvalue_var_1 = Int::add(solver.get_context(), &[
                                     &Int::new_const(solver.get_context(), operand1_name),
@@ -490,7 +488,6 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                 let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
                                 let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_2);
                                 let min_int =
                                     Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                                 let max_int =
@@ -512,7 +509,6 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                 );
 
                                 let lvalue_var_name_1 = format!("{}.0", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_1);
                                 let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                                 let rvalue_var_1 = Int::add(solver.get_context(), &[
                                     &Int::new_const(solver.get_context(), operand1_name),
@@ -522,7 +518,6 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                 let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
                                 let lvalue_var_name_2 = format!("{}.1", get_var_name(&current_instruction, &solver));
-                                // println!("{:?}", lvalue_var_name_2);
                                 let min_int =
                                     Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
                                 let max_int =
@@ -686,10 +681,10 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                         
                     }
                     InstructionOpcode::Load => {
-                        // TODO: Support types other than i32* here
+                        // TODO: Support non-int types here
                         let operand = current_instruction.get_operand(0).unwrap().left().unwrap();
-                        if !current_instruction.get_type().to_string().eq("\"i32\"") {
-                            println!("Currently unsuppported type {:?} for load operand", current_instruction.get_type().to_string())
+                        if !current_instruction.get_type().is_int_type() {
+                            warn!("Currently unsuppported type {:?} for load operand", current_instruction.get_type().to_string())
                         }
                         let lvalue_var_name = get_var_name(&current_instruction, &solver);
                         let rvalue_var_name = get_var_name(&operand, &solver);
@@ -705,10 +700,10 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                         node_var = assignment.implies(&node_var);
                     }
                     InstructionOpcode::Store => {
-                        // TODO: Support types other than i32* here
+                        // TODO: Support non-int types here
                         let operand1 = current_instruction.get_operand(0).unwrap().left().unwrap();
-                        if !operand1.get_type().to_string().eq("\"i32\"") {
-                            println!("Currently unsuppported type {:?} for store operand", operand1.get_type().to_string())
+                        if !operand1.get_type().is_int_type() {
+                            warn!("Currently unsuppported type {:?} for store operand", operand1.get_type().to_string())
                         }
                         let operand2 = current_instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value();
                         
@@ -732,7 +727,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                         let operand1_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
                         let operand2_var_name = get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap(), &solver);
                         if !current_instruction.get_type().to_string().eq("\"i1\"") {
-                            println!("Currently unsuppported type {:?} for xor operand", current_instruction.get_type().to_string());
+                            warn!("Currently unsuppported type {:?} for xor operand", current_instruction.get_type().to_string());
                         }
                         let operand1_var = Bool::new_const(
                             solver.get_context(),
@@ -813,7 +808,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                             );
                             let assignment = lvalue_var._eq(&rvalue_var);
                             node_var = assignment.implies(&node_var);       
-                        } else if current_instruction.get_type().to_string().eq("\"i32\"") {
+                        } else if current_instruction.get_type().is_int_type() {
                             let lvalue_var = Int::new_const(
                                 solver.get_context(),
                                 lvalue_var_name
@@ -823,20 +818,9 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                 rvalue_var_name
                             );
                             let assignment = lvalue_var._eq(&rvalue_var);
-                            node_var = assignment.implies(&node_var);    
-                        } else if current_instruction.get_type().to_string().eq("\"i64\"") {
-                            let lvalue_var = Int::new_const(
-                                solver.get_context(),
-                                lvalue_var_name
-                            );
-                            let rvalue_var = Int::new_const(
-                                solver.get_context(),
-                                rvalue_var_name
-                            );
-                            let assignment = lvalue_var._eq(&rvalue_var);
-                            node_var = assignment.implies(&node_var);    
+                            node_var = assignment.implies(&node_var);     
                         }  else {
-                            println!("Currently unsuppported type {:?} for extract value", operand.get_type().to_string())
+                            warn!("Currently unsuppported type {:?} for extract value", operand.get_type().to_string())
                         } 
                     }
                     InstructionOpcode::Alloca => {
@@ -848,9 +832,6 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                     InstructionOpcode::Trunc => {
                         let lvalue_var_name = get_var_name(&current_instruction, &solver);
                         let operand_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
-                        println!("Trunc: {:?}", lvalue_var_name);
-                        println!("Trunc: {:?}", operand_var_name);
-                        println!("Trunc: {:?}", current_instruction);
                         let lvalue_var = Bool::new_const(
                             solver.get_context(),
                             lvalue_var_name
@@ -862,7 +843,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                         let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 64), true);
                         let assignment = lvalue_var._eq(&operand_var._eq(&const_0).not());
                         node_var = assignment.implies(&node_var);                        
-                        println!("Trunc is only partially supported (always i1)");
+                        warn!("Trunc is only partially supported (always i1)");
                     }
                     InstructionOpcode::Select => {
                         let discriminant = current_instruction.get_operand(0).unwrap().left().unwrap();
@@ -870,7 +851,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                         let operand_1_var_name = get_var_name(&current_instruction.get_operand(1).unwrap().left().unwrap(), &solver);
                         let operand_2_var_name = get_var_name(&current_instruction.get_operand(2).unwrap().left().unwrap(), &solver);
                         if !discriminant.get_type().to_string().eq("\"i1\"") {
-                            println!("Currently unsuppported type {:?} for select discriminant", discriminant.get_type().to_string());
+                            warn!("Currently unsuppported type {:?} for select discriminant", discriminant.get_type().to_string());
                             continue;
                         }
                         let discriminant_var = Bool::new_const(
@@ -889,10 +870,7 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                             let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_1_var));
                             let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&current_instruction, &solver))._eq(&operand_2_var));
                             node_var = Bool::and(solver.get_context(), &[&select_1.implies(&node_var), &select_2.implies(&node_var)]);
-                        } else if current_instruction.get_type().to_string().eq("\"i64\"") || current_instruction.get_type().to_string().eq("\"i32\"") || current_instruction.get_type().to_string().eq("\"i8\"") {
-                            if current_instruction.get_type().to_string().eq("\"i8\"") {
-                                println!("i8 is only partially supported for select statements (treated as i32)");
-                            }
+                        } else if current_instruction.get_type().is_int_type() {
                             let operand_1_var = Int::new_const(
                                 solver.get_context(),
                                 operand_1_var_name
@@ -906,15 +884,12 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                             let assignment = Bool::and(solver.get_context(), &[&select_1, &select_2]);
                             node_var = assignment.implies(&node_var);
                         } else {
-                            println!("Currently unsuppported type {:?} for select", current_instruction.get_type().to_string());
+                            warn!("Currently unsuppported type {:?} for select", current_instruction.get_type().to_string());
                         }
                     }
                     InstructionOpcode::ZExt => {
                         let lvalue_var_name = get_var_name(&current_instruction, &solver);
                         let operand_var_name = get_var_name(&current_instruction.get_operand(0).unwrap().left().unwrap(), &solver);
-                        println!("ZExt: {:?}", lvalue_var_name);
-                        println!("ZExt: {:?}", operand_var_name);
-                        println!("ZExt: {:?}", current_instruction);
                         let lvalue_var = Int::new_const(
                             solver.get_context(),
                             lvalue_var_name
@@ -929,10 +904,10 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                         let cast_2 = operand_var.not().implies(&lvalue_var._eq(&const_0));
                         let assignment = Bool::and(solver.get_context(), &[&cast_1, &cast_2]);
                         node_var = assignment.implies(&node_var);                        
-                        println!("ZExt is only partially supported (always i32)");
+                        warn!("ZExt is only partially supported (always i32)");
                     }
                     _ => {
-                        println!("Opcode {:?} is not supported as a statement for code gen", opcode);
+                        warn!("Opcode {:?} is not supported as a statement for code gen", opcode);
                     }
                 }
 

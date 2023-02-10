@@ -77,7 +77,6 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
     // handle const literal
     let llvm_str = value.print_to_string();
     let str = llvm_str.to_str().unwrap();
-    // println!("{:?}", str);
     if !str.contains("%") {
         let var_name = str.split_whitespace().nth(1).unwrap();
         if var_name.eq("true") {
@@ -87,7 +86,7 @@ fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
             let false_const = Bool::new_const(solver.get_context(), format!("const_{}", var_name));
             solver.assert(&false_const._eq(&Bool::from_bool(solver.get_context(), false)));
         } else {
-            let parsed_num = var_name.parse::<i32>().unwrap();
+            let parsed_num = var_name.parse::<i64>().unwrap();
             let num_const = Int::new_const(solver.get_context(), format!("const_{}", var_name));
             solver.assert(&num_const._eq(&Int::from_i64(solver.get_context(), parsed_num.into())));
         }
@@ -134,8 +133,6 @@ fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &S
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function);
-        println!("{}", current_full_function_name);
-        // println!("{}", target_function_name_prefix);
         if current_full_function_name.find(target_function_name_prefix).is_some() {
             // Get function argument names before removing store/alloca instructions
             let func_arg_names = get_function_argument_names(&current_function);

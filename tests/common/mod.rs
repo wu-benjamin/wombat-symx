@@ -2,9 +2,19 @@ use std::fs;
 use std::process::Command;
 use std::env::current_dir;
 
+use tracing_core::Level;
+use tracing_subscriber::FmtSubscriber;
+
 use wombat_symx;
 
 pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_safe: bool) -> () {
+
+    // Setup the tracing debug level
+    let subscriber = FmtSubscriber::builder().with_max_level(Level::DEBUG).finish();
+
+    // _guard resets the current default dispatcher to the prior default when dropped
+    let _guard = tracing::subscriber::set_default(subscriber);
+
     let source_file_name = format!("tests/ZZZ_temp_test_{}.rs", test_name);
     let bytecode_file_name = format!("ZZZ_temp_test_{}.bc", test_name);
     let current_directory_pathbuf = current_dir().unwrap();

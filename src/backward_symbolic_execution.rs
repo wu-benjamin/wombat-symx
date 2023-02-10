@@ -6,11 +6,13 @@ use inkwell::{IntPredicate};
 use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use inkwell::module::Module as InkwellModule;
-use tracing::{debug, warn, error};
+use tracing::{debug, warn};
 use z3::{
     ast::{Ast, Bool, Int, BV},
 };
 use z3::Solver;
+
+use crate::symbolic_execution::get_function_name;
 
 const COMMON_END_NODE_NAME: &str = "common_end";
 const PANIC_VAR_NAME: &str = "panic_var";
@@ -375,7 +377,7 @@ fn get_entry_condition<'a>(
 }
 
 
-pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap<String, String>, solver: &Solver, module: &InkwellModule, namespace: &String) -> bool {
+pub fn backward_symbolic_execution(function: &FunctionValue, _arg_names: &HashMap<String, String>, solver: &Solver, _module: &InkwellModule, _namespace: &String) -> bool {
     //! Perform backward symbolic execution on a function given the llvm-ir function object
     let forward_edges = get_forward_edges(&function);
     let backward_edges = get_backward_edges(&function);
@@ -465,9 +467,10 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                     InstructionOpcode::Call => {
                         let call_operand = &current_instruction.get_operand(current_instruction.get_num_operands()-1)
                             .unwrap().left().unwrap().into_pointer_value();
-                        let call_operation_name = call_operand.get_name().to_str().unwrap();
+                        let call_operation_name_string = get_function_name(call_operand);
+                        let call_operation_name_str = call_operation_name_string.as_str();
 
-                        match call_operation_name {
+                        match call_operation_name_str {
                             "llvm.sadd.with.overflow.i32" => {
                                 let operand1_name = get_var_name(
                                     &current_instruction.get_operand(0).unwrap().left().unwrap(),
@@ -665,12 +668,11 @@ pub fn backward_symbolic_execution(function: &FunctionValue, arg_names: &HashMap
                                 let assignment = Bool::new_const(solver.get_context(), lvalue_var_name)._eq(&rvalue_var);
                                 node_var = assignment.implies(&node_var);
                             }
-                            "_ZN4core9panicking5panic17he60bb304466ccbafE" => {
-                                // TODO: Find stable function name
+                            "core::panicking::panic::he60bb304466ccbaf" => {
                                 // NO-OP
                             }
                             _ => {
-                                debug!("Unsupported Call function {:?}", call_operation_name);
+                                warn!("Unsupported Call function {:?}", call_operation_name_str);
                             }
                         }
                     }

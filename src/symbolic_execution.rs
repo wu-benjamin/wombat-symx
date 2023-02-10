@@ -9,7 +9,7 @@ use inkwell::context::Context as InkwellContext;
 use inkwell::module::Module as InkwellModule;
 use inkwell::memory_buffer::MemoryBuffer;
 use inkwell::passes::{PassManager, PassManagerBuilder};
-use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue};
+use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, PointerValue};
 
 use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
@@ -17,11 +17,11 @@ use z3::ast::{Ast, Bool, Int};
 
 use crate::backward_symbolic_execution::backward_symbolic_execution;
 
-struct Param<'a> {
-    arg_name: String,
-    alias_name: String,
-    inkwell_type: inkwell::values::BasicValueEnum<'a>,
-}
+// struct Param<'a> {
+//     arg_name: String,
+//     alias_name: String,
+//     inkwell_type: inkwell::values::BasicValueEnum<'a>,
+// }
 
 trait Named {
     fn get_name(&self) -> String;
@@ -124,7 +124,7 @@ fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<Strin
     arg_names
 }
 
-fn get_function_name(function: &FunctionValue) -> String {
+pub fn get_function_name(function: &PointerValue) -> String {
     return demangle(&function.get_name().to_str().unwrap()).to_string();
 }
 
@@ -132,7 +132,7 @@ fn get_function_name(function: &FunctionValue) -> String {
 fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {    
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
-        let current_full_function_name = get_function_name(&current_function);
+        let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());
         if current_full_function_name.find(target_function_name_prefix).is_some() {
             // Get function argument names before removing store/alloca instructions
             let func_arg_names = get_function_argument_names(&current_function);

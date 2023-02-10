@@ -148,10 +148,11 @@ fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &S
                 debug!("{:?}", solver);
         
                 // Attempt resolving the model (and obtaining the respective arg values if panic found)
-                let is_safe = solver.check() != SatResult::Sat;
-                println!("\nFunction safety: {}", if is_safe {"safe"} else {"unsafe"});
+                let is_confirmed_safe = solver.check() == SatResult::Unsat;
+                let is_confirmed_unsafe = solver.check() == SatResult::Sat;
+                println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
             
-                if !is_safe {
+                if is_confirmed_unsafe {
                     let model = solver.get_model().unwrap();
                     debug!("\n{:?}", model);
                     println!("\nArgument values:");
@@ -161,7 +162,7 @@ fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &S
                         println!("\t{:?} = {:?}", &arg_name, model.eval(&arg_z3, true).unwrap());
                     };
                 }
-                return Some(is_safe);
+                return Some(is_confirmed_safe);
             }
             break;
             

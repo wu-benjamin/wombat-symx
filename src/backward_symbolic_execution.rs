@@ -6,7 +6,7 @@ use inkwell::{IntPredicate};
 use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, InstructionValue, PhiValue};
 use inkwell::module::Module as InkwellModule;
-use tracing::{debug, warn};
+use tracing::{warn};
 use z3::{
     ast::{Ast, Bool, Int, BV},
 };
@@ -842,9 +842,11 @@ pub fn backward_symbolic_execution(function: &FunctionValue, _arg_names: &HashMa
                             solver.get_context(),
                             operand_var_name
                         );
-                        let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 64), true);
-                        let assignment = lvalue_var._eq(&operand_var._eq(&const_0).not());
-                        node_var = assignment.implies(&node_var);                        
+                        let const_1 = Int::from_i64(solver.get_context(), 1);
+                        let const_2 = Int::from_i64(solver.get_context(), 2);
+                        let right_most_bit = operand_var.modulo(&const_2);
+                        let assignment = lvalue_var._eq(&right_most_bit._eq(&const_1));
+                        node_var = assignment.implies(&node_var);
                         warn!("Trunc is only partially supported (always i1)");
                     }
                     InstructionOpcode::Select => {
@@ -900,8 +902,8 @@ pub fn backward_symbolic_execution(function: &FunctionValue, _arg_names: &HashMa
                             solver.get_context(),
                             operand_var_name
                         );
-                        let const_1 = Int::from_bv(&BV::from_i64(solver.get_context(), 1, 32), true);
-                        let const_0 = Int::from_bv(&BV::from_i64(solver.get_context(), 0, 32), true);
+                        let const_1 = Int::from_i64(solver.get_context(), 1);
+                        let const_0 = Int::from_i64(solver.get_context(), 0);
                         let cast_1 = operand_var.implies(&lvalue_var._eq(&const_1));
                         let cast_2 = operand_var.not().implies(&lvalue_var._eq(&const_0));
                         let assignment = Bool::and(solver.get_context(), &[&cast_1, &cast_2]);
@@ -938,7 +940,6 @@ pub fn backward_symbolic_execution(function: &FunctionValue, _arg_names: &HashMa
             }
         }
 
-        let mut entry_conditions_set = false;
         let mut entry_conditions = Bool::from_bool(solver.get_context(), true);
         if let Some(predecessors) = backward_edges.get(&node) {
             if predecessors.len() > 0 {
@@ -947,12 +948,8 @@ pub fn backward_symbolic_execution(function: &FunctionValue, _arg_names: &HashMa
                     let entry_condition = get_entry_condition(&solver, &function, &predecessor, &node);
                     entry_conditions = Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
                 }
-                entry_conditions_set = true;
             }
         }  
-        if !entry_conditions_set {
-            entry_conditions = Bool::from_bool(solver.get_context(), true);
-        }
         node_var = entry_conditions.implies(&node_var);
 
         let named_node_var = Bool::new_const(solver.get_context(), String::from(node));

@@ -6,6 +6,18 @@ use tracing_subscriber::FmtSubscriber;
 
 use wombat_symx;
 
+struct TestFileDropper<'a> {
+    source_file_name: &'a String,
+    bytecode_file_name: &'a String,
+}
+
+impl Drop for TestFileDropper<'_> {
+    fn drop(&mut self) {
+        fs::remove_file(self.source_file_name).expect("Failed to delete temp test source file.");
+        fs::remove_file(self.bytecode_file_name).expect("Failed to delete temp test bytecode file.");
+    }
+}
+
 pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_safe: bool) -> () {
 
     // Setup the tracing debug level
@@ -17,6 +29,11 @@ pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_sa
     let source_file_name = format!("tests/zzz_temp_test_{}.rs", test_name);
     let bytecode_file_name = format!("tests/zzz_temp_test_{}.bc", test_name);
 
+    let _test_file_dropper = TestFileDropper {
+        source_file_name: &source_file_name,
+        bytecode_file_name: &bytecode_file_name,
+    };
+
     // Prevent compiler from optimizing away unused function
     let main = format!("fn main() {{println!(\"{{:p}}\", {} as *const ())}}", function_name);
 
@@ -27,9 +44,6 @@ pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_sa
         .expect("Failed to generate bytecode file!");
 
     let actual_safe = wombat_symx::symbolic_execution::symbolic_execution(&bytecode_file_name, &String::from(function_name));
-
-    fs::remove_file(&source_file_name).expect("Failed to delete temp test source file.");
-    fs::remove_file(&bytecode_file_name).expect("Failed to delete temp test bytecode file.");
 
     assert!(expected_safe == actual_safe.unwrap());
 }

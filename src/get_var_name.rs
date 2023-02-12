@@ -1,4 +1,5 @@
 use inkwell::values::{AnyValue};
+
 use z3::ast::{Ast, Bool, Int};
 use z3::Solver;
 
@@ -7,10 +8,10 @@ pub const CONST_NAMESPACE: &str = "const_";
 
 
 pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace: &str) -> String {
-    // handle const literal
     let value_llvm_str = value.print_to_string();
     let value_str = value_llvm_str.to_str().unwrap();
     let name = if !value_str.contains("%") {
+        // handle const literals
         let const_value_str = value_str.split_whitespace().nth(1).unwrap();
         let var_name_string = format!("{}{}", CONST_NAMESPACE, const_value_str);
         let var_name = var_name_string.as_str();

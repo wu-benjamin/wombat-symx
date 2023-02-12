@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use inkwell::values::{FunctionValue, InstructionOpcode};
 use tracing::{warn};
+
+use inkwell::values::{FunctionValue, InstructionOpcode};
 
 
 pub fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String>> {

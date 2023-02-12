@@ -13,9 +13,11 @@ use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, PointerValue};
 
 use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
-use z3::ast::{Ast, Bool, Int};
+use z3::ast::{Int};
 
 use crate::backward_symbolic_execution::backward_symbolic_execution;
+use crate::get_var_name::get_var_name;
+use crate::pretty_print::print_file_functions;
 
 // struct Param<'a> {
 //     arg_name: String,
@@ -73,31 +75,6 @@ fn get_module_name_from_file_name(file_name: &String) -> String {
     return file_name[start_index..end_index].to_string();
 }
 
-fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>) -> String {
-    // handle const literal
-    let llvm_str = value.print_to_string();
-    let str = llvm_str.to_str().unwrap();
-    if !str.contains("%") {
-        let var_name = str.split_whitespace().nth(1).unwrap();
-        if var_name.eq("true") {
-            let true_const = Bool::new_const(solver.get_context(), format!("const_{}", var_name));
-            solver.assert(&true_const._eq(&Bool::from_bool(solver.get_context(), true)));
-        } else if var_name.eq("false") {
-            let false_const = Bool::new_const(solver.get_context(), format!("const_{}", var_name));
-            solver.assert(&false_const._eq(&Bool::from_bool(solver.get_context(), false)));
-        } else {
-            let parsed_num = var_name.parse::<i64>().unwrap();
-            let num_const = Int::new_const(solver.get_context(), format!("const_{}", var_name));
-            solver.assert(&num_const._eq(&Int::from_i64(solver.get_context(), parsed_num.into())));
-        }
-        return String::from(format!("const_{}", var_name));
-    }
-    let start_index = str.find("%").unwrap();
-    let end_index = str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or(str[start_index..].len()) + start_index;
-    let var_name = String::from(&str[start_index..end_index]);
-    return String::from(var_name);
-}
-
 fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<String, String> {
     let mut arg_names = HashMap::<String, String>::new();
     for param in &function.get_params() {
@@ -128,8 +105,9 @@ pub fn get_function_name(function: &PointerValue) -> String {
     return demangle(&function.get_name().to_str().unwrap()).to_string();
 }
 
-// Returns bool representing whether symbolic execution for a function was completed without error
-fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {    
+// Returns Some(true) if the function is safe, Some(false) if the function is unsafe, and None if analysis did not complete
+fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {   
+    print_file_functions(module); 
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());

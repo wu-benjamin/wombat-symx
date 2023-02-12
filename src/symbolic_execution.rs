@@ -15,7 +15,7 @@ use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
 use z3::ast::{Int, Bool};
 
-use crate::codegen::function_codegen;
+use crate::codegen_function::codegen_function;
 use crate::get_var_name::get_var_name;
 use crate::pretty_print::{print_file_functions};
 
@@ -70,6 +70,7 @@ fn get_module_name_from_file_name(file_name: &String) -> String {
     return file_name[start_index..end_index].to_string();
 }
 
+
 fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<String, String> {
     let mut arg_names = HashMap::<String, String>::new();
     for param in &function.get_params() {
@@ -100,10 +101,6 @@ fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<Strin
     arg_names
 }
 
-pub fn get_function_name(function: &PointerValue) -> String {
-    return demangle(&function.get_name().to_str().unwrap()).to_string();
-}
-
 
 fn get_all_function_argument_names(module: &InkwellModule) -> HashMap<String, HashMap<String, String>> {
     let mut all_func_arg_names = HashMap::<String, HashMap<String, String>>::new();
@@ -118,17 +115,8 @@ fn get_all_function_argument_names(module: &InkwellModule) -> HashMap<String, Ha
 }
 
 
-fn convert_to_dsa<'a>(module: &InkwellModule) -> () {
-    let pass_manager_builder = PassManagerBuilder::create();
-    let pass_manager = PassManager::create(module);
-    pass_manager.add_promote_memory_to_register_pass();
-    pass_manager_builder.populate_function_pass_manager(&pass_manager);
-
-    let mut next_function = module.get_first_function();
-    while let Some(current_function) = next_function {
-        pass_manager.run_on(&current_function);
-        next_function = current_function.get_next_function();
-    }
+pub fn get_function_name(function: &PointerValue) -> String {
+    return demangle(&function.get_name().to_str().unwrap()).to_string();
 }
 
 
@@ -142,6 +130,20 @@ fn get_function_by_name<'a>(module: &'a InkwellModule, target_function_name_pref
         next_function = current_function.get_next_function();
     }
     return None;
+}
+
+
+fn convert_to_dsa<'a>(module: &InkwellModule) -> () {
+    let pass_manager_builder = PassManagerBuilder::create();
+    let pass_manager = PassManager::create(module);
+    pass_manager.add_promote_memory_to_register_pass();
+    pass_manager_builder.populate_function_pass_manager(&pass_manager);
+
+    let mut next_function = module.get_first_function();
+    while let Some(current_function) = next_function {
+        pass_manager.run_on(&current_function);
+        next_function = current_function.get_next_function();
+    }
 }
 
 
@@ -183,7 +185,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     }
     let func_arg_names = func_arg_names_option.unwrap();
 
-    function_codegen(&function, &solver, &namespace);
+    codegen_function(&function, &solver, &namespace);
 
     let start_node = function.get_first_basic_block().unwrap();
     // TODO: Namespace
@@ -194,10 +196,13 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     debug!("{:?}", solver);
 
     // Attempt resolving the model (and obtaining the respective arg values if panic found)
-    let is_confirmed_safe = solver.check() == SatResult::Unsat;
-    let is_confirmed_unsafe = solver.check() == SatResult::Sat;
+    let satisfiability = solver.check();
+
+    let is_confirmed_safe = satisfiability == SatResult::Unsat;
+    let is_confirmed_unsafe = satisfiability == SatResult::Sat;
     println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
 
+    // Exhibit a pathological input if the function is unsafe
     if is_confirmed_unsafe {
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);

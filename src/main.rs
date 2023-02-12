@@ -4,7 +4,9 @@ use tracing_core::Level;
 use tracing_subscriber::FmtSubscriber;
 
 mod symbolic_execution;
-mod codegen;
+mod codegen_function;
+mod codegen_basic_block;
+mod codegen_instruction;
 mod get_var_name;
 mod pretty_print;
 

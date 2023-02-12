@@ -4,8 +4,6 @@ use std::process::Command;
 use tracing_core::Level;
 use tracing_subscriber::FmtSubscriber;
 
-use wombat_symx;
-
 struct TestFileDropper<'a> {
     source_file_name: &'a String,
     bytecode_file_name: &'a String,
@@ -19,9 +17,14 @@ impl Drop for TestFileDropper<'_> {
 }
 
 pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_safe: bool) -> () {
+    let debug = false;
 
     // Setup the tracing debug level
-    let subscriber = FmtSubscriber::builder().with_max_level(Level::DEBUG).finish();
+    let subscriber = if debug {
+        FmtSubscriber::builder().with_max_level(Level::DEBUG).finish()
+    } else {
+        FmtSubscriber::builder().with_max_level(Level::WARN).finish()
+    };
 
     // _guard resets the current default dispatcher to the prior default when dropped
     let _guard = tracing::subscriber::set_default(subscriber);

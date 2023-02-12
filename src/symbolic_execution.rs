@@ -17,6 +17,7 @@ use z3::ast::{Int};
 
 use crate::backward_symbolic_execution::backward_symbolic_execution;
 use crate::get_var_name::get_var_name;
+use crate::pretty_print::print_file_functions;
 
 // struct Param<'a> {
 //     arg_name: String,
@@ -105,7 +106,8 @@ pub fn get_function_name(function: &PointerValue) -> String {
 }
 
 // Returns Some(true) if the function is safe, Some(false) if the function is unsafe, and None if analysis did not complete
-fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {    
+fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {   
+    print_file_functions(module); 
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());

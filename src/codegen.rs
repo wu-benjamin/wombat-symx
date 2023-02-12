@@ -13,7 +13,7 @@ use crate::get_var_name::get_var_name;
 
 #[derive(Debug)]
 #[derive(PartialEq)]
-enum IsCleanup {
+pub enum IsCleanup {
     YES,
     NO,
     UNKNOWN,
@@ -35,7 +35,9 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String) -> Ba
 }
 
 
-fn is_panic_block(bb: &BasicBlock) -> IsCleanup {
+// Assuming IsCleanup::NO means the block does not represent a panicking state
+// and IsCleanup::YES means the block does represent a panicking state
+pub fn is_panic_block(bb: &BasicBlock) -> IsCleanup {
     if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
         match &opcode {
@@ -84,7 +86,7 @@ fn is_panic_block(bb: &BasicBlock) -> IsCleanup {
 }
 
 
-fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String>> {
+pub fn get_forward_edges(function: &FunctionValue) -> HashMap<String, HashSet<String>> {
     let mut all_edges = HashMap::new();
     for bb in function.get_basic_blocks() {
         let mut node_edges = HashSet::new();
@@ -339,7 +341,8 @@ pub fn function_codegen(function: &FunctionValue, solver: &Solver, _namespace: &
             // handle panic (conceptually assign panic var and assert)
             // (panic <- bool_var) => !panic
             // equivalent to !panic
-            let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node)) == IsCleanup::YES;
+            // Including unknown as panic to be cautious in our analysis
+            let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node)) != IsCleanup::NO;
             Bool::from_bool(solver.get_context(), !is_panic)
         } else {
             let mut successor_conditions = Bool::from_bool(solver.get_context(), true);

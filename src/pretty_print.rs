@@ -1,3 +1,14 @@
+use rustc_demangle::demangle;
+
+use tracing::debug;
+
+use inkwell::module::Module as InkwellModule;
+use inkwell::values::FunctionValue;
+
+use crate::codegen::{get_forward_edges, is_panic_block};
+
+
+
 pub fn print_file_functions(module: &InkwellModule) -> () {
     //! Iterates through all functions in the file and prints the demangled name
     debug!("Functions in {:?}:", module.get_name());

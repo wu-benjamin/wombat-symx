@@ -6,8 +6,10 @@ use z3::ast::Bool;
 use z3::Solver;
 
 use crate::codegen::function_codegen;
+use crate::pretty_print::pretty_print_function;
 
 pub fn backward_symbolic_execution(function: &FunctionValue, _arg_names: &HashMap<String, String>, solver: &Solver, _module: &InkwellModule, _namespace: &String) -> bool {
+    pretty_print_function(function);
     function_codegen(function, solver, _namespace);
     
     let start_node = function.get_first_basic_block().unwrap();

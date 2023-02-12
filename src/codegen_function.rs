@@ -162,15 +162,14 @@ fn backward_topological_sort(function: &FunctionValue) -> Vec<String> {
 }
 
 
-// TODO: Maybe return param names in Z3 space?
-pub fn codegen_function(function: &FunctionValue, solver: &Solver, _namespace: &String) -> () {
+pub fn codegen_function(function: &FunctionValue, solver: &Solver, namespace: &str) -> () {
     //! Perform backward symbolic execution on a function given the llvm-ir function object
     let forward_edges = get_forward_edges(&function);
     let backward_edges = get_backward_edges(&function);
     let backward_sorted_nodes = backward_topological_sort(&function);
 
     for node in backward_sorted_nodes {
-        codegen_basic_block(node, &forward_edges, &backward_edges, function, solver, _namespace);
+        codegen_basic_block(node, &forward_edges, &backward_edges, function, solver, namespace);
     }
 
     // constrain int inputs
@@ -179,7 +178,7 @@ pub fn codegen_function(function: &FunctionValue, solver: &Solver, _namespace: &
         if input.get_type().to_string().eq("\"i1\"") {
             continue;
         } else if input.get_type().to_string().eq("\"i32\"") {
-            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver));
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, namespace));
             let min_int =
                 Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
             let max_int =
@@ -187,7 +186,7 @@ pub fn codegen_function(function: &FunctionValue, solver: &Solver, _namespace: &
             solver
                 .assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
         } else if input.get_type().to_string().eq("\"i64\"") {
-            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver));
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, namespace));
             let min_int =
                 Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
             let max_int =

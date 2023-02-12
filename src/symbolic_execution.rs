@@ -17,7 +17,10 @@ use z3::ast::{Int, Bool};
 
 use crate::codegen_function::codegen_function;
 use crate::get_var_name::get_var_name;
-use crate::pretty_print::{print_file_functions};
+use crate::pretty_print::{print_file_functions, pretty_print_function};
+
+
+const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
 
 
 trait Named {
@@ -71,13 +74,15 @@ fn get_module_name_from_file_name(file_name: &String) -> String {
 }
 
 
-fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<String, String> {
+// Returns a map of source code function argument names to Z3 module variable names
+fn get_function_argument_names<'a>(function: &'a FunctionValue, solver: &Solver, namespace: &str) -> HashMap<String, String> {
     let mut arg_names = HashMap::<String, String>::new();
     for param in &function.get_params() {
         debug!("Func param instr: {:?}", param);
         if param.get_name().len() == 0 {
             // Var name is empty, find in start basic block
-            let alias_name = &get_var_name(&param.as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
+            let alias_name = &get_var_name(&param.as_any_value_enum(), solver, namespace);
+            
             let start_block_option = function.get_first_basic_block();
             if start_block_option.is_none() {
                 return arg_names;
@@ -85,30 +90,31 @@ fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<Strin
             let start_block =start_block_option.unwrap();
             let mut instr = start_block.get_first_instruction();
             while instr.is_some() {
-                if instr.unwrap().get_opcode() == InstructionOpcode::Store && alias_name.to_string() == get_var_name(&instr.unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new()))) {
-                    let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
-                    arg_names.insert(arg_name[1..].to_string(), alias_name.to_string());
+                if instr.unwrap().get_opcode() == InstructionOpcode::Store && alias_name.to_string() == get_var_name(&instr.unwrap().as_any_value_enum(), solver, namespace) {
+                    let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), solver, namespace);
+                    arg_names.insert(arg_name.to_string(), alias_name.to_string());
                 }
                 instr = instr.unwrap().get_next_instruction();
             }
         } else {
-            let arg_name = &param.get_name();
-            arg_names.insert(arg_name.to_string(), format!("{}{}", "%", arg_name.to_string()));
+            let arg_name_string = format!("{}{}{}", namespace, "%", &param.get_name());
+            let arg_name = arg_name_string.to_string();
+            arg_names.insert(arg_name.to_string(), arg_name.to_string());
         }
     }
 
     debug!("Function arg names: {:?}", arg_names);
-    arg_names
+    return arg_names;
 }
 
 
-fn get_all_function_argument_names(module: &InkwellModule) -> HashMap<String, HashMap<String, String>> {
+fn get_all_function_argument_names(module: &InkwellModule, solver: &Solver, namespace: &str) -> HashMap<String, HashMap<String, String>> {
     let mut all_func_arg_names = HashMap::<String, HashMap<String, String>>::new();
 
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());
-        all_func_arg_names.insert(current_full_function_name, get_function_argument_names(&current_function));
+        all_func_arg_names.insert(current_full_function_name, get_function_argument_names(&current_function, solver, namespace));
         next_function = current_function.get_next_function();
     }
     return all_func_arg_names;
@@ -157,7 +163,6 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let module = module_result.unwrap();
     let module_name = get_module_name_from_file_name(file_name);
     let target_function_name_prefix = format!("{}::{}", module_name, function_name);
-    let namespace = String::from("");
 
     // Initialize the Z3 and Builder objects
     let cfg = Config::new();
@@ -165,7 +170,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let solver = Solver::new(&ctx);
 
     // Save function argument names before removing store/alloca instructions
-    let all_func_arg_names = get_all_function_argument_names(&module);
+    let all_func_arg_names = get_all_function_argument_names(&module, &solver, MAIN_FUNCTION_NAMESPACE);
 
     // Convert to dynamic single assignment form (DSA)
 
@@ -185,11 +190,12 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     }
     let func_arg_names = func_arg_names_option.unwrap();
 
-    codegen_function(&function, &solver, &namespace);
+    pretty_print_function(&function);
+
+    codegen_function(&function, &solver, MAIN_FUNCTION_NAMESPACE);
 
     let start_node = function.get_first_basic_block().unwrap();
-    // TODO: Namespace
-    let start_node_var_name = start_node.get_name().to_str().unwrap();
+    let start_node_var_name = format!("{}{}", MAIN_FUNCTION_NAMESPACE, start_node.get_name().to_str().unwrap());
     let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
     solver.assert(&start_node_var.not());
 
@@ -207,11 +213,12 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);
         println!("\nArgument values:");
-        for (arg_name, alias_name) in func_arg_names {
-            // TODO: Namespace
+        for (arg_name, z3_name) in func_arg_names {
             // TODO: Support non-int params
-            let arg_z3 = Int::new_const(solver.get_context(), alias_name.as_str());
-            println!("\t{:?} = {:?}", &arg_name, model.eval(&arg_z3, true).unwrap());
+            let arg_z3 = Int::new_const(solver.get_context(), z3_name.as_str());
+            let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
+            let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
+            println!("\t{:?} = {:?}", &arg_name_without_namespace_and_percent, model.eval(&arg_z3, true).unwrap());
         };
     }
     return Some(is_confirmed_safe);

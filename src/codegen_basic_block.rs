@@ -29,6 +29,8 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String) -> Ba
 }
 
 
+
+// Conjecture: The name of the basic block is panic with an optional counting number suffix if and only if the block is a panic block
 pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
     if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
@@ -90,6 +92,7 @@ pub fn get_entry_condition<'a>(
     function: &'a FunctionValue,
     predecessor: &str,
     node: &str,
+    namespace: &str,
 ) -> Bool<'a> {
     let mut entry_condition = Bool::from_bool(solver.get_context(), true);
     if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor)).get_terminator() {
@@ -111,7 +114,7 @@ pub fn get_entry_condition<'a>(
                         Bool::from_bool(solver.get_context(), target_val);
                     let switch_var = Bool::new_const(
                         solver.get_context(),
-                        get_var_name(&discriminant, &solver),
+                        get_var_name(&discriminant, &solver, namespace),
                     );
 
                     entry_condition = switch_var._eq(&target_val_var);
@@ -135,7 +138,7 @@ pub fn get_entry_condition<'a>(
                 }
                 let switch_var = Int::new_const(
                     solver.get_context(),
-                    get_var_name(&discriminant, &solver),
+                    get_var_name(&discriminant, &solver, namespace),
                 );
 
                 if target_val == terminator.get_operand(0).unwrap().left().unwrap() {
@@ -143,12 +146,12 @@ pub fn get_entry_condition<'a>(
                     for j in 2..num_operands {
                         if j % 2 == 0 { 
                             let temp_target_val = terminator.get_operand(j).unwrap().left().unwrap();
-                            let temp_target_val_var = Int::new_const(solver.get_context(), get_var_name(&temp_target_val, &solver));
+                            let temp_target_val_var = Int::new_const(solver.get_context(), get_var_name(&temp_target_val, &solver, namespace));
                             entry_condition = Bool::and(solver.get_context(), &[&(switch_var._eq(&temp_target_val_var)).not(), &entry_condition]);
                         }
                     }
                 } else {
-                    let target_val_var = Int::new_const(solver.get_context(), get_var_name(&target_val, &solver));
+                    let target_val_var = Int::new_const(solver.get_context(), get_var_name(&target_val, &solver, namespace));
                     entry_condition = switch_var._eq(&target_val_var);
                 }
             }
@@ -169,8 +172,7 @@ pub fn get_entry_condition<'a>(
 }
 
 
-// TODO: Maybe return param names in Z3 space?
-pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges: &EdgeSet, function: &FunctionValue, solver: &Solver, _namespace: &String) -> () {
+pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges: &EdgeSet, function: &FunctionValue, solver: &Solver, namespace: &str) -> () {
     let mut successors = &HashSet::<String>::new();
     successors = forward_edges.get(&node).unwrap_or(successors);
     let mut node_var = if successors.len() == 0 {
@@ -184,8 +186,9 @@ pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges
         let mut successor_conditions = Bool::from_bool(solver.get_context(), true);
         if let Some(successors) = forward_edges.get(&node) {
             for successor in successors {
+                let successor_name_with_namespace = format!("{}{}", namespace, successor);
                 let successor_var =
-                    Bool::new_const(solver.get_context(), String::from(successor));
+                    Bool::new_const(solver.get_context(), String::from(successor_name_with_namespace));
                 successor_conditions =
                     Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
             }
@@ -198,7 +201,7 @@ pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
-        node_var = codegen_instruction(&node, node_var, current_instruction, function, solver, _namespace);
+        node_var = codegen_instruction(&node, node_var, current_instruction, function, solver, namespace);
         prev_instruction = current_instruction.get_previous_instruction();
     }
 
@@ -207,13 +210,14 @@ pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges
         if predecessors.len() > 0 {
             for predecessor in predecessors {
                 // get conditions
-                let entry_condition = get_entry_condition(&solver, &function, &predecessor, &node);
+                let entry_condition = get_entry_condition(&solver, &function, &predecessor, &node, namespace);
                 entry_conditions = Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
             }
         }
     }  
     node_var = entry_conditions.implies(&node_var);
 
-    let named_node_var = Bool::new_const(solver.get_context(), String::from(&node));
+    let node_name_with_namespace = format!("{}{}", namespace, node);
+    let named_node_var = Bool::new_const(solver.get_context(), String::from(&node_name_with_namespace));
     solver.assert(&named_node_var._eq(&node_var));
 }

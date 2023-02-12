@@ -15,7 +15,7 @@ fn get_field_to_extract(instruction: &InstructionValue) -> String {
 }
 
 
-pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruction: InstructionValue, function: &'a FunctionValue, solver: &'a Solver, _namespace: &'a String) -> Bool<'a> {
+pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruction: InstructionValue, function: &'a FunctionValue, solver: &'a Solver, namespace: &'a str) -> Bool<'a> {
     let opcode = instruction.get_opcode();
     match &opcode {
         InstructionOpcode::Unreachable => {
@@ -31,14 +31,16 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.sadd.with.overflow.i32" => {
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
 
-                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
                     let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                     let rvalue_var_1 = Int::add(solver.get_context(), &[
                         &Int::new_const(solver.get_context(), operand1_name),
@@ -47,7 +49,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     
                     let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
                     let min_int =
                         Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                     let max_int =
@@ -61,14 +63,16 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.sadd.with.overflow.i64" => {
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
 
-                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
                     let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                     let rvalue_var_1 = Int::add(solver.get_context(), &[
                         &Int::new_const(solver.get_context(), operand1_name),
@@ -77,7 +81,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     
                     let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
                     let min_int =
                         Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
                     let max_int =
@@ -91,14 +95,16 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.ssub.with.overflow.i32" => {
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
 
-                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
                     let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                     let rvalue_var_1 = Int::sub(solver.get_context(), &[
                         &Int::new_const(solver.get_context(), operand1_name),
@@ -107,7 +113,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     
                     let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
                     let min_int =
                         Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                     let max_int =
@@ -121,14 +127,16 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.ssub.with.overflow.i64" => {
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
 
-                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
                     let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                     let rvalue_var_1 = Int::sub(solver.get_context(), &[
                         &Int::new_const(solver.get_context(), operand1_name),
@@ -137,7 +145,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     
                     let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
                     let min_int =
                         Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
                     let max_int =
@@ -151,14 +159,16 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.smul.with.overflow.i32" => {
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
 
-                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
                     let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                     let rvalue_var_1 = Int::mul(solver.get_context(), &[
                         &Int::new_const(solver.get_context(), operand1_name),
@@ -167,7 +177,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     
                     let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
                     let min_int =
                         Int::from_bv(&BV::from_i64(solver.get_context(), i32::MIN.into(), 32), true);
                     let max_int =
@@ -181,14 +191,16 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.smul.with.overflow.i64" => {
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
 
-                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
                     let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
                     let rvalue_var_1 = Int::mul(solver.get_context(), &[
                         &Int::new_const(solver.get_context(), operand1_name),
@@ -197,7 +209,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     
                     let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver));
+                    let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
                     let min_int =
                         Int::from_bv(&BV::from_i64(solver.get_context(), i64::MIN.into(), 64), true);
                     let max_int =
@@ -211,15 +223,18 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 "llvm.expect.i1" => {
                     let lvalue_var_name = get_var_name(
                         &instruction,
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand1_name = get_var_name(
                         &instruction.get_operand(0).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let operand2_name = get_var_name(
                         &instruction.get_operand(1).unwrap().left().unwrap(),
-                        &solver
+                        &solver,
+                        namespace
                     );
                     let rvalue_var = Bool::new_const(solver.get_context(), operand1_name)._eq(&Bool::new_const(solver.get_context(), operand2_name));
                     let assignment = Bool::new_const(solver.get_context(), lvalue_var_name)._eq(&rvalue_var);
@@ -245,8 +260,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             if !instruction.get_type().is_int_type() {
                 warn!("Currently unsuppported type {:?} for load operand", instruction.get_type().to_string())
             }
-            let lvalue_var_name = get_var_name(&instruction, &solver);
-            let rvalue_var_name = get_var_name(&operand, &solver);
+            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            let rvalue_var_name = get_var_name(&operand, &solver, namespace);
             let lvalue_var = Int::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -266,8 +281,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             }
             let operand2 = instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value();
             
-            let lvalue_var_name = get_var_name(&operand1, &solver);
-            let rvalue_var_name = get_var_name(&operand2, &solver);
+            let lvalue_var_name = get_var_name(&operand1, &solver, namespace);
+            let rvalue_var_name = get_var_name(&operand2, &solver, namespace);
             let lvalue_var = Int::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -283,8 +298,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             // NO-OP
         }
         InstructionOpcode::Xor => {
-            let operand1_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver);
-            let operand2_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver);
+            let operand1_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+            let operand2_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
             if !instruction.get_type().to_string().eq("\"i1\"") {
                 warn!("Currently unsuppported type {:?} for xor operand", instruction.get_type().to_string());
             }
@@ -297,7 +312,7 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                 operand2_var_name
             );
             let rvalue_var = operand1_var.xor(&operand2_var);
-            let lvalue_var_name = get_var_name(&instruction, &solver);
+            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
             let lvalue_var = Bool::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -306,10 +321,10 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::ICmp => {
-            let lvalue_var_name = get_var_name(&instruction, &solver);
+            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
             let lvalue_var = Bool::new_const(solver.get_context(), lvalue_var_name);
-            let operand1 = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver);
-            let operand2 = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver);
+            let operand1 = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+            let operand2 = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
             let rvalue_operation;
             
 
@@ -353,9 +368,9 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::ExtractValue => {
-            let lvalue_var_name = get_var_name(&instruction, &solver);
+            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
             let operand = instruction.get_operand(0).unwrap().left().unwrap();
-            let rvalue_var_name = format!("{}.{}", get_var_name(&operand, &solver), get_field_to_extract(&instruction));
+            let rvalue_var_name = format!("{}.{}", get_var_name(&operand, &solver, namespace), get_field_to_extract(&instruction));
             if instruction.get_type().to_string().eq("\"i1\"") {
                 let lvalue_var = Bool::new_const(
                     solver.get_context(),
@@ -391,9 +406,9 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             for incoming_index in 0..phi_instruction.count_incoming() {
                 let incoming = phi_instruction.get_incoming(incoming_index).unwrap();
                 let predecessor = incoming.1.get_name().to_str().unwrap();
-                let phi_condition = get_entry_condition(&solver, &function, &predecessor, &node);
-                let lvalue_var_name = get_var_name(&instruction, &solver);
-                let rvalue_var_name = get_var_name(&incoming.0, &solver);
+                let phi_condition = get_entry_condition(&solver, &function, &predecessor, &node, namespace);
+                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+                let rvalue_var_name = get_var_name(&incoming.0, &solver, namespace);
                 if instruction.get_type().to_string().eq("\"i1\"") {
                     let lvalue_var = Bool::new_const(
                         solver.get_context(),
@@ -421,8 +436,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::Trunc => {
-            let lvalue_var_name = get_var_name(&instruction, &solver);
-            let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver);
+            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
             let lvalue_var = Bool::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -440,9 +455,9 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
         }
         InstructionOpcode::Select => {
             let discriminant = instruction.get_operand(0).unwrap().left().unwrap();
-            let discriminant_name = get_var_name(&discriminant, &solver);
-            let operand_1_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver);
-            let operand_2_var_name = get_var_name(&instruction.get_operand(2).unwrap().left().unwrap(), &solver);
+            let discriminant_name = get_var_name(&discriminant, &solver, namespace);
+            let operand_1_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
+            let operand_2_var_name = get_var_name(&instruction.get_operand(2).unwrap().left().unwrap(), &solver, namespace);
             if !discriminant.get_type().to_string().eq("\"i1\"") {
                 warn!("Currently unsuppported type {:?} for select discriminant", discriminant.get_type().to_string());
             }
@@ -459,8 +474,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     solver.get_context(),
                     operand_2_var_name
                 );                            
-                let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, &solver))._eq(&operand_1_var));
-                let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, &solver))._eq(&operand_2_var));
+                let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_1_var));
+                let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_2_var));
                 node_var = Bool::and(solver.get_context(), &[&select_1.implies(&node_var), &select_2.implies(&node_var)]);
             } else if instruction.get_type().is_int_type() {
                 let operand_1_var = Int::new_const(
@@ -471,8 +486,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
                     solver.get_context(),
                     operand_2_var_name
                 );                            
-                let select_1 = discriminant_var.implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, &solver))._eq(&operand_1_var));
-                let select_2 = discriminant_var.not().implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, &solver))._eq(&operand_2_var));
+                let select_1 = discriminant_var.implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_1_var));
+                let select_2 = discriminant_var.not().implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_2_var));
                 let assignment = Bool::and(solver.get_context(), &[&select_1, &select_2]);
                 node_var = assignment.implies(&node_var);
             } else {
@@ -480,8 +495,8 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             }
         }
         InstructionOpcode::ZExt => {
-            let lvalue_var_name = get_var_name(&instruction, &solver);
-            let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver);
+            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
             let lvalue_var = Int::new_const(
                 solver.get_context(),
                 lvalue_var_name

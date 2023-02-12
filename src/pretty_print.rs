@@ -9,7 +9,6 @@ use crate::codegen_function::{get_forward_edges};
 use crate::codegen_basic_block::is_panic_block;
 
 
-
 pub fn print_file_functions(module: &InkwellModule) -> () {
     //! Iterates through all functions in the file and prints the demangled name
     debug!("Functions in {:?}:", module.get_name());

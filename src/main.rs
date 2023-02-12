@@ -4,7 +4,6 @@ use tracing_core::Level;
 use tracing_subscriber::FmtSubscriber;
 
 mod symbolic_execution;
-mod backward_symbolic_execution;
 mod codegen;
 mod get_var_name;
 mod pretty_print;

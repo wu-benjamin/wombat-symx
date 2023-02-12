@@ -6,24 +6,22 @@ use tracing::{debug, error};
 use rustc_demangle::demangle;
 
 use inkwell::context::Context as InkwellContext;
-use inkwell::module::Module as InkwellModule;
+use inkwell::module::{Module as InkwellModule};
 use inkwell::memory_buffer::MemoryBuffer;
 use inkwell::passes::{PassManager, PassManagerBuilder};
 use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, PointerValue};
 
 use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
-use z3::ast::{Int};
+use z3::ast::{Int, Bool};
 
-use crate::backward_symbolic_execution::backward_symbolic_execution;
+use crate::codegen_function::codegen_function;
 use crate::get_var_name::get_var_name;
-use crate::pretty_print::print_file_functions;
+use crate::pretty_print::{print_file_functions, pretty_print_function};
 
-// struct Param<'a> {
-//     arg_name: String,
-//     alias_name: String,
-//     inkwell_type: inkwell::values::BasicValueEnum<'a>,
-// }
+
+const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
+
 
 trait Named {
     fn get_name(&self) -> String;
@@ -75,94 +73,153 @@ fn get_module_name_from_file_name(file_name: &String) -> String {
     return file_name[start_index..end_index].to_string();
 }
 
-fn get_function_argument_names<'a>(function: &'a FunctionValue) -> HashMap<String, String> {
+
+// Returns a map of source code function argument names to Z3 module variable names
+fn get_function_argument_names<'a>(function: &'a FunctionValue, solver: &Solver, namespace: &str) -> HashMap<String, String> {
     let mut arg_names = HashMap::<String, String>::new();
     for param in &function.get_params() {
         debug!("Func param instr: {:?}", param);
         if param.get_name().len() == 0 {
             // Var name is empty, find in start basic block
-            let alias_name = &get_var_name(&param.as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
-            let start_block = function.get_first_basic_block().unwrap();
+            let alias_name = &get_var_name(&param.as_any_value_enum(), solver, namespace);
+            
+            let start_block_option = function.get_first_basic_block();
+            if start_block_option.is_none() {
+                return arg_names;
+            }
+            let start_block =start_block_option.unwrap();
             let mut instr = start_block.get_first_instruction();
             while instr.is_some() {
-                if instr.unwrap().get_opcode() == InstructionOpcode::Store && alias_name.to_string() == get_var_name(&instr.unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new()))) {
-                    let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), &Solver::new(&Z3Context::new(&Config::new())));
-                    arg_names.insert(arg_name[1..].to_string(), alias_name.to_string());
+                if instr.unwrap().get_opcode() == InstructionOpcode::Store && alias_name.to_string() == get_var_name(&instr.unwrap().as_any_value_enum(), solver, namespace) {
+                    let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), solver, namespace);
+                    arg_names.insert(arg_name.to_string(), alias_name.to_string());
                 }
                 instr = instr.unwrap().get_next_instruction();
             }
         } else {
-            let arg_name = &param.get_name();
-            arg_names.insert(arg_name.to_string(), format!("{}{}", "%", arg_name.to_string()));
+            let arg_name_string = format!("{}{}{}", namespace, "%", &param.get_name());
+            let arg_name = arg_name_string.to_string();
+            arg_names.insert(arg_name.to_string(), arg_name.to_string());
         }
     }
 
     debug!("Function arg names: {:?}", arg_names);
-    arg_names
+    return arg_names;
 }
+
+
+fn get_all_function_argument_names(module: &InkwellModule, solver: &Solver, namespace: &str) -> HashMap<String, HashMap<String, String>> {
+    let mut all_func_arg_names = HashMap::<String, HashMap<String, String>>::new();
+
+    let mut next_function = module.get_first_function();
+    while let Some(current_function) = next_function {
+        let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());
+        all_func_arg_names.insert(current_full_function_name, get_function_argument_names(&current_function, solver, namespace));
+        next_function = current_function.get_next_function();
+    }
+    return all_func_arg_names;
+}
+
 
 pub fn get_function_name(function: &PointerValue) -> String {
     return demangle(&function.get_name().to_str().unwrap()).to_string();
 }
 
-// Returns Some(true) if the function is safe, Some(false) if the function is unsafe, and None if analysis did not complete
-fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {   
-    print_file_functions(module); 
+
+fn get_function_by_name<'a>(module: &'a InkwellModule, target_function_name_prefix: &String) -> Option<FunctionValue<'a>> {
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());
         if current_full_function_name.find(target_function_name_prefix).is_some() {
-            // Get function argument names before removing store/alloca instructions
-            let func_arg_names = get_function_argument_names(&current_function);
-
-            let pass_manager_builder = PassManagerBuilder::create();
-            let pass_manager = PassManager::create(module);
-            pass_manager.add_promote_memory_to_register_pass();
-            pass_manager_builder.populate_function_pass_manager(&pass_manager);
-            pass_manager.run_on(&current_function);
-
-            let is_success = backward_symbolic_execution(&current_function, &func_arg_names, solver, module, namespace);
-            if is_success && namespace.eq(&String::from("")) {
-                debug!("{:?}", solver);
-        
-                // Attempt resolving the model (and obtaining the respective arg values if panic found)
-                let is_confirmed_safe = solver.check() == SatResult::Unsat;
-                let is_confirmed_unsafe = solver.check() == SatResult::Sat;
-                println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
-            
-                if is_confirmed_unsafe {
-                    let model = solver.get_model().unwrap();
-                    debug!("\n{:?}", model);
-                    println!("\nArgument values:");
-                    for (arg_name, alias_name) in func_arg_names {
-                        // TODO: Support non-int params
-                        let arg_z3 = Int::new_const(solver.get_context(), alias_name.as_str());
-                        println!("\t{:?} = {:?}", &arg_name, model.eval(&arg_z3, true).unwrap());
-                    };
-                }
-                return Some(is_confirmed_safe);
-            }
-            break;
-            
+            return Some(current_function);
         }
         next_function = current_function.get_next_function();
     }
     return None;
 }
 
+
+fn convert_to_dsa<'a>(module: &InkwellModule) -> () {
+    let pass_manager_builder = PassManagerBuilder::create();
+    let pass_manager = PassManager::create(module);
+    pass_manager.add_promote_memory_to_register_pass();
+    pass_manager_builder.populate_function_pass_manager(&pass_manager);
+
+    let mut next_function = module.get_first_function();
+    while let Some(current_function) = next_function {
+        pass_manager.run_on(&current_function);
+        next_function = current_function.get_next_function();
+    }
+}
+
+
 pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<bool> {
     let context = InkwellContext::create();
-    if let Some(module) = get_inkwell_module(&context, file_name) {
-        let module_name = get_module_name_from_file_name(file_name);
-        let target_function_name_prefix = format!("{}::{}", module_name, function_name);
-        let namespace = String::from("");
-
-        // Initialize the Z3 and Builder objects
-        let cfg = Config::new();
-        let ctx = Z3Context::new(&cfg);
-        let solver = Solver::new(&ctx);
-
-        return do_symbolic_execution(&module, &target_function_name_prefix, &solver, &namespace);
+    let module_result = get_inkwell_module(&context, file_name);
+    if module_result.is_none() {
+        return None;
     }
-    return None;
+
+    let module = module_result.unwrap();
+    let module_name = get_module_name_from_file_name(file_name);
+    let target_function_name_prefix = format!("{}::{}", module_name, function_name);
+
+    // Initialize the Z3 and Builder objects
+    let cfg = Config::new();
+    let ctx = Z3Context::new(&cfg);
+    let solver = Solver::new(&ctx);
+
+    // Save function argument names before removing store/alloca instructions
+    let all_func_arg_names = get_all_function_argument_names(&module, &solver, MAIN_FUNCTION_NAMESPACE);
+
+    // Convert to dynamic single assignment form (DSA)
+
+    print_file_functions(&module);
+
+    convert_to_dsa(&module);
+
+    let function_option = get_function_by_name(&module, &target_function_name_prefix);
+    if function_option.is_none() {
+        return None;
+    }
+    let function = function_option.unwrap();
+
+    let func_arg_names_option = all_func_arg_names.get(&get_function_name(&function.as_global_value().as_pointer_value()));
+    if func_arg_names_option.is_none() {
+        return None;
+    }
+    let func_arg_names = func_arg_names_option.unwrap();
+
+    pretty_print_function(&function);
+
+    codegen_function(&function, &solver, MAIN_FUNCTION_NAMESPACE);
+
+    let start_node = function.get_first_basic_block().unwrap();
+    let start_node_var_name = format!("{}{}", MAIN_FUNCTION_NAMESPACE, start_node.get_name().to_str().unwrap());
+    let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
+    solver.assert(&start_node_var.not());
+
+    debug!("{:?}", solver);
+
+    // Attempt resolving the model (and obtaining the respective arg values if panic found)
+    let satisfiability = solver.check();
+
+    let is_confirmed_safe = satisfiability == SatResult::Unsat;
+    let is_confirmed_unsafe = satisfiability == SatResult::Sat;
+    println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
+
+    // Exhibit a pathological input if the function is unsafe
+    if is_confirmed_unsafe {
+        let model = solver.get_model().unwrap();
+        debug!("\n{:?}", model);
+        println!("\nArgument values:");
+        for (arg_name, z3_name) in func_arg_names {
+            // TODO: Support non-int params
+            let arg_z3 = Int::new_const(solver.get_context(), z3_name.as_str());
+            let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
+            let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
+            println!("\t{:?} = {:?}", &arg_name_without_namespace_and_percent, model.eval(&arg_z3, true).unwrap());
+        };
+    }
+    return Some(is_confirmed_safe);
 }

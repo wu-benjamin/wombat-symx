@@ -5,8 +5,8 @@ use tracing::debug;
 use inkwell::module::Module as InkwellModule;
 use inkwell::values::FunctionValue;
 
-use crate::codegen::{get_forward_edges, is_panic_block};
-
+use crate::codegen_function::{get_forward_edges};
+use crate::codegen_basic_block::is_panic_block;
 
 
 pub fn print_file_functions(module: &InkwellModule) -> () {
@@ -28,17 +28,17 @@ pub fn pretty_print_function(function: &FunctionValue) -> () {
     debug!("Basic Blocks:");
     for bb in function.get_basic_blocks() {
         debug!("\tBasic Block: {:?}", bb.get_name().to_str().unwrap());
-        debug!("\t\tis_cleanup: {:?}", is_panic_block(&bb));
+        debug!("\t\tPanic: {:?}", is_panic_block(&bb));
         let mut next_instruction = bb.get_first_instruction();
-        let has_terminator = bb.get_terminator().is_some();
+        let terminator_option = bb.get_terminator();
 
         while let Some(current_instruction) = next_instruction {
             debug!("\t\tStatement: {:?}", current_instruction.to_string());
             next_instruction = current_instruction.get_next_instruction();
         }
 
-        if has_terminator {
-            debug!("\t\tLast statement is a terminator");
+        if terminator_option.is_some() {
+            debug!("\t\tLast statement is a {:?} terminator", terminator_option.unwrap().get_opcode());
         } else {
             debug!("\t\tNo terminator");
         }

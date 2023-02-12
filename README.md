@@ -6,7 +6,7 @@ Wombat SymX is a symbolic executor that operates on LLVM IR (specifically, `*.bc
 
 ## Setup
 
-Note that LLVM 13+ is required for running the program and for creating `*.bc` LLVM binaries. This is packaged with the latest rust compiler (`rustc +1.60.0`)
+Note that LLVM 13+ is required for running the program and for creating `*.bc` LLVM binaries. This is packaged with the latest rust compiler (`rustc +1.60.0`).
 
 For MAC and Linux, run:
 ```zsh
@@ -32,6 +32,14 @@ To build the project, use:
 cargo build
 ```
 
+### Update Project Dependencies
+
+To build the project, use:
+```
+cargo update
+```
+Note it is wise to backup your local dependencies incase an external dependency is updated in a breaking way and is not properly versioned.
+
 ## Runtime Execution
 
 To see an overview of run commands, use the following:
@@ -41,11 +49,25 @@ cargo run -- --help
 
 To run the project, use:
 ```
-cargo run -- [bc-file-path]
+cargo run -- [bc-file-path] [function-name]
 ```
 
-If no `bc-file-path` is provided, then the program will default to `tests/hello_world.rs` (in which case, `--` can be ignored with no other options).
+To run the project with debug output enabled, use:
+```
+cargo run -- -d [bc-file-path] [function-name]
+```
 
+## Run Test Suite
+
+To run all (integration) test case functions (optionally matching a prefix), use:
+```
+cargo test [test-prefix]
+```
+
+To run test case functions with output, use:
+```
+cargo test [test-prefix] -- --show-output
+```
 
 
 ## Creating LLVM IR files
@@ -58,29 +80,4 @@ rustc --emit=llvm-bc <file-name>.rs
 A human-readable LLVM IR format can be created by using the following:
 ```zsh
 rustc --emit=llvm-ir <file-name>.rs
-```
-
-### Support Scripts
-
-There are a few scripts to help build the programs in `tests/`. Run the bash scripts in the project root.
-
-#### build-tests.sh
-
-Run the following script to emit bytecode & human-readable LLVM for the test programs.
-```bash
-./build-tests.sh
-```
-
-#### cleanup-tests.sh
-
-Run the following script to cleanup and delete all LLVM output files in the tests folder.
-```bash
-./cleanup-tests.sh
-```
-
-#### output-tests-dump.sh
-
-Run the following script to dump the output of Wombat-SymX for all test files to `tests/output/`.
-```bash
-./output-tests-dump.sh
 ```

@@ -5,7 +5,7 @@ use tracing::debug;
 use inkwell::module::Module as InkwellModule;
 use inkwell::values::FunctionValue;
 
-use crate::codegen_function::{get_forward_edges};
+use crate::control_flow_graph::{get_forward_edges};
 use crate::codegen_basic_block::is_panic_block;
 
 

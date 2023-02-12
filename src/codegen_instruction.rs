@@ -436,22 +436,25 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::Trunc => {
-            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-            let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
-            let lvalue_var = Bool::new_const(
-                solver.get_context(),
-                lvalue_var_name
-            );
-            let operand_var = Int::new_const(
-                solver.get_context(),
-                operand_var_name
-            );
-            let const_1 = Int::from_i64(solver.get_context(), 1);
-            let const_2 = Int::from_i64(solver.get_context(), 2);
-            let right_most_bit = operand_var.modulo(&const_2);
-            let assignment = lvalue_var._eq(&right_most_bit._eq(&const_1));
-            node_var = assignment.implies(&node_var);
-            warn!("Trunc is only partially supported (always i1)");
+            if instruction.get_type().to_string().eq("\"i1\"") {
+                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+                let lvalue_var = Bool::new_const(
+                    solver.get_context(),
+                    lvalue_var_name
+                );
+                let operand_var = Int::new_const(
+                    solver.get_context(),
+                    operand_var_name
+                );
+                let const_1 = Int::from_i64(solver.get_context(), 1);
+                let const_2 = Int::from_i64(solver.get_context(), 2);
+                let right_most_bit = operand_var.modulo(&const_2);
+                let assignment = lvalue_var._eq(&right_most_bit._eq(&const_1));
+                node_var = assignment.implies(&node_var);
+            } else {
+                warn!("Type {} is not a supported target type for the Trunc instruction!", instruction.get_type().to_string());
+            }
         }
         InstructionOpcode::Select => {
             let discriminant = instruction.get_operand(0).unwrap().left().unwrap();
@@ -495,23 +498,39 @@ pub fn codegen_instruction<'a>(node: &'a String, mut node_var: Bool<'a>, instruc
             }
         }
         InstructionOpcode::ZExt => {
-            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-            let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
-            let lvalue_var = Int::new_const(
-                solver.get_context(),
-                lvalue_var_name
-            );
-            let operand_var = Bool::new_const(
-                solver.get_context(),
-                operand_var_name
-            );
-            let const_1 = Int::from_i64(solver.get_context(), 1);
-            let const_0 = Int::from_i64(solver.get_context(), 0);
-            let cast_1 = operand_var.implies(&lvalue_var._eq(&const_1));
-            let cast_2 = operand_var.not().implies(&lvalue_var._eq(&const_0));
-            let assignment = Bool::and(solver.get_context(), &[&cast_1, &cast_2]);
-            node_var = assignment.implies(&node_var);                        
-            warn!("ZExt is only partially supported (always i32)");
+            if instruction.get_operand(0).unwrap().left().unwrap().get_type().to_string().eq("\"i1\"") {
+                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+                let lvalue_var = Int::new_const(
+                    solver.get_context(),
+                    lvalue_var_name
+                );
+                let operand_var = Bool::new_const(
+                    solver.get_context(),
+                    operand_var_name
+                );
+                let const_1 = Int::from_i64(solver.get_context(), 1);
+                let const_0 = Int::from_i64(solver.get_context(), 0);
+                let cast_1 = operand_var.implies(&lvalue_var._eq(&const_1));
+                let cast_2 = operand_var.not().implies(&lvalue_var._eq(&const_0));
+                let assignment = Bool::and(solver.get_context(), &[&cast_1, &cast_2]);
+                node_var = assignment.implies(&node_var);
+            } else if instruction.get_operand(0).unwrap().left().unwrap().get_type().is_int_type() {
+                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+                let lvalue_var = Int::new_const(
+                    solver.get_context(),
+                    lvalue_var_name
+                );
+                let operand_var = Int::new_const(
+                    solver.get_context(),
+                    operand_var_name
+                );
+                let assignment = lvalue_var._eq(&operand_var);
+                node_var = assignment.implies(&node_var);
+            } else {
+                warn!("Type {} is not a supported target type for the ZExt instruction!", instruction.get_type().to_string());
+            }
         }
         _ => {
             warn!("Opcode {:?} is not supported as a statement for code gen", opcode);

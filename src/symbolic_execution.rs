@@ -128,7 +128,7 @@ pub fn get_function_name(function: &PointerValue) -> String {
     return demangle(&function.get_name().to_str().unwrap()).to_string();
 }
 
-// Returns bool representing whether symbolic execution for a function was completed without error
+// Returns Some(true) if the function is safe, Some(false) if the function is unsafe, and None if analysis did not complete
 fn do_symbolic_execution(module: &InkwellModule, target_function_name_prefix: &String, solver: &Solver, namespace: &String) -> Option<bool> {    
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {

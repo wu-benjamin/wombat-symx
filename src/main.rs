@@ -8,6 +8,7 @@ mod codegen_function;
 mod codegen_basic_block;
 mod codegen_instruction;
 mod control_flow_graph;
+pub mod function_utils;
 mod get_var_name;
 mod pretty_print;
 

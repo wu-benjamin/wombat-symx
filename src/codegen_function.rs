@@ -1,7 +1,9 @@
-use inkwell::values::{FunctionValue};
 use tracing::{warn};
-use z3::ast::{Bool, Int, BV};
+
+use inkwell::values::{FunctionValue};
+
 use z3::Solver;
+use z3::ast::{Bool, Int, BV};
 
 use crate::codegen_basic_block::codegen_basic_block;
 use crate::control_flow_graph::{get_forward_edges, get_backward_edges, backward_topological_sort};

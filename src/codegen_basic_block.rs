@@ -1,13 +1,15 @@
 use std::collections::{HashMap, HashSet};
 
+use tracing::{warn};
+
 use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionOpcode};
-use tracing::{warn};
-use z3::ast::{Ast, Bool, Int};
-use z3::Solver;
 
-use crate::get_var_name::get_var_name;
+use z3::Solver;
+use z3::ast::{Ast, Bool, Int};
+
 use crate::codegen_instruction::codegen_instruction;
+use crate::get_var_name::get_var_name;
 
 
 type EdgeSet = HashMap<String, HashSet<String>>;
@@ -27,7 +29,6 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String) -> Ba
     }
     return matching_bb.unwrap();
 }
-
 
 
 // Conjecture: The name of the basic block is panic with an optional counting number suffix if and only if the block is a panic block

@@ -5,6 +5,9 @@ use tracing_subscriber::FmtSubscriber;
 
 mod symbolic_execution;
 mod backward_symbolic_execution;
+mod codegen;
+mod get_var_name;
+
 use symbolic_execution::symbolic_execution;
 
 #[derive(Parser, Debug)]

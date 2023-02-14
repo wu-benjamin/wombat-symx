@@ -2,6 +2,7 @@ pub mod symbolic_execution;
 pub mod codegen_function;
 pub mod codegen_basic_block;
 pub mod codegen_instruction;
+pub mod codegen_call;
 pub mod control_flow_graph;
 pub mod function_utils;
 pub mod get_var_name;

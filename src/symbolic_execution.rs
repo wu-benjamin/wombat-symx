@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use tracing::{debug, error};
+use tracing::{debug, warn, error};
 
 use inkwell::context::Context as InkwellContext;
 use inkwell::module::{Module as InkwellModule};
@@ -9,14 +9,19 @@ use inkwell::passes::{PassManager, PassManagerBuilder};
 
 use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
-use z3::ast::{Int, Bool};
+use z3::ast::{Int, Bool, Ast};
 
 use crate::codegen_function::codegen_function;
 use crate::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
-use crate::pretty_print::{print_file_functions, pretty_print_function};
+use crate::get_var_name::get_var_name;
+use crate::pretty_print::{print_file_functions};
 
 
-const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
+// pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
+pub const MAIN_FUNCTION_NAMESPACE: &str = "";
+pub const COMMON_END_NODE: &str = "common_end_node";
+pub const PANIC_VAR_NAME: &str = "is_panic";
+pub const MAIN_FUNCTION_RETURN_REGISTER: &str = "wombat_symx_return_register";
 
 
 fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Option<InkwellModule<'a>> {
@@ -38,7 +43,7 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
     return Some(module);
 }
 
-fn get_module_name_from_file_name(file_name: &String) -> String {
+pub fn get_module_name_from_file_name(file_name: &String) -> String {
     let mut start_index = 0;
     if let Some(last_slash_index) = file_name.rfind("/") {
         start_index = last_slash_index + 1;
@@ -99,9 +104,32 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     }
     let func_arg_names = func_arg_names_option.unwrap();
 
-    pretty_print_function(&function);
+    let call_stack = function.get_name().to_str().unwrap();
+    codegen_function(&module, &function, &solver, MAIN_FUNCTION_NAMESPACE, call_stack, COMMON_END_NODE, MAIN_FUNCTION_RETURN_REGISTER);
 
-    codegen_function(&function, &solver, MAIN_FUNCTION_NAMESPACE);
+    // constrain int inputs
+    for input in function.get_params() {
+        // TODO: Support other input types
+        if input.get_type().to_string().eq("\"i1\"") {
+            continue;
+        } else if input.get_type().to_string().eq("\"i32\"") {
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
+            let min_int = Int::from_i64(solver.get_context(), i32::MIN.into());
+            let max_int = Int::from_i64(solver.get_context(), i32::MAX.into());
+            solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        } else if input.get_type().to_string().eq("\"i64\"") {
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
+            let min_int = Int::from_i64(solver.get_context(), i64::MIN.into());
+            let max_int = Int::from_i64(solver.get_context(), i64::MAX.into());
+            solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        }  else {
+            warn!("Currently unsuppported type {:?} for input parameter to {}", input.get_type().to_string(), function_name);
+        }
+    }
+
+    let common_end_node_var = Bool::new_const(solver.get_context(), String::from(COMMON_END_NODE));
+    let panic_var = Bool::new_const(solver.get_context(), String::from(PANIC_VAR_NAME));
+    solver.assert(&common_end_node_var._eq(&panic_var.not()));
 
     let start_node = function.get_first_basic_block().unwrap();
     let start_node_var_name = format!("{}{}", MAIN_FUNCTION_NAMESPACE, start_node.get_name().to_str().unwrap());

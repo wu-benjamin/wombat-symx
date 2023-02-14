@@ -7,6 +7,7 @@ use inkwell::values::FunctionValue;
 
 use crate::control_flow_graph::{get_forward_edges};
 use crate::codegen_basic_block::is_panic_block;
+use crate::symbolic_execution::COMMON_END_NODE;
 
 
 pub fn print_file_functions(module: &InkwellModule) -> () {
@@ -21,8 +22,13 @@ pub fn print_file_functions(module: &InkwellModule) -> () {
 }
 
 
-pub fn pretty_print_function(function: &FunctionValue) -> () {
+pub fn pretty_print_function(function: &FunctionValue, namespace: &str) -> () {
+    debug!("Function {}", demangle(function.get_name().to_str().unwrap()));
+    let number_of_nodes = function.count_basic_blocks();
     debug!("Number of Nodes: {}", function.count_basic_blocks());
+    if number_of_nodes == 0 {
+        return;
+    }
     debug!("Arg count: {}", function.count_params());
     // No local decl available to print
     debug!("Basic Blocks:");
@@ -46,9 +52,10 @@ pub fn pretty_print_function(function: &FunctionValue) -> () {
     debug!("");
 
     let first_basic_block = function.get_first_basic_block().unwrap();
+    let first_basic_block_name = format!("{}{}", namespace, first_basic_block.get_name().to_str().unwrap());
     debug!("Start node: {:?}", first_basic_block.get_name().to_str().unwrap());
-    let forward_edges = get_forward_edges(function);
-    let successors = forward_edges.get(first_basic_block.get_name().to_str().unwrap()).unwrap();
+    let forward_edges = get_forward_edges(function, namespace, COMMON_END_NODE);
+    let successors = forward_edges.get(&first_basic_block_name).unwrap();
     for successor in successors {
         debug!("\tSuccessor to start node: {:?}", successor);
     }

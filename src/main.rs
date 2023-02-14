@@ -7,8 +7,9 @@ mod symbolic_execution;
 mod codegen_function;
 mod codegen_basic_block;
 mod codegen_instruction;
+mod codegen_call;
 mod control_flow_graph;
-pub mod function_utils;
+mod function_utils;
 mod get_var_name;
 mod pretty_print;
 

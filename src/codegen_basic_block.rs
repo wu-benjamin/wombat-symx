@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use tracing::{warn};
 
+use inkwell::module::{Module as InkwellModule};
 use inkwell::basic_block::BasicBlock;
 use inkwell::values::{FunctionValue, InstructionOpcode};
 
@@ -10,16 +11,18 @@ use z3::ast::{Ast, Bool, Int};
 
 use crate::codegen_instruction::codegen_instruction;
 use crate::get_var_name::get_var_name;
+use crate::symbolic_execution::{PANIC_VAR_NAME, COMMON_END_NODE};
 
 
 type EdgeSet = HashMap<String, HashSet<String>>;
 
 
-fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String) -> BasicBlock<'a> {
+fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, namespace: &str) -> BasicBlock<'a> {
     let mut matching_bb: Option<BasicBlock> = None;
     let mut matched = false;
     for bb in function.get_basic_blocks() {
-        if name.eq(&String::from(bb.get_name().to_str().unwrap())) {
+        let node_name = format!("{}{}", namespace, bb.get_name().to_str().unwrap());
+        if name.eq(&String::from(node_name)) {
             if matched {
                 warn!("Multiple basic blocks matched name {:?}", name);
             }
@@ -96,7 +99,7 @@ pub fn get_entry_condition<'a>(
     namespace: &str,
 ) -> Bool<'a> {
     let mut entry_condition = Bool::from_bool(solver.get_context(), true);
-    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor)).get_terminator() {
+    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace).get_terminator() {
         let opcode = terminator.get_opcode();
         let num_operands = terminator.get_num_operands();
         match &opcode {
@@ -107,7 +110,7 @@ pub fn get_entry_condition<'a>(
                     let mut target_val = true;
                     let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                     let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
-                    let successor_basic_block_name_1 = String::from(successor_basic_block_1.get_name().to_str().unwrap());
+                    let successor_basic_block_name_1 = String::from(format!("{}{}", namespace, successor_basic_block_1.get_name().to_str().unwrap()));
                     if successor_basic_block_name_1.eq(&String::from(node)) {
                         target_val = false;
                     }
@@ -130,7 +133,7 @@ pub fn get_entry_condition<'a>(
                 for i in 0..num_operands {
                     if i % 2 == 1 {
                         let basic_block = terminator.get_operand(i).unwrap().right().unwrap();
-                        let basic_block_name = String::from(basic_block.get_name().to_str().unwrap());
+                        let basic_block_name = String::from(format!("{}{}", namespace, basic_block.get_name().to_str().unwrap()));
                         if basic_block_name.eq(&String::from(node)) {
                             target_val = terminator.get_operand(i-1).unwrap().left().unwrap();
                             break;
@@ -173,36 +176,43 @@ pub fn get_entry_condition<'a>(
 }
 
 
-pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges: &EdgeSet, function: &FunctionValue, solver: &Solver, namespace: &str) -> () {
-    let mut successors = &HashSet::<String>::new();
-    successors = forward_edges.get(&node).unwrap_or(successors);
-    let mut node_var = if successors.len() == 0 {
-        // handle panic (conceptually assign panic var and assert)
-        // (panic <- bool_var) => !panic
-        // equivalent to !panic
-        // Default is_panic true to be cautious in our analysis
-        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node)).unwrap_or(true);
-        Bool::from_bool(solver.get_context(), !is_panic)
-    } else {
-        let mut successor_conditions = Bool::from_bool(solver.get_context(), true);
-        if let Some(successors) = forward_edges.get(&node) {
-            for successor in successors {
-                let successor_name_with_namespace = format!("{}{}", namespace, successor);
-                let successor_var =
-                    Bool::new_const(solver.get_context(), String::from(successor_name_with_namespace));
-                successor_conditions =
-                    Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
-            }
+pub fn codegen_basic_block(
+    module: &InkwellModule,
+    node: String,
+    forward_edges: &EdgeSet,
+    backward_edges: &EdgeSet,
+    function: &FunctionValue,
+    solver: &Solver,
+    namespace: &str,
+    call_stack: &str,
+    return_register: &str
+) -> () {
+    let mut successor_conditions = Bool::from_bool(solver.get_context(), true);
+    if let Some(successors) = forward_edges.get(&node) {
+        for successor in successors {
+            let successor_var =
+                Bool::new_const(solver.get_context(), String::from(successor));
+            successor_conditions =
+                Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
         }
-        successor_conditions
-    };
+    }
+    let mut node_var = successor_conditions;
+
+    if forward_edges.get(&node).is_some() && forward_edges.get(&node).unwrap().contains(COMMON_END_NODE) {
+        // assign panic_var
+        let lvalue_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
+        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node, namespace)).unwrap_or(true);
+        let rvalue_var = Bool::from_bool(solver.get_context(), is_panic);
+        let assignment = lvalue_var._eq(&rvalue_var);
+        node_var = assignment.implies(&node_var);
+    }
 
     // Parse statements in the basic block
-    let mut prev_instruction = get_basic_block_by_name(&function, &node).get_last_instruction();
+    let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).get_last_instruction();
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
-        node_var = codegen_instruction(&node, node_var, current_instruction, function, solver, namespace);
+        node_var = codegen_instruction(&module, &node, node_var, current_instruction, function, solver, namespace, call_stack, return_register);
         prev_instruction = current_instruction.get_previous_instruction();
     }
 
@@ -218,7 +228,6 @@ pub fn codegen_basic_block(node: String, forward_edges: &EdgeSet, backward_edges
     }  
     node_var = entry_conditions.implies(&node_var);
 
-    let node_name_with_namespace = format!("{}{}", namespace, node);
-    let named_node_var = Bool::new_const(solver.get_context(), String::from(&node_name_with_namespace));
+    let named_node_var = Bool::new_const(solver.get_context(), String::from(&node));
     solver.assert(&named_node_var._eq(&node_var));
 }

@@ -17,7 +17,7 @@ impl Drop for TestFileDropper<'_> {
 }
 
 pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_safe: bool) -> () {
-    let debug = false;
+    let debug = true;
 
     // Setup the tracing debug level
     let subscriber = if debug {

@@ -35,8 +35,8 @@ impl Named for inkwell::values::BasicValueEnum<'_> {
 }
 
 // Returns a map of source code function argument names to Z3 module variable names
-pub fn get_function_argument_names<'a>(function: &'a FunctionValue, solver: &Solver, namespace: &str) -> HashMap<String, String> {
-    let mut arg_names = HashMap::<String, String>::new();
+pub fn get_function_argument_names<'a>(function: &'a FunctionValue, solver: &Solver, namespace: &str) -> Vec<(String, String)> {
+    let mut arg_names = Vec::<(String, String)>::new();
     for param in &function.get_params() {
         debug!("Func param instr: {:?}", param);
         if param.get_name().len() == 0 {
@@ -52,14 +52,14 @@ pub fn get_function_argument_names<'a>(function: &'a FunctionValue, solver: &Sol
             while instr.is_some() {
                 if instr.unwrap().get_opcode() == InstructionOpcode::Store && alias_name.to_string() == get_var_name(&instr.unwrap().as_any_value_enum(), solver, namespace) {
                     let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), solver, namespace);
-                    arg_names.insert(arg_name.to_string(), alias_name.to_string());
+                    arg_names.push((arg_name.to_string(), alias_name.to_string()));
                 }
                 instr = instr.unwrap().get_next_instruction();
             }
         } else {
             let arg_name_string = format!("{}{}{}", namespace, "%", &param.get_name());
             let arg_name = arg_name_string.to_string();
-            arg_names.insert(arg_name.to_string(), arg_name.to_string());
+            arg_names.push((arg_name.to_string(), arg_name.to_string()));
         }
     }
 
@@ -68,8 +68,8 @@ pub fn get_function_argument_names<'a>(function: &'a FunctionValue, solver: &Sol
 }
 
 
-pub fn get_all_function_argument_names(module: &InkwellModule, solver: &Solver, namespace: &str) -> HashMap<String, HashMap<String, String>> {
-    let mut all_func_arg_names = HashMap::<String, HashMap<String, String>>::new();
+pub fn get_all_function_argument_names(module: &InkwellModule, solver: &Solver, namespace: &str) -> HashMap<String, Vec<(String, String)>> {
+    let mut all_func_arg_names = HashMap::<String, Vec<(String, String)>>::new();
 
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {

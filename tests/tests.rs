@@ -39,6 +39,42 @@ fn test_safe_neg_abs() {
 }
 
 #[test]
+fn test_safe_func_call() {
+    common::test(
+        "test_safe_func_call",
+        "test_safe_func_call",
+        "
+            fn abs(x: i32) -> i32 {
+                return x * -1;
+            }
+            fn test_safe_func_call() -> () {
+                let y = abs(-13);
+                assert!(y == 13);
+            }        
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_unsafe_func_call() {
+    common::test(
+        "test_unsafe_func_call",
+        "test_unsafe_func_call",
+        "
+            fn abs(x: i32) -> i32 {
+                return x * -1;
+            }
+            fn test_unsafe_func_call() -> () {
+                let y = abs(-2147483648);
+                assert!(y >= 0);
+            }        
+        ",
+        false,
+    );
+}
+
+#[test]
 fn test_safe_assert() {
     common::test(
         "test_safe_assert",

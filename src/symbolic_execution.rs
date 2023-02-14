@@ -1,6 +1,8 @@
+use std::fs;
 use std::path::Path;
+use std::process::Command;
 
-use tracing::{debug, error};
+use tracing::{debug, warn, error};
 
 use inkwell::context::Context as InkwellContext;
 use inkwell::module::{Module as InkwellModule};
@@ -9,14 +11,31 @@ use inkwell::passes::{PassManager, PassManagerBuilder};
 
 use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
-use z3::ast::{Int, Bool};
+use z3::ast::{Int, Bool, Ast};
 
 use crate::codegen_function::codegen_function;
 use crate::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
-use crate::pretty_print::{print_file_functions, pretty_print_function};
+use crate::get_var_name::get_var_name;
+use crate::pretty_print::{print_file_functions};
 
 
-const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
+// pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
+pub const MAIN_FUNCTION_NAMESPACE: &str = "";
+pub const COMMON_END_NODE: &str = "common_end_node";
+pub const PANIC_VAR_NAME: &str = "is_panic";
+pub const MAIN_FUNCTION_RETURN_REGISTER: &str = "wombat_symx_return_register";
+
+
+struct FileDropper<'a> {
+    file_name: &'a String,
+}
+
+impl Drop for FileDropper<'_> {
+    fn drop(&mut self) {
+        println!("{}", self.file_name);
+        fs::remove_file(self.file_name).expect("Failed to delete file.");
+    }
+}
 
 
 fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Option<InkwellModule<'a>> {
@@ -38,7 +57,7 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
     return Some(module);
 }
 
-fn get_module_name_from_file_name(file_name: &String) -> String {
+pub fn get_module_name_from_file_name(file_name: &String) -> String {
     let mut start_index = 0;
     if let Some(last_slash_index) = file_name.rfind("/") {
         start_index = last_slash_index + 1;
@@ -64,13 +83,25 @@ fn convert_to_dsa<'a>(module: &InkwellModule) -> () {
 
 pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<bool> {
     let context = InkwellContext::create();
-    let module_result = get_inkwell_module(&context, file_name);
+
+    let bytecode_file_name = format!("{}.bc", &file_name[0..file_name.rfind('.').unwrap_or(file_name.len())]);
+
+    Command::new("rustc")
+        .args(["--emit=llvm-bc", &file_name, "-o", &bytecode_file_name])
+        .status()
+        .expect("Failed to generate bytecode file!");
+
+    let _temp_bc_file_dropper = FileDropper {
+        file_name: &bytecode_file_name,
+    };
+
+    let module_result = get_inkwell_module(&context, &bytecode_file_name);
     if module_result.is_none() {
         return None;
     }
 
     let module = module_result.unwrap();
-    let module_name = get_module_name_from_file_name(file_name);
+    let module_name = get_module_name_from_file_name(&bytecode_file_name);
     let target_function_name_prefix = format!("{}::{}", module_name, function_name);
 
     // Initialize the Z3 and Builder objects
@@ -99,9 +130,32 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     }
     let func_arg_names = func_arg_names_option.unwrap();
 
-    pretty_print_function(&function);
+    let call_stack = function.get_name().to_str().unwrap();
+    codegen_function(&module, &function, &solver, MAIN_FUNCTION_NAMESPACE, call_stack, COMMON_END_NODE, MAIN_FUNCTION_RETURN_REGISTER);
 
-    codegen_function(&function, &solver, MAIN_FUNCTION_NAMESPACE);
+    // constrain int inputs
+    for input in function.get_params() {
+        // TODO: Support other input types
+        if input.get_type().to_string().eq("\"i1\"") {
+            continue;
+        } else if input.get_type().to_string().eq("\"i32\"") {
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
+            let min_int = Int::from_i64(solver.get_context(), i32::MIN.into());
+            let max_int = Int::from_i64(solver.get_context(), i32::MAX.into());
+            solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        } else if input.get_type().to_string().eq("\"i64\"") {
+            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
+            let min_int = Int::from_i64(solver.get_context(), i64::MIN.into());
+            let max_int = Int::from_i64(solver.get_context(), i64::MAX.into());
+            solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
+        }  else {
+            warn!("Currently unsuppported type {:?} for input parameter to {}", input.get_type().to_string(), function_name);
+        }
+    }
+
+    let common_end_node_var = Bool::new_const(solver.get_context(), String::from(COMMON_END_NODE));
+    let panic_var = Bool::new_const(solver.get_context(), String::from(PANIC_VAR_NAME));
+    solver.assert(&common_end_node_var._eq(&panic_var.not()));
 
     let start_node = function.get_first_basic_block().unwrap();
     let start_node_var_name = format!("{}{}", MAIN_FUNCTION_NAMESPACE, start_node.get_name().to_str().unwrap());
@@ -122,13 +176,53 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);
         println!("\nArgument values:");
+        let mut argument_values = std::vec::Vec::<String>::new();
         for (arg_name, z3_name) in func_arg_names {
             // TODO: Support non-int params
-            let arg_z3 = Int::new_const(solver.get_context(), z3_name.as_str());
             let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
             let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
-            println!("\t{:?} = {:?}", &arg_name_without_namespace_and_percent, model.eval(&arg_z3, true).unwrap());
+            let model_string = format!("{:?}", model);
+            // Find line of model for variable and extract line
+            let mut value = &model_string[model_string.find(z3_name).unwrap()..model_string.len()];
+            value = &value[value.find("->").unwrap()..value.find("\n").unwrap_or(value.len())];
+            let cleaned_value = &value.replace("(", "").replace(")", "").replace(" ", "").replace("->", "");
+            println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value);
+            argument_values.push(String::from(cleaned_value));
         };
+
+        let mut source_file_content = fs::read_to_string(file_name).unwrap();
+        source_file_content = source_file_content.replace("fn main", "fn _main");
+        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
+        for argument_value in argument_values {
+            source_file_content = format!("{}{},", source_file_content, argument_value);
+        }
+        source_file_content = format!("{});}}", source_file_content);
+        debug!("{}", source_file_content);
+
+        let mut temp_file_path_base_end_index = 0;
+        if file_name.rfind('/').is_some() {
+            temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
+        }
+        let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
+        fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
+
+        let _temp_source_file_dropper = FileDropper {
+            file_name: &temp_source_file_name,
+        };
+
+        let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
+
+        Command::new("rustc")
+        .args([&temp_source_file_name, "-o", &temp_executable_file_name])
+        .status()
+        .expect("Failed to generate executable file!");
+
+        let _temp_executable_file_dropper = FileDropper {
+            file_name: &String::from(temp_executable_file_name),
+        };
+
+        println!("{}", std::str::from_utf8(&Command::new(temp_executable_file_name).output().ok().unwrap().stderr).unwrap());
     }
+
     return Some(is_confirmed_safe);
 }

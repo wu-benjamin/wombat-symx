@@ -5,16 +5,79 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb) Launch",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
-            "program": "/Users/benjaminwu/Desktop/UWSE2023/4A/URA/wombat-symx/target/debug/wombat_symx",
-            "args": ["/Users/benjaminwu/Desktop/UWSE2023/4A/URA/wombat-symx/tests/hello_world.bc"],
-            "stopAtEntry": false,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb"
+            "name": "Debug unit tests in library 'wombat_symx'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=wombat_symx"
+                ],
+                "filter": {
+                    "name": "wombat_symx",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'wombat_symx'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=wombat_symx",
+                    "--package=wombat_symx"
+                ],
+                "filter": {
+                    "name": "wombat_symx",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'wombat_symx'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=wombat_symx",
+                    "--package=wombat_symx"
+                ],
+                "filter": {
+                    "name": "wombat_symx",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=tests",
+                    "--package=wombat_symx"
+                ],
+                "filter": {
+                    "name": "tests",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

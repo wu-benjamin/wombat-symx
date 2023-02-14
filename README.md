@@ -13,6 +13,8 @@ For MAC and Linux, run:
 curl https://sh.rustup.rs -sSf | sh
 ```
 
+Project is tested on an M1 Pro Macbook 2021 with `rustc 1.60.0 (7737e0b5c 2022-04-04)`.
+
 ### Mac Dependency Installation
 
 You will need the following dependencies:
@@ -49,12 +51,12 @@ cargo run -- --help
 
 To run the project, use:
 ```
-cargo run -- [bc-file-path] [function-name]
+cargo run -- [rs-file-path] [function-name]
 ```
 
 To run the project with debug output enabled, use:
 ```
-cargo run -- -d [bc-file-path] [function-name]
+cargo run -- -d [rs-file-path] [function-name]
 ```
 
 ## Run Test Suite

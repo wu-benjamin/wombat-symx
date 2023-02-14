@@ -1,4 +1,6 @@
+use std::fs;
 use std::path::Path;
+use std::process::Command;
 
 use tracing::{debug, warn, error};
 
@@ -22,6 +24,18 @@ pub const MAIN_FUNCTION_NAMESPACE: &str = "";
 pub const COMMON_END_NODE: &str = "common_end_node";
 pub const PANIC_VAR_NAME: &str = "is_panic";
 pub const MAIN_FUNCTION_RETURN_REGISTER: &str = "wombat_symx_return_register";
+
+
+struct FileDropper<'a> {
+    file_name: &'a String,
+}
+
+impl Drop for FileDropper<'_> {
+    fn drop(&mut self) {
+        println!("{}", self.file_name);
+        fs::remove_file(self.file_name).expect("Failed to delete file.");
+    }
+}
 
 
 fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Option<InkwellModule<'a>> {
@@ -69,13 +83,25 @@ fn convert_to_dsa<'a>(module: &InkwellModule) -> () {
 
 pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<bool> {
     let context = InkwellContext::create();
-    let module_result = get_inkwell_module(&context, file_name);
+
+    let bytecode_file_name = format!("{}.bc", &file_name[0..file_name.rfind('.').unwrap_or(file_name.len())]);
+
+    Command::new("rustc")
+        .args(["--emit=llvm-bc", &file_name, "-o", &bytecode_file_name])
+        .status()
+        .expect("Failed to generate bytecode file!");
+
+    let _temp_bc_file_dropper = FileDropper {
+        file_name: &bytecode_file_name,
+    };
+
+    let module_result = get_inkwell_module(&context, &bytecode_file_name);
     if module_result.is_none() {
         return None;
     }
 
     let module = module_result.unwrap();
-    let module_name = get_module_name_from_file_name(file_name);
+    let module_name = get_module_name_from_file_name(&bytecode_file_name);
     let target_function_name_prefix = format!("{}::{}", module_name, function_name);
 
     // Initialize the Z3 and Builder objects
@@ -150,13 +176,53 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);
         println!("\nArgument values:");
+        let mut argument_values = std::vec::Vec::<String>::new();
         for (arg_name, z3_name) in func_arg_names {
             // TODO: Support non-int params
-            let arg_z3 = Int::new_const(solver.get_context(), z3_name.as_str());
             let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
             let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
-            println!("\t{:?} = {:?}", &arg_name_without_namespace_and_percent, model.eval(&arg_z3, true).unwrap());
+            let model_string = format!("{:?}", model);
+            // Find line of model for variable and extract line
+            let mut value = &model_string[model_string.find(z3_name).unwrap()..model_string.len()];
+            value = &value[value.find("->").unwrap()..value.find("\n").unwrap_or(value.len())];
+            let cleaned_value = &value.replace("(", "").replace(")", "").replace(" ", "").replace("->", "");
+            println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value);
+            argument_values.push(String::from(cleaned_value));
         };
+
+        let mut source_file_content = fs::read_to_string(file_name).unwrap();
+        source_file_content = source_file_content.replace("fn main", "fn _main");
+        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
+        for argument_value in argument_values {
+            source_file_content = format!("{}{},", source_file_content, argument_value);
+        }
+        source_file_content = format!("{});}}", source_file_content);
+        debug!("{}", source_file_content);
+
+        let mut temp_file_path_base_end_index = 0;
+        if file_name.rfind('/').is_some() {
+            temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
+        }
+        let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
+        fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
+
+        let _temp_source_file_dropper = FileDropper {
+            file_name: &temp_source_file_name,
+        };
+
+        let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
+
+        Command::new("rustc")
+        .args([&temp_source_file_name, "-o", &temp_executable_file_name])
+        .status()
+        .expect("Failed to generate executable file!");
+
+        let _temp_executable_file_dropper = FileDropper {
+            file_name: &String::from(temp_executable_file_name),
+        };
+
+        println!("{}", std::str::from_utf8(&Command::new(temp_executable_file_name).output().ok().unwrap().stderr).unwrap());
     }
+
     return Some(is_confirmed_safe);
 }

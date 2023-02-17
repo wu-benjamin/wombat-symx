@@ -206,57 +206,6 @@ pub fn codegen_basic_block(
         node_var = assignment.implies(&node_var);
     }
 
-    // Resolve Phi
-    // if let Some(successors) = forward_edges.get(&node) {
-    //     for successor_name in successors {
-    //         let successor_option = get_basic_block_by_name(function, successor_name, namespace);
-    //         if successor_option.is_none() {
-    //             continue;
-    //         }
-    //         let successor = successor_option.unwrap();
-    //         let mut prev_successor_instruction = successor.get_last_instruction();
-    //         while let Some(current_successor_instruction) = prev_successor_instruction {
-    //             if current_successor_instruction.get_opcode() == InstructionOpcode::Phi {
-    //                 let phi_instruction: PhiValue = current_successor_instruction.try_into().unwrap();
-    //                 for incoming_index in 0..phi_instruction.count_incoming() {
-    //                     let incoming = phi_instruction.get_incoming(incoming_index).unwrap();
-    //                     let predecessor = String::from(format!("{}{}", namespace, incoming.1.get_name().to_str().unwrap()));
-    //                     if predecessor.eq(&node) {
-    //                         let lvalue_var_name = get_var_name(&current_successor_instruction, &solver, namespace);
-    //                         let rvalue_var_name = get_var_name(&incoming.0, &solver, namespace);
-    //                         if current_successor_instruction.get_type().to_string().eq("\"i1\"") {
-    //                             let lvalue_var = Bool::new_const(
-    //                                 solver.get_context(),
-    //                                 lvalue_var_name
-    //                             );
-    //                             let rvalue_var = Bool::new_const(
-    //                                 solver.get_context(),
-    //                                 rvalue_var_name
-    //                             );
-    //                             let assignment = lvalue_var._eq(&rvalue_var);
-    //                             node_var = assignment.implies(&node_var);
-    //                         } else if current_successor_instruction.get_type().is_int_type() {
-    //                             let lvalue_var = Int::new_const(
-    //                                 solver.get_context(),
-    //                                 lvalue_var_name
-    //                             );
-    //                             let rvalue_var = Int::new_const(
-    //                                 solver.get_context(),
-    //                                 rvalue_var_name
-    //                             );
-    //                             let assignment = lvalue_var._eq(&rvalue_var);
-    //                             node_var = assignment.implies(&node_var);
-    //                         } else {
-    //                             warn!("Currently unsuppported type {:?} for Phi", incoming.0.get_type().to_string());
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //             prev_successor_instruction = current_successor_instruction.get_previous_instruction();
-    //         }
-    //     }
-    // }
-
     // Parse statements in the basic block
     let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).unwrap().get_last_instruction();
 

@@ -399,6 +399,32 @@ fn test_unsafe_sequential_branch_5() {
 
 #[test]
 #[ignore]
+fn test_unsafe_tricky_phi() {
+    common::test(
+        "test_unsafe_tricky_phi",
+        "test_unsafe_tricky_phi",
+        "
+            fn test(
+                c1: bool,
+                // c2: bool
+            ) -> i32 {
+                let mut r = 0;
+                if c1 {
+                    r -= 1;
+                }
+                // if c2 {
+                // 	r += 2;
+                // }
+                assert!(r >= 0);
+                return r;
+            }
+        ",
+        false,
+    );
+}
+
+#[test]
+#[ignore]
 fn test_safe_bool_params() {
     common::test(
         "test_safe_bool_params",

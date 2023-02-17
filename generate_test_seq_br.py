@@ -18,7 +18,7 @@ def generate_test_seq_br_c(n: int, is_safe: bool):
         for i in range(0, n):
             sign = '+' if is_safe or i % 2 == 1 else '-'
             output_c_file.write(f'\tif (c{i+1}) {{\n')
-            output_c_file.write(f'\t\tr {sign}= {i+1};\n')
+            output_c_file.write(f'\t\tr {sign}= {2 ** i};\n')
             output_c_file.write(f'\t}}\n')
         output_c_file.write('\tassert(r >= 0);\n')
         output_c_file.write('\treturn r;\n')
@@ -45,7 +45,7 @@ def generate_test_seq_br_rust(n: int, is_safe: bool):
         for i in range(0, n):
             sign = '' if is_safe or i % 2 == 1 else '-'
             output_c_file.write(f'\tlet r{i+1} = if c{i+1} {{\n')
-            output_c_file.write(f'\t\t{sign}{i+1}\n')
+            output_c_file.write(f'\t\t{sign}{2 ** i}\n')
             output_c_file.write(f'\t}} else {{\n')
             output_c_file.write(f'\t\t0\n')
             output_c_file.write(f'\t}};\n')

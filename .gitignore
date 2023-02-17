@@ -1,3 +1,4 @@
 /target
 /tests/*.ll
 /tests/*.bc
+/.vscode

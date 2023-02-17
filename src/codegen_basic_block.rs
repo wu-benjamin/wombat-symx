@@ -4,7 +4,7 @@ use tracing::{warn};
 
 use inkwell::module::{Module as InkwellModule};
 use inkwell::basic_block::BasicBlock;
-use inkwell::values::{FunctionValue, InstructionOpcode};
+use inkwell::values::{FunctionValue, PhiValue, InstructionOpcode};
 
 use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
@@ -14,10 +14,10 @@ use crate::get_var_name::get_var_name;
 use crate::symbolic_execution::{PANIC_VAR_NAME, COMMON_END_NODE};
 
 
-type EdgeSet = HashMap<String, HashSet<String>>;
+pub type EdgeSet = HashMap<String, HashSet<String>>;
 
 
-fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, namespace: &str) -> BasicBlock<'a> {
+fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, namespace: &str) -> Option<BasicBlock<'a>> {
     let mut matching_bb: Option<BasicBlock> = None;
     let mut matched = false;
     for bb in function.get_basic_blocks() {
@@ -30,7 +30,7 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
             matched = true;
         }
     }
-    return matching_bb.unwrap();
+    return matching_bb;
 }
 
 
@@ -91,6 +91,34 @@ pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
 }
 
 
+pub fn get_all_entry_conditions<'a>(
+    solver: &'a Solver<'_>,
+    function: &'a FunctionValue,
+    backward_edges: &EdgeSet,
+    node: &str,
+    namespace: &str,
+) -> Bool<'a> {
+    let mut entry_conditions = Bool::from_bool(solver.get_context(), false);
+    if let Some(predecessors) = backward_edges.get(node) {
+        if predecessors.len() > 0 {
+            for predecessor in predecessors {
+                // get conditions
+                let entry_condition = Bool::and(
+                    solver.get_context(),
+                    &[
+                        &get_entry_condition(&solver, &function, &predecessor, &node, namespace),
+                        &get_all_entry_conditions(&solver, &function, backward_edges, &predecessor, namespace)
+                    ]
+                );
+                entry_conditions = Bool::or(solver.get_context(), &[&entry_conditions, &entry_condition]);
+            }
+        } else {
+            entry_conditions = Bool::from_bool(solver.get_context(), true);
+        }
+    }
+    return entry_conditions;
+}
+
 pub fn get_entry_condition<'a>(
     solver: &'a Solver<'_>,
     function: &'a FunctionValue,
@@ -99,7 +127,7 @@ pub fn get_entry_condition<'a>(
     namespace: &str,
 ) -> Bool<'a> {
     let mut entry_condition = Bool::from_bool(solver.get_context(), true);
-    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace).get_terminator() {
+    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace).unwrap().get_terminator() {
         let opcode = terminator.get_opcode();
         let num_operands = terminator.get_num_operands();
         match &opcode {
@@ -201,18 +229,69 @@ pub fn codegen_basic_block(
     if forward_edges.get(&node).is_some() && forward_edges.get(&node).unwrap().contains(COMMON_END_NODE) {
         // assign panic_var
         let lvalue_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
-        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node, namespace)).unwrap_or(true);
+        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node, namespace).unwrap()).unwrap_or(true);
         let rvalue_var = Bool::from_bool(solver.get_context(), is_panic);
         let assignment = lvalue_var._eq(&rvalue_var);
         node_var = assignment.implies(&node_var);
     }
 
+    // Resolve Phi
+    // if let Some(successors) = forward_edges.get(&node) {
+    //     for successor_name in successors {
+    //         let successor_option = get_basic_block_by_name(function, successor_name, namespace);
+    //         if successor_option.is_none() {
+    //             continue;
+    //         }
+    //         let successor = successor_option.unwrap();
+    //         let mut prev_successor_instruction = successor.get_last_instruction();
+    //         while let Some(current_successor_instruction) = prev_successor_instruction {
+    //             if current_successor_instruction.get_opcode() == InstructionOpcode::Phi {
+    //                 let phi_instruction: PhiValue = current_successor_instruction.try_into().unwrap();
+    //                 for incoming_index in 0..phi_instruction.count_incoming() {
+    //                     let incoming = phi_instruction.get_incoming(incoming_index).unwrap();
+    //                     let predecessor = String::from(format!("{}{}", namespace, incoming.1.get_name().to_str().unwrap()));
+    //                     if predecessor.eq(&node) {
+    //                         let lvalue_var_name = get_var_name(&current_successor_instruction, &solver, namespace);
+    //                         let rvalue_var_name = get_var_name(&incoming.0, &solver, namespace);
+    //                         if current_successor_instruction.get_type().to_string().eq("\"i1\"") {
+    //                             let lvalue_var = Bool::new_const(
+    //                                 solver.get_context(),
+    //                                 lvalue_var_name
+    //                             );
+    //                             let rvalue_var = Bool::new_const(
+    //                                 solver.get_context(),
+    //                                 rvalue_var_name
+    //                             );
+    //                             let assignment = lvalue_var._eq(&rvalue_var);
+    //                             node_var = assignment.implies(&node_var);
+    //                         } else if current_successor_instruction.get_type().is_int_type() {
+    //                             let lvalue_var = Int::new_const(
+    //                                 solver.get_context(),
+    //                                 lvalue_var_name
+    //                             );
+    //                             let rvalue_var = Int::new_const(
+    //                                 solver.get_context(),
+    //                                 rvalue_var_name
+    //                             );
+    //                             let assignment = lvalue_var._eq(&rvalue_var);
+    //                             node_var = assignment.implies(&node_var);
+    //                         } else {
+    //                             warn!("Currently unsuppported type {:?} for Phi", incoming.0.get_type().to_string());
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             prev_successor_instruction = current_successor_instruction.get_previous_instruction();
+    //         }
+    //     }
+    // }
+
     // Parse statements in the basic block
-    let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).get_last_instruction();
+    let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).unwrap().get_last_instruction();
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
-        node_var = codegen_instruction(&module, &node, node_var, current_instruction, function, solver, namespace, call_stack, return_register);
+        node_var = codegen_instruction(&module, &node, node_var, current_instruction, function, backward_edges, solver, namespace, call_stack, return_register);
         prev_instruction = current_instruction.get_previous_instruction();
     }
 
@@ -225,7 +304,7 @@ pub fn codegen_basic_block(
                 entry_conditions = Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
             }
         }
-    }  
+    }
     node_var = entry_conditions.implies(&node_var);
 
     let named_node_var = Bool::new_const(solver.get_context(), String::from(&node));

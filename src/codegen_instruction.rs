@@ -7,6 +7,7 @@ use inkwell::values::{FunctionValue, InstructionOpcode, InstructionValue, PhiVal
 use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
 
+use crate::codegen_basic_block::EdgeSet;
 use crate::codegen_basic_block::get_entry_condition;
 use crate::codegen_call::{codegen_call};
 use crate::get_var_name::get_var_name;
@@ -24,6 +25,7 @@ pub fn codegen_instruction<'a>(
     mut node_var: Bool<'a>,
     instruction: InstructionValue,
     function: &'a FunctionValue,
+    backward_edges: &EdgeSet,
     solver: &'a Solver,
     namespace: &'a str,
     call_stack: &str,

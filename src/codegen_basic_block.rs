@@ -4,7 +4,7 @@ use tracing::{warn};
 
 use inkwell::module::{Module as InkwellModule};
 use inkwell::basic_block::BasicBlock;
-use inkwell::values::{FunctionValue, PhiValue, InstructionOpcode};
+use inkwell::values::{FunctionValue, InstructionOpcode};
 
 use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
@@ -34,7 +34,6 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
 }
 
 
-// Conjecture: The name of the basic block is panic with an optional counting number suffix if and only if the block is a panic block
 pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
     if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
@@ -90,34 +89,6 @@ pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
     }
 }
 
-
-pub fn get_all_entry_conditions<'a>(
-    solver: &'a Solver<'_>,
-    function: &'a FunctionValue,
-    backward_edges: &EdgeSet,
-    node: &str,
-    namespace: &str,
-) -> Bool<'a> {
-    let mut entry_conditions = Bool::from_bool(solver.get_context(), false);
-    if let Some(predecessors) = backward_edges.get(node) {
-        if predecessors.len() > 0 {
-            for predecessor in predecessors {
-                // get conditions
-                let entry_condition = Bool::and(
-                    solver.get_context(),
-                    &[
-                        &get_entry_condition(&solver, &function, &predecessor, &node, namespace),
-                        &get_all_entry_conditions(&solver, &function, backward_edges, &predecessor, namespace)
-                    ]
-                );
-                entry_conditions = Bool::or(solver.get_context(), &[&entry_conditions, &entry_condition]);
-            }
-        } else {
-            entry_conditions = Bool::from_bool(solver.get_context(), true);
-        }
-    }
-    return entry_conditions;
-}
 
 pub fn get_entry_condition<'a>(
     solver: &'a Solver<'_>,
@@ -291,7 +262,7 @@ pub fn codegen_basic_block(
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
-        node_var = codegen_instruction(&module, &node, node_var, current_instruction, function, backward_edges, solver, namespace, call_stack, return_register);
+        node_var = codegen_instruction(&module, &node, node_var, current_instruction, function, solver, namespace, call_stack, return_register);
         prev_instruction = current_instruction.get_previous_instruction();
     }
 

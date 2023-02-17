@@ -32,7 +32,6 @@ struct FileDropper<'a> {
 
 impl Drop for FileDropper<'_> {
     fn drop(&mut self) {
-        println!("{}", self.file_name);
         fs::remove_file(self.file_name).expect("Failed to delete file.");
     }
 }
@@ -175,59 +174,63 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     if is_confirmed_unsafe {
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);
-        println!("\nArgument values:");
+        println!("\nUnsafe values:");
         let mut argument_values = std::vec::Vec::<String>::new();
-        for (arg_name, z3_name) in func_arg_names {
+        for (arg_name, z3_name, var_type) in func_arg_names {
             // TODO: Support non-int params
             let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
             let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
-            let model_string = format!("{:?}", model);
-            // Find line of model for variable and extract line
-            let index_arg_line = model_string.find(z3_name);
-            if index_arg_line.is_none() {
-                continue;
+            let value_string;
+            if var_type.to_string().eq("\"i1\"") {
+                let value = Bool::new_const(solver.get_context(), z3_name.as_str());
+                value_string = format!("{:?}", model.eval(&value, true).unwrap());
+                let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
+                println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
+                argument_values.push(cleaned_value_string.to_string());
+            } else if var_type.is_int_type() {
+                let value = Int::new_const(solver.get_context(), z3_name.as_str());
+                value_string = format!("{:?}", model.eval(&value, true).unwrap());
+                let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
+                println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
+                argument_values.push(cleaned_value_string.to_string());
+            } else {
+                warn!("{} is not a supported parameter type!", var_type);
             }
-            let mut value = &model_string[model_string.find(z3_name).unwrap()..model_string.len()];
-            value = &value[value.find("->").unwrap()..value.find("\n").unwrap_or(value.len())];
-            let cleaned_value = &value.replace("(", "").replace(")", "").replace(" ", "").replace("->", "");
-            println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value);
-            argument_values.push(String::from(cleaned_value));
+        };
+        
+        let mut source_file_content = fs::read_to_string(file_name).unwrap();
+        source_file_content = source_file_content.replace("fn main", "fn _main");
+        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
+        for argument_value in argument_values {
+            source_file_content = format!("{}{},", source_file_content, argument_value);
+        }
+        source_file_content = format!("{});}}", source_file_content);
+        debug!("{}", source_file_content);
+
+        let mut temp_file_path_base_end_index = 0;
+        if file_name.rfind('/').is_some() {
+            temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
+        }
+        let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
+        fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
+
+        let _temp_source_file_dropper = FileDropper {
+            file_name: &temp_source_file_name,
         };
 
-        // TODO: Pass in any value if argument not in solution model (solution has arg as a don't care)
-        
-        // let mut source_file_content = fs::read_to_string(file_name).unwrap();
-        // source_file_content = source_file_content.replace("fn main", "fn _main");
-        // source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
-        // for argument_value in argument_values {
-        //     source_file_content = format!("{}{},", source_file_content, argument_value);
-        // }
-        // source_file_content = format!("{});}}", source_file_content);
-        // debug!("{}", source_file_content);
+        let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
 
-        // let mut temp_file_path_base_end_index = 0;
-        // if file_name.rfind('/').is_some() {
-        //     temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
-        // }
-        // let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
-        // fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
+        Command::new("rustc")
+            .args([&temp_source_file_name, "-o", &temp_executable_file_name])
+            .status()
+            .expect("Failed to generate executable file!");
 
-        // let _temp_source_file_dropper = FileDropper {
-        //     file_name: &temp_source_file_name,
-        // };
+        let _temp_executable_file_dropper = FileDropper {
+            file_name: &String::from(temp_executable_file_name),
+        };
 
-        // let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
-
-        // Command::new("rustc")
-        // .args([&temp_source_file_name, "-o", &temp_executable_file_name])
-        // .status()
-        // .expect("Failed to generate executable file!");
-
-        // let _temp_executable_file_dropper = FileDropper {
-        //     file_name: &String::from(temp_executable_file_name),
-        // };
-
-        // println!("{}", std::str::from_utf8(&Command::new(temp_executable_file_name).output().ok().unwrap().stderr).unwrap());
+        println!("\n{}", format!("Error from calling function {} with unsafe arguments:", function_name));
+        println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace("\n", "\n\t"));
     }
 
     return Some(is_confirmed_safe);

@@ -37,31 +37,32 @@ def generate_test_seq_br_c(n: int, is_safe: bool):
 
 
 def generate_test_seq_br_rust(n: int, is_safe: bool):
-    with open(f"test_seq_br_{'safe' if is_safe else 'unsafe'}_{n}.rs", "w") as output_c_file:
-        output_c_file.write('fn test(\n')
+    with open(f"test_seq_br_{'safe' if is_safe else 'unsafe'}_{n}.rs", "w") as output_rust_file:
+        output_rust_file.write('fn test(\n')
         for i in range(0, n):
-            output_c_file.write(f"\t c{i+1}: bool{',' if i != n - 1 else ''}\n")
-        output_c_file.write(') -> i32 {\n')
+            output_rust_file.write(f"\t c{i+1}: bool{',' if i != n - 1 else ''}\n")
+        output_rust_file.write(') -> i32 {\n')
         for i in range(0, n):
             sign = '' if is_safe or i % 2 == 1 else '-'
-            output_c_file.write(f'\tlet r{i+1} = if c{i+1} {{\n')
-            output_c_file.write(f'\t\t{sign}{2 ** i}\n')
-            output_c_file.write(f'\t}} else {{\n')
-            output_c_file.write(f'\t\t0\n')
-            output_c_file.write(f'\t}};\n')
-        output_c_file.write('\tlet r = ')
+            output_rust_file.write(f'\tlet r{i+1} = if c{i+1} {{\n')
+            output_rust_file.write(f'\t\t{sign}{2 ** i}\n')
+            output_rust_file.write(f'\t}} else {{\n')
+            output_rust_file.write(f'\t\t0\n')
+            output_rust_file.write(f'\t}};\n')
+        output_rust_file.write('\tlet r = ')
         for i in range(0, n):
-            output_c_file.write(f"r{i+1}{' + ' if i != n - 1 else ';'}")
-        output_c_file.write('\tassert!(r >= 0);\n')
-        output_c_file.write('\treturn r;\n')
-        output_c_file.write('}\n')
+            output_rust_file.write(f"r{i+1}{' + ' if i != n - 1 else ''}")
+        output_rust_file.write(';\n')
+        output_rust_file.write('\tassert!(r >= 0);\n')
+        output_rust_file.write('\treturn r;\n')
+        output_rust_file.write('}\n')
 
-        output_c_file.write('fn main() {\n')
-        output_c_file.write('\ttest(')
+        output_rust_file.write('fn main() {\n')
+        output_rust_file.write('\ttest(')
         for i in range(0, n):
-            output_c_file.write(f"{'false' if random.randint(0, 1) == 0 else 'true'}{', ' if i != n - 1 else ''}")
-        output_c_file.write(');\n')
-        output_c_file.write('}\n')
+            output_rust_file.write(f"{'false' if random.randint(0, 1) == 0 else 'true'}{', ' if i != n - 1 else ''}")
+        output_rust_file.write(');\n')
+        output_rust_file.write('}\n')
 
 
 def main():

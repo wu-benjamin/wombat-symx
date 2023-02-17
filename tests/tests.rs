@@ -200,6 +200,204 @@ fn test_unsafe_switch() {
 }
 
 #[test]
+fn test_safe_sequential_branch_1() {
+    common::test(
+        "test_safe_sequential_branch_1",
+        "test_safe_sequential_branch_1",
+        "
+            fn test_safe_sequential_branch_1(
+                c1: bool
+            ) -> i32 {
+                let r1 = if c1 {
+                    1
+                } else {
+                    0
+                };
+                let r = r1;
+                assert!(r >= 0);
+                return r;
+            }
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_safe_sequential_branch_2() {
+    common::test(
+        "test_safe_sequential_branch_2",
+        "test_safe_sequential_branch_2",
+        "
+            fn test_safe_sequential_branch_2(
+                c1: bool,
+                c2: bool
+            ) -> i32 {
+                let r1 = if c1 {
+                    1
+                } else {
+                    0
+                };
+                let r2 = if c2 {
+                    2
+                } else {
+                    0
+                };
+                let r = r1 + r2;
+                assert!(r >= 0);
+                return r;
+            } 
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_safe_sequential_branch_5() {
+    common::test(
+        "test_safe_sequential_branch_5",
+        "test_safe_sequential_branch_5",
+        "
+            fn test_safe_sequential_branch_5(
+                c1: bool,
+                c2: bool,
+                c3: bool,
+                c4: bool,
+                c5: bool
+            ) -> i32 {
+                let r1 = if c1 {
+                    1
+                } else {
+                    0
+                };
+                let r2 = if c2 {
+                    2
+                } else {
+                    0
+                };
+                let r3 = if c3 {
+                    4
+                } else {
+                    0
+                };
+                let r4 = if c4 {
+                    8
+                } else {
+                    0
+                };
+                let r5 = if c5 {
+                    16
+                } else {
+                    0
+                };
+                let r = r1 + r2 + r3 + r4 + r5;
+                assert!(r >= 0);
+                return r;
+            }
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_unsafe_sequential_branch_1() {
+    common::test(
+        "test_unsafe_sequential_branch_1",
+        "test_unsafe_sequential_branch_1",
+        "
+            fn test_unsafe_sequential_branch_1(
+                c1: bool
+            ) -> i32 {
+                let r1 = if c1 {
+                    -1
+                } else {
+                    0
+                };
+                let r = r1;
+                assert!(r >= 0);
+                return r;
+            }
+        ",
+        false,
+    );
+}
+
+#[test]
+fn test_unsafe_sequential_branch_2() {
+    common::test(
+        "test_unsafe_sequential_branch_2",
+        "test_unsafe_sequential_branch_2",
+        "
+            fn test_unsafe_sequential_branch_2(
+                c1: bool,
+                c2: bool
+            ) -> i32 {
+                let r1 = if c1 {
+                    -1
+                } else {
+                    0
+                };
+                let r2 = if c2 {
+                    2
+                } else {
+                    0
+                };
+                let r = r1 + r2;
+                assert!(r >= 0);
+                return r;
+            } 
+        ",
+        false,
+    );
+}
+
+#[test]
+fn test_unsafe_sequential_branch_5() {
+    common::test(
+        "test_unsafe_sequential_branch_5",
+        "test_unsafe_sequential_branch_5",
+        "
+            fn test_unsafe_sequential_branch_5(
+                c1: bool,
+                c2: bool,
+                c3: bool,
+                c4: bool,
+                c5: bool
+            ) -> i32 {
+                let r1 = if c1 {
+                    -1
+                } else {
+                    0
+                };
+                let r2 = if c2 {
+                    2
+                } else {
+                    0
+                };
+                let r3 = if c3 {
+                    -4
+                } else {
+                    0
+                };
+                let r4 = if c4 {
+                    8
+                } else {
+                    0
+                };
+                let r5 = if c5 {
+                    -16
+                } else {
+                    0
+                };
+                let r = r1 + r2 + r3 + r4 + r5;
+                assert!(r >= 0);
+                return r;
+            }
+        ",
+        false,
+    );
+}
+
+#[test]
 #[ignore]
 fn test_safe_bool_params() {
     common::test(

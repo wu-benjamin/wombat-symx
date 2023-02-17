@@ -1,7 +1,7 @@
 use std::collections::{HashMap};
 
 use inkwell::types::BasicTypeEnum;
-use tracing::{debug};
+// use tracing::{debug};
 
 use rustc_demangle::demangle;
 
@@ -39,7 +39,7 @@ impl Named for inkwell::values::BasicValueEnum<'_> {
 pub fn get_function_argument_names<'a>(function: FunctionValue<'a>, solver: &Solver, namespace: &str) -> Vec<(String, String, BasicTypeEnum<'a>)> {
     let mut arg_names = Vec::<(String, String, BasicTypeEnum)>::new();
     for param in &function.get_params() {
-        debug!("Func param instr: {:?}", param);
+        // debug!("Func param instr: {:?}", param);
         if param.get_name().len() == 0 {
             // Var name is empty, find in start basic block
             let alias_name = &get_var_name(&param.as_any_value_enum(), solver, namespace);
@@ -64,7 +64,7 @@ pub fn get_function_argument_names<'a>(function: FunctionValue<'a>, solver: &Sol
         }
     }
 
-    debug!("Function arg names: {:?}", arg_names);
+    // debug!("Function arg names: {:?}", arg_names);
     return arg_names;
 }
 

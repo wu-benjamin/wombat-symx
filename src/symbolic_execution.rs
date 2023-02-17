@@ -161,7 +161,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
     solver.assert(&start_node_var.not());
 
-    debug!("{:?}", solver);
+    debug!("{}", format!("\nSolver:\n{:?}", solver));
 
     // Attempt resolving the model (and obtaining the respective arg values if panic found)
     let satisfiability = solver.check();

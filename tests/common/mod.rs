@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 
 use tracing_core::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -26,7 +27,11 @@ pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_sa
     // _guard resets the current default dispatcher to the prior default when dropped
     let _guard = tracing::subscriber::set_default(subscriber);
 
-    let source_file_name = format!("test_temp/zzz_temp_test_{}.rs", test_name);
+    let source_file_name = format!("tests_temp/zzz_temp_test_{}.rs", test_name);
+    if !Path::exists(Path::new("tests_temp")) {
+        // Ensure temp test directory exists, otherwise src file fails to be created
+        fs::create_dir("tests_temp").expect("Unable to create test directory: \"tests_temp\"");
+    }
 
     let _file_dropper = FileDropper {
         file_name: &source_file_name,

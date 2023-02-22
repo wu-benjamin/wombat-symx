@@ -3,9 +3,6 @@ use clap::Parser;
 use tracing_core::Level;
 use tracing_subscriber::FmtSubscriber;
 
-use wombat_symx::codegen;
-use wombat_symx::utils;
-use wombat_symx::control_flow_graph;
 use wombat_symx::symbolic_execution::symbolic_execution;
 
 #[derive(Parser, Debug)]

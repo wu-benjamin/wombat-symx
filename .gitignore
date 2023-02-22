@@ -3,3 +3,4 @@
 /tests/*.bc
 /.vscode
 /.idea
+/tests_temp

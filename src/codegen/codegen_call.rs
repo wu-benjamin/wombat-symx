@@ -9,7 +9,7 @@ use z3::ast::{Ast, Bool, Int};
 use crate::codegen::codegen_function::codegen_function;
 use crate::control_flow_graph::forward_topological_sort;
 use crate::utils::function_utils::{get_function_name, get_function_by_name};
-use crate::utils::get_var_name::get_var_name;
+use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
 use crate::symbolic_execution::get_module_name_from_file_name;
 
 fn codegen_general_call<'a>(
@@ -94,7 +94,11 @@ pub fn codegen_call<'a>(
     }
 
     match call_operation_name_str {
-        "llvm.sadd.with.overflow.i32" => {
+        s if s.starts_with("llvm.sadd.with.overflow.i") => {
+            // Translate the intrinsic integer size to an i64 representing the min/max representable numbers
+            let s_size = &s[25..];
+            let (min_int_val, max_int_val) = get_min_max_signed_int(s_size);
+
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
                 &solver,
@@ -116,45 +120,19 @@ pub fn codegen_call<'a>(
             let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
             let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
-            let min_int = Int::from_i64(solver.get_context(), i32::MIN.into());
-            let max_int = Int::from_i64(solver.get_context(), i32::MAX.into());
+            let min_int = Int::from_i64(solver.get_context(), min_int_val);
+            let max_int = Int::from_i64(solver.get_context(), max_int_val);
             let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
             
             let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
             let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
             node_var = assignment.implies(&node_var);
         }
-        "llvm.sadd.with.overflow.i64" => {
-            let operand1_name = get_var_name(
-                &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
-                namespace
-            );
-            let operand2_name = get_var_name(
-                &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
-                namespace
-            );
+        s if s.starts_with("llvm.ssub.with.overflow.i") => {
+            // Translate the intrinsic integer size to an i64 representing the min/max representable numbers
+            let s_size = &s[25..];
+            let (min_int_val, max_int_val) = get_min_max_signed_int(s_size);
 
-            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
-            let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
-            let rvalue_var_1 = Int::add(solver.get_context(), &[
-                &Int::new_const(solver.get_context(), operand1_name),
-                &Int::new_const(solver.get_context(), operand2_name)
-            ]);
-            
-            let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
-
-            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
-            let min_int = Int::from_i64(solver.get_context(), i64::MIN);
-            let max_int = Int::from_i64(solver.get_context(), i64::MAX);
-            let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
-            
-            let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
-            let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
-            node_var = assignment.implies(&node_var);
-        }
-        "llvm.ssub.with.overflow.i32" => {
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
                 &solver,
@@ -176,45 +154,19 @@ pub fn codegen_call<'a>(
             let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
             let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
-            let min_int = Int::from_i64(solver.get_context(), i32::MIN.into());
-            let max_int = Int::from_i64(solver.get_context(), i32::MAX.into());
+            let min_int = Int::from_i64(solver.get_context(), min_int_val);
+            let max_int = Int::from_i64(solver.get_context(), max_int_val);
             let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
             
             let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
             let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
             node_var = assignment.implies(&node_var);
         }
-        "llvm.ssub.with.overflow.i64" => {
-            let operand1_name = get_var_name(
-                &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
-                namespace
-            );
-            let operand2_name = get_var_name(
-                &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
-                namespace
-            );
+        s if s.starts_with("llvm.smul.with.overflow.i") => {
+            // Translate the intrinsic integer size to an i64 representing the min/max representable numbers
+            let s_size = &s[25..];
+            let (min_int_val, max_int_val) = get_min_max_signed_int(s_size);
 
-            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
-            let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
-            let rvalue_var_1 = Int::sub(solver.get_context(), &[
-                &Int::new_const(solver.get_context(), operand1_name),
-                &Int::new_const(solver.get_context(), operand2_name)
-            ]);
-            
-            let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
-
-            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
-            let min_int = Int::from_i64(solver.get_context(), i64::MIN);
-            let max_int = Int::from_i64(solver.get_context(), i64::MAX);
-            let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
-            
-            let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
-            let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
-            node_var = assignment.implies(&node_var);
-        }
-        "llvm.smul.with.overflow.i32" => {
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
                 &solver,
@@ -236,38 +188,8 @@ pub fn codegen_call<'a>(
             let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
             let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
-            let min_int = Int::from_i64(solver.get_context(), i32::MIN.into());
-            let max_int = Int::from_i64(solver.get_context(), i32::MAX.into());
-            let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
-            
-            let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);
-            let assignment = Bool::and(solver.get_context(), &[&assignment_1, &assignment_2]);
-            node_var = assignment.implies(&node_var);
-        }
-        "llvm.smul.with.overflow.i64" => {
-            let operand1_name = get_var_name(
-                &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
-                namespace
-            );
-            let operand2_name = get_var_name(
-                &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
-                namespace
-            );
-
-            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
-            let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
-            let rvalue_var_1 = Int::mul(solver.get_context(), &[
-                &Int::new_const(solver.get_context(), operand1_name),
-                &Int::new_const(solver.get_context(), operand2_name)
-            ]);
-            
-            let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
-
-            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
-            let min_int = Int::from_i64(solver.get_context(), i64::MIN);
-            let max_int = Int::from_i64(solver.get_context(), i64::MAX);
+            let min_int = Int::from_i64(solver.get_context(), min_int_val);
+            let max_int = Int::from_i64(solver.get_context(), max_int_val);
             let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
             
             let assignment_2 = Bool::new_const(solver.get_context(), lvalue_var_name_2)._eq(&rvalue_var_2);

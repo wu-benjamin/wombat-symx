@@ -9,7 +9,7 @@ use z3::ast::{Ast, Bool, Int};
 
 use crate::codegen::codegen_basic_block::get_entry_condition;
 use crate::codegen::codegen_call::{codegen_call};
-use crate::utils::get_var_name::get_var_name;
+use crate::utils::var_utils::get_var_name;
 
 
 fn get_field_to_extract(instruction: &InstructionValue) -> String {
@@ -67,10 +67,10 @@ pub fn codegen_instruction<'a>(
                     let assignment = lvalue_var._eq(&rvalue_var);
                     node_var = assignment.implies(&node_var);
                 } else {
-                    warn!("Currently unsuppported type {:?} for return {:?}", operand.get_type().to_string(), instruction);
+                    warn!("Currently unsupported type {:?} for return {:?}", operand.get_type().to_string(), instruction);
                 }
             } else {
-                warn!("Currently unsuppported number of operands {:?} for return {:?}", instruction.get_num_operands(), instruction);
+                warn!("Currently unsupported number of operands {:?} for return {:?}", instruction.get_num_operands(), instruction);
             }
         }
         InstructionOpcode::Switch => {
@@ -80,7 +80,7 @@ pub fn codegen_instruction<'a>(
             // TODO: Support non-int types here
             let operand = instruction.get_operand(0).unwrap().left().unwrap();
             if !instruction.get_type().is_int_type() {
-                warn!("Currently unsuppported type {:?} for load operand", instruction.get_type().to_string())
+                warn!("Currently unsupported type {:?} for load operand", instruction.get_type().to_string())
             }
             let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
             let rvalue_var_name = get_var_name(&operand, &solver, namespace);
@@ -99,7 +99,7 @@ pub fn codegen_instruction<'a>(
             // TODO: Support non-int types here
             let operand1 = instruction.get_operand(0).unwrap().left().unwrap();
             if !operand1.get_type().is_int_type() {
-                warn!("Currently unsuppported type {:?} for store operand", operand1.get_type().to_string())
+                warn!("Currently unsupported type {:?} for store operand", operand1.get_type().to_string())
             }
             let operand2 = instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value();
             
@@ -123,7 +123,7 @@ pub fn codegen_instruction<'a>(
             let operand1_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
             let operand2_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
             if !instruction.get_type().to_string().eq("\"i1\"") {
-                warn!("Currently unsuppported type {:?} for xor operand", instruction.get_type().to_string());
+                warn!("Currently unsupported type {:?} for xor operand", instruction.get_type().to_string());
             }
             let operand1_var = Bool::new_const(
                 solver.get_context(),
@@ -216,7 +216,7 @@ pub fn codegen_instruction<'a>(
                 let assignment = lvalue_var._eq(&rvalue_var);
                 node_var = assignment.implies(&node_var);     
             }  else {
-                warn!("Currently unsuppported type {:?} for extract value", operand.get_type().to_string())
+                warn!("Currently unsupported type {:?} for extract value", operand.get_type().to_string())
             } 
         }
         InstructionOpcode::Alloca => {
@@ -252,7 +252,7 @@ pub fn codegen_instruction<'a>(
                     );
                     assignment = Bool::and(&solver.get_context(), &[&assignment, &phi_condition.implies(&lvalue_var._eq(&rvalue_var))]);
                 } else {
-                    warn!("Currently unsuppported type {:?} for Phi", incoming.0.get_type().to_string());
+                    warn!("Currently unsupported type {:?} for Phi", incoming.0.get_type().to_string());
                 }
             }
             node_var = assignment.implies(&node_var);
@@ -284,7 +284,7 @@ pub fn codegen_instruction<'a>(
             let operand_1_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
             let operand_2_var_name = get_var_name(&instruction.get_operand(2).unwrap().left().unwrap(), &solver, namespace);
             if !discriminant.get_type().to_string().eq("\"i1\"") {
-                warn!("Currently unsuppported type {:?} for select discriminant", discriminant.get_type().to_string());
+                warn!("Currently unsupported type {:?} for select discriminant", discriminant.get_type().to_string());
             }
             let discriminant_var = Bool::new_const(
                 solver.get_context(),
@@ -316,7 +316,7 @@ pub fn codegen_instruction<'a>(
                 let assignment = Bool::and(solver.get_context(), &[&select_1, &select_2]);
                 node_var = assignment.implies(&node_var);
             } else {
-                warn!("Currently unsuppported type {:?} for select", instruction.get_type().to_string());
+                warn!("Currently unsupported type {:?} for select", instruction.get_type().to_string());
             }
         }
         InstructionOpcode::ZExt => {

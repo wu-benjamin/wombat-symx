@@ -2,3 +2,4 @@
 /tests/*.ll
 /tests/*.bc
 /.vscode
+/.idea

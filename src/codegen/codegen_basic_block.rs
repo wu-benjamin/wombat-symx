@@ -35,57 +35,57 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
 
 
 pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
-    if let Some(terminator) = bb.get_terminator() {
+    return if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
         match &opcode {
             InstructionOpcode::Return => {
-                return Some(false);
+                Some(false)
             }
             InstructionOpcode::Br => {
-                return Some(false);
+                Some(false)
             }
             InstructionOpcode::Switch => {
-                return Some(false);
+                Some(false)
             }
             InstructionOpcode::IndirectBr => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::Invoke => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::CallBr => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::Resume => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::CatchSwitch => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::CatchRet => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::CleanupRet => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
-                return None;
+                None
             }
             InstructionOpcode::Unreachable => {
-                return Some(true);
+                Some(true)
             }
             _ => {
                 warn!("Opcode {:?} is not supported as a terminator for panic detection", opcode);
-                return None;
+                None
             }
         }
     } else {
         warn!("\tNo terminator found for panic detection");
-        return None;
+        None
     }
 }
 

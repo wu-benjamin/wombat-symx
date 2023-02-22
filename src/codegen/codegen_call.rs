@@ -67,7 +67,7 @@ fn codegen_general_call<'a>(
             let assignment = lvalue._eq(&rvalue);
             node_var = assignment.implies(&node_var);
         }  else {
-            warn!("Currently unsuppported type {:?} for input parameter to {}", input.get_type().to_string(), call_operation_name_string); 
+            warn!("Currently unsupported type {:?} for input parameter to {}", input.get_type().to_string(), call_operation_name_string);
         }
     }
 

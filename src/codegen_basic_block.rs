@@ -14,10 +14,10 @@ use crate::get_var_name::get_var_name;
 use crate::symbolic_execution::{PANIC_VAR_NAME, COMMON_END_NODE};
 
 
-type EdgeSet = HashMap<String, HashSet<String>>;
+pub type EdgeSet = HashMap<String, HashSet<String>>;
 
 
-fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, namespace: &str) -> BasicBlock<'a> {
+fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, namespace: &str) -> Option<BasicBlock<'a>> {
     let mut matching_bb: Option<BasicBlock> = None;
     let mut matched = false;
     for bb in function.get_basic_blocks() {
@@ -30,11 +30,10 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
             matched = true;
         }
     }
-    return matching_bb.unwrap();
+    return matching_bb;
 }
 
 
-// Conjecture: The name of the basic block is panic with an optional counting number suffix if and only if the block is a panic block
 pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
     if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
@@ -99,7 +98,7 @@ pub fn get_entry_condition<'a>(
     namespace: &str,
 ) -> Bool<'a> {
     let mut entry_condition = Bool::from_bool(solver.get_context(), true);
-    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace).get_terminator() {
+    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace).unwrap().get_terminator() {
         let opcode = terminator.get_opcode();
         let num_operands = terminator.get_num_operands();
         match &opcode {
@@ -201,14 +200,14 @@ pub fn codegen_basic_block(
     if forward_edges.get(&node).is_some() && forward_edges.get(&node).unwrap().contains(COMMON_END_NODE) {
         // assign panic_var
         let lvalue_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
-        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node, namespace)).unwrap_or(true);
+        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node, namespace).unwrap()).unwrap_or(true);
         let rvalue_var = Bool::from_bool(solver.get_context(), is_panic);
         let assignment = lvalue_var._eq(&rvalue_var);
         node_var = assignment.implies(&node_var);
     }
 
     // Parse statements in the basic block
-    let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).get_last_instruction();
+    let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).unwrap().get_last_instruction();
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
@@ -225,7 +224,7 @@ pub fn codegen_basic_block(
                 entry_conditions = Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
             }
         }
-    }  
+    }
     node_var = entry_conditions.implies(&node_var);
 
     let named_node_var = Bool::new_const(solver.get_context(), String::from(&node));

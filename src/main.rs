@@ -3,17 +3,10 @@ use clap::Parser;
 use tracing_core::Level;
 use tracing_subscriber::FmtSubscriber;
 
-mod symbolic_execution;
-mod codegen_function;
-mod codegen_basic_block;
-mod codegen_instruction;
-mod codegen_call;
-mod control_flow_graph;
-mod function_utils;
-mod get_var_name;
-mod pretty_print;
-
-use symbolic_execution::symbolic_execution;
+use wombat_symx::codegen;
+use wombat_symx::utils;
+use wombat_symx::control_flow_graph;
+use wombat_symx::symbolic_execution::symbolic_execution;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

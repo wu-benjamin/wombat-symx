@@ -7,9 +7,9 @@ use inkwell::values::{FunctionValue, InstructionOpcode, InstructionValue, PhiVal
 use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
 
-use crate::codegen_basic_block::get_entry_condition;
-use crate::codegen_call::{codegen_call};
-use crate::get_var_name::get_var_name;
+use crate::codegen::codegen_basic_block::get_entry_condition;
+use crate::codegen::codegen_call::{codegen_call};
+use crate::utils::get_var_name::get_var_name;
 
 
 fn get_field_to_extract(instruction: &InstructionValue) -> String {

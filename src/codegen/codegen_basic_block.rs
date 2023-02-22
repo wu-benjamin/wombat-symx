@@ -9,8 +9,8 @@ use inkwell::values::{FunctionValue, InstructionOpcode};
 use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
 
-use crate::codegen_instruction::codegen_instruction;
-use crate::get_var_name::get_var_name;
+use crate::codegen::codegen_instruction::codegen_instruction;
+use crate::utils::get_var_name::get_var_name;
 use crate::symbolic_execution::{PANIC_VAR_NAME, COMMON_END_NODE};
 
 

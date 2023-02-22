@@ -6,10 +6,10 @@ use inkwell::values::{InstructionValue};
 use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
 
-use crate::codegen_function::codegen_function;
+use crate::codegen::codegen_function::codegen_function;
 use crate::control_flow_graph::forward_topological_sort;
-use crate::function_utils::{get_function_name, get_function_by_name};
-use crate::get_var_name::get_var_name;
+use crate::utils::function_utils::{get_function_name, get_function_by_name};
+use crate::utils::get_var_name::get_var_name;
 use crate::symbolic_execution::get_module_name_from_file_name;
 
 fn codegen_general_call<'a>(

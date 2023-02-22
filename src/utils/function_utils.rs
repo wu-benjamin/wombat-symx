@@ -10,7 +10,7 @@ use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, PointerValue};
 
 use z3::{Solver};
 
-use crate::get_var_name::get_var_name;
+use crate::utils::get_var_name::get_var_name;
 
 
 trait Named {

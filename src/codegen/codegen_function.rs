@@ -5,9 +5,9 @@ use inkwell::values::{FunctionValue};
 
 use z3::Solver;
 
-use crate::codegen_basic_block::codegen_basic_block;
+use crate::codegen::codegen_basic_block::codegen_basic_block;
 use crate::control_flow_graph::{get_forward_edges, get_backward_edges, backward_topological_sort};
-use crate::pretty_print::pretty_print_function;
+use crate::utils::pretty_print::pretty_print_function;
 
 
 pub fn codegen_function(module: &InkwellModule, function: &FunctionValue, solver: &Solver, namespace: &str, call_stack: &str, return_target_node: &str, return_register: &str) -> () {

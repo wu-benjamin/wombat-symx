@@ -6,7 +6,7 @@ use inkwell::module::Module as InkwellModule;
 use inkwell::values::FunctionValue;
 
 use crate::control_flow_graph::{get_forward_edges};
-use crate::codegen_basic_block::is_panic_block;
+use crate::codegen::codegen_basic_block::is_panic_block;
 use crate::symbolic_execution::COMMON_END_NODE;
 
 

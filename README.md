@@ -6,7 +6,7 @@ Wombat SymX is a symbolic executor that operates on LLVM IR (specifically, `*.bc
 
 ## Setup
 
-Note that LLVM 13+ is required for running the program and for creating `*.bc` LLVM binaries. This is packaged with the latest rust compiler (`rustc +1.60.0`).
+Note that LLVM 13 is required for running the program and for creating `*.bc` LLVM binaries. This is packaged with the following rust compilers (`rustc 1.60.*-1.64.*`).
 
 For MAC and Linux, run:
 ```zsh

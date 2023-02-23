@@ -216,7 +216,7 @@ pub fn codegen_call<'a>(
             let assignment = Bool::new_const(solver.get_context(), lvalue_var_name)._eq(&rvalue_var);
             node_var = assignment.implies(&node_var);
         }
-        "core::panicking::panic::he60bb304466ccbaf" => {
+        s if s.starts_with("core::panicking::panic") => {
             // NO-OP
         }
         _ => {

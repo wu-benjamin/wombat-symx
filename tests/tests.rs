@@ -20,6 +20,63 @@ fn test_unsafe_abs() {
 }
 
 #[test]
+fn test_unsafe_abs_i8() {
+    common::test(
+        "test_unsafe_abs_i8",
+        "test_unsafe_abs_i8",
+        "
+            fn test_unsafe_abs_i8(mut x: i8) -> i8 {
+                if x < 0 {
+                    x = -1 * x;
+                }
+
+                assert!(x >= 0);
+                x
+            }
+        ",
+        false,
+    );
+}
+
+#[test]
+fn test_unsafe_abs_i16() {
+    common::test(
+        "test_unsafe_abs_i16",
+        "test_unsafe_abs_i16",
+        "
+            fn test_unsafe_abs_i16(mut x: i16) -> i16 {
+                if x < 0 {
+                    x = -1 * x;
+                }
+
+                assert!(x >= 0);
+                x
+            }
+        ",
+        false,
+    );
+}
+
+#[test]
+fn test_unsafe_abs_i64() {
+    common::test(
+        "test_unsafe_abs_i64",
+        "test_unsafe_abs_i64",
+        "
+            fn test_unsafe_abs_i64(mut x: i64) -> i64 {
+                if x < 0 {
+                    x = -1 * x;
+                }
+
+                assert!(x >= 0);
+                x
+            }
+        ",
+        false,
+    );
+}
+
+#[test]
 fn test_safe_neg_abs() {
     common::test(
         "test_safe_neg_abs",
@@ -33,6 +90,63 @@ fn test_safe_neg_abs() {
                 assert!(x <= 0);
                 x
             }        
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_safe_neg_abs_i8() {
+    common::test(
+        "test_safe_neg_abs_i8",
+        "test_safe_neg_abs_i8",
+        "
+            fn test_safe_neg_abs_i8(mut x: i8) -> i8 {
+                if x > 0 {
+                    x = -1 * x;
+                }
+
+                assert!(x <= 0);
+                x
+            }
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_safe_neg_abs_i16() {
+    common::test(
+        "test_safe_neg_abs_i16",
+        "test_safe_neg_abs_i16",
+        "
+            fn test_safe_neg_abs_i16(mut x: i16) -> i16 {
+                if x > 0 {
+                    x = -1 * x;
+                }
+
+                assert!(x <= 0);
+                x
+            }
+        ",
+        true,
+    );
+}
+
+#[test]
+fn test_safe_neg_abs_i64() {
+    common::test(
+        "test_safe_neg_abs_i64",
+        "test_safe_neg_abs_i64",
+        "
+            fn test_safe_neg_abs_i64(mut x: i64) -> i64 {
+                if x > 0 {
+                    x = -1 * x;
+                }
+
+                assert!(x <= 0);
+                x
+            }
         ",
         true,
     );

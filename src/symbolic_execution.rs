@@ -13,10 +13,10 @@ use z3::{Config, Solver, SatResult};
 use z3::Context as Z3Context;
 use z3::ast::{Int, Bool, Ast};
 
-use crate::codegen_function::codegen_function;
-use crate::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
-use crate::get_var_name::get_var_name;
-use crate::pretty_print::{print_file_functions};
+use crate::codegen::codegen_function::codegen_function;
+use crate::utils::pretty_print::{print_file_functions};
+use crate::utils::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
+use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
 
 
 // pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
@@ -137,18 +137,14 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         // TODO: Support other input types
         if input.get_type().to_string().eq("\"i1\"") {
             continue;
-        } else if input.get_type().to_string().eq("\"i32\"") {
+        } else if input.get_type().is_int_type() {
             let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
-            let min_int = Int::from_i64(solver.get_context(), i32::MIN.into());
-            let max_int = Int::from_i64(solver.get_context(), i32::MAX.into());
+            let (min_int_val, max_int_val) = get_min_max_signed_int(&input.get_type().to_string().as_str().replace("\"", "")[1..]);
+            let min_int = Int::from_i64(solver.get_context(), min_int_val);
+            let max_int = Int::from_i64(solver.get_context(), max_int_val);
             solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
-        } else if input.get_type().to_string().eq("\"i64\"") {
-            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
-            let min_int = Int::from_i64(solver.get_context(), i64::MIN.into());
-            let max_int = Int::from_i64(solver.get_context(), i64::MAX.into());
-            solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
-        }  else {
-            warn!("Currently unsuppported type {:?} for input parameter to {}", input.get_type().to_string(), function_name);
+        } else {
+            warn!("Currently unsupported type {:?} for input parameter to {}", input.get_type().to_string(), function_name);
         }
     }
 
@@ -175,7 +171,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);
         println!("\nUnsafe values:");
-        let mut argument_values = std::vec::Vec::<String>::new();
+        let mut argument_values = Vec::<String>::new();
         for (arg_name, z3_name, var_type) in func_arg_names {
             // TODO: Support non-int params
             let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];

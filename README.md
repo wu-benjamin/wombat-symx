@@ -6,7 +6,7 @@ Wombat SymX is a symbolic executor that operates on LLVM IR (specifically, `*.bc
 
 ## Setup
 
-Note that LLVM 13+ is required for running the program and for creating `*.bc` LLVM binaries. This is packaged with the latest rust compiler (`rustc +1.60.0`).
+Note that LLVM 13 is required for running the program and for creating `*.bc` LLVM binaries. This is packaged with the following rust compilers (`rustc 1.60.*-1.64.*`).
 
 For MAC and Linux, run:
 ```zsh
@@ -106,3 +106,12 @@ The path looks like the following:
 
 ## Time Wombat SymX
 `time cargo run -- <rust_file> test`  
+
+
+# Resources
+
+## LLVM Unsigned vs Signed
+
+LLVM lifts all integers to signed. Intrinsic functions still use unsigned operations while taking signed integers as arguments.
+
+https://stackoverflow.com/questions/14723532/llvms-integer-types

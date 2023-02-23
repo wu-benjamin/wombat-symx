@@ -137,7 +137,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         // TODO: Support other input types
         if input.get_type().to_string().eq("\"i1\"") {
             continue;
-        } else if input.get_type().to_string().starts_with("\"i") {
+        } else if input.get_type().is_int_type() {
             let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
             let (min_int_val, max_int_val) = get_min_max_signed_int(&input.get_type().to_string().as_str().replace("\"", "")[1..]);
             let min_int = Int::from_i64(solver.get_context(), min_int_val);

@@ -144,7 +144,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
             let max_int = Int::from_i64(solver.get_context(), max_int_val);
             solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
         } else {
-            warn!("Currently unsuppported type {:?} for input parameter to {}", input.get_type().to_string(), function_name);
+            warn!("Currently unsupported type {:?} for input parameter to {}", input.get_type().to_string(), function_name);
         }
     }
 

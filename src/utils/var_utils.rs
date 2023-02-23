@@ -47,15 +47,3 @@ pub fn get_min_max_signed_int(size: &str) -> (i64, i64) {
         _ => panic!("Unsupported signed integer type")
     }
 }
-
-pub fn get_min_max_unsigned_int(size: &str) -> (u64, u64) {
-    match size {
-        "8" => (u8::MIN as u64, u8::MAX as u64),
-        "16" => (u8::MIN as u64, u8::MAX as u64),
-        "32" => (u32::MIN as u64, u32::MAX as u64),
-        "64" => (u64::MIN, u64::MAX),
-        "size" => (usize::MIN as u64, usize::MAX as u64), // isize depends on devices architecture (32 bits or 64 bits)
-        "128" => panic!("i128 are unsupported due to Z3 allowing up to64 bit integers"),
-        _ => panic!("Unsupported signed integer type")
-    }
-}

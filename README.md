@@ -106,3 +106,12 @@ The path looks like the following:
 
 ## Time Wombat SymX
 `time cargo run -- <rust_file> test`  
+
+
+# Resources
+
+## LLVM Unsigned vs Signed
+
+LLVM lifts all integers to signed. Intrinsic functions still use unsigned operations while taking signed integers as arguments.
+
+https://stackoverflow.com/questions/14723532/llvms-integer-types

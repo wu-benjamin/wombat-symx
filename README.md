@@ -36,7 +36,7 @@ cargo build
 
 ### Update Project Dependencies
 
-To build the project, use:
+To updat the project dependencies, use:
 ```
 cargo update
 ```

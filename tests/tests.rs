@@ -512,13 +512,12 @@ fn test_unsafe_sequential_branch_5() {
 }
 
 #[test]
-#[ignore]
 fn test_unsafe_tricky_phi() {
     common::test(
         "test_unsafe_tricky_phi",
         "test_unsafe_tricky_phi",
         "
-            fn test(
+            fn test_unsafe_tricky_phi(
                 c1: bool,
                 // c2: bool
             ) -> i32 {

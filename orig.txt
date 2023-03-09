@@ -1,0 +1,41 @@
+Function zzz_temp_test_test_safe_neg_abs_i64::test_safe_neg_abs_i64::hb73d491382b5c24d	
+Number of Nodes: 6	
+Arg count: 1	
+Basic Blocks:	
+    Basic Block: "start"	
+            Panic: Some(false)	
+            Statement: "\"  %_2 = icmp sgt i64 %0, 0\""	
+            Statement: "\"  br i1 %_2, label %bb1, label %bb3\""	
+            Last statement is a Br terminator	
+    Basic Block: "bb3"	
+            Panic: Some(false)	
+            Statement: "\"  %x.0 = phi i64 [ %0, %start ], [ %_5.0, %bb1 ]\""	
+            Statement: "\"  %_7 = icmp sle i64 %x.0, 0\""	
+            Statement: "\"  %_6 = xor i1 %_7, true\""	
+            Statement: "\"  br i1 %_6, label %bb4, label %bb5\""	
+            Last statement is a Br terminator	
+    Basic Block: "bb1"	
+            Panic: Some(false)	
+            Statement: "\"  %1 = call { i64, i1 } @llvm.smul.with.overflow.i64(i64 -1, i64 %0)\""	
+            Statement: "\"  %_5.0 = extractvalue { i64, i1 } %1, 0\""	
+            Statement: "\"  %_5.1 = extractvalue { i64, i1 } %1, 1\""	
+            Statement: "\"  br i1 %_5.1, label %panic, label %bb3, !prof !2\""	
+            Last statement is a Br terminator	
+    Basic Block: "panic"	
+            Panic: Some(true)	
+            Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast ([33 x i8]* @str.0 to [0 x i8]*), i64 33, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc38 to %\\\"core::panic::location::Location\\\"*)) #8\""	
+            Statement: "\"  unreachable\""	
+            Last statement is a Unreachable terminator	
+    Basic Block: "bb5"	
+            Panic: Some(false)	
+            Statement: "\"  ret i64 %x.0\""	
+            Last statement is a Return terminator	
+    Basic Block: "bb4"	
+            Panic: Some(true)	
+            Statement: "\"  call void @_ZN4core9panicking5panic17he60bb304466ccbafE([0 x i8]* noundef nonnull align 1 bitcast (<{ [24 x i8] }>* @alloc39 to [0 x i8]*), i64 24, %\\\"core::panic::location::Location\\\"* noundef align 8 dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>* @alloc41 to %\\\"core::panic::location::Location\\\"*)) #8\""	
+            Statement: "\"  unreachable\""	
+            Last statement is a Unreachable terminator	
+	
+Start node: "start"	
+    Successor to start node: "bb3"	
+    Successor to start node: "bb1"	

@@ -17,7 +17,7 @@ use crate::codegen::codegen_function::codegen_function;
 use crate::utils::pretty_print::{print_file_functions};
 use crate::utils::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
 use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
-
+use crate::utils::resolve_phi::resolve_phi;
 
 // pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
 pub const MAIN_FUNCTION_NAMESPACE: &str = "";
@@ -116,6 +116,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     print_file_functions(&module);
 
     convert_to_dsa(&module);
+    resolve_phi(&context, &module);
 
     let function_option = get_function_by_name(&module, &target_function_name_prefix);
     if function_option.is_none() {

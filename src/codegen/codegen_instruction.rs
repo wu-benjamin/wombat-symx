@@ -223,39 +223,41 @@ pub fn codegen_instruction<'a>(
             // NO-OP
         }
         InstructionOpcode::Phi => {
-            let phi_instruction: PhiValue = instruction.try_into().unwrap();
-            let mut assignment = Bool::from_bool(solver.get_context(), true);
-            for incoming_index in 0..phi_instruction.count_incoming() {
-                let incoming = phi_instruction.get_incoming(incoming_index).unwrap();
-                let predecessor = String::from(format!("{}{}", namespace, incoming.1.get_name().to_str().unwrap()));
-                let phi_condition = get_entry_condition(&solver, &function, &predecessor, &node, namespace);
-                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-                let rvalue_var_name = get_var_name(&incoming.0, &solver, namespace);
-                if instruction.get_type().to_string().eq("\"i1\"") {
-                    let lvalue_var = Bool::new_const(
-                        solver.get_context(),
-                        lvalue_var_name
-                    );
-                    let rvalue_var = Bool::new_const(
-                        solver.get_context(),
-                        rvalue_var_name
-                    );
-                    assignment = Bool::and(&solver.get_context(), &[&assignment, &phi_condition.implies(&lvalue_var._eq(&rvalue_var))]);
-                } else if instruction.get_type().is_int_type() {
-                    let lvalue_var = Int::new_const(
-                        solver.get_context(),
-                        lvalue_var_name
-                    );
-                    let rvalue_var = Int::new_const(
-                        solver.get_context(),
-                        rvalue_var_name
-                    );
-                    assignment = Bool::and(&solver.get_context(), &[&assignment, &phi_condition.implies(&lvalue_var._eq(&rvalue_var))]);
-                } else {
-                    warn!("Currently unsupported type {:?} for Phi", incoming.0.get_type().to_string());
-                }
-            }
-            node_var = assignment.implies(&node_var);
+            // NO-OP
+
+            // let phi_instruction: PhiValue = instruction.try_into().unwrap();
+            // let mut assignment = Bool::from_bool(solver.get_context(), true);
+            // for incoming_index in 0..phi_instruction.count_incoming() {
+            //     let incoming = phi_instruction.get_incoming(incoming_index).unwrap();
+            //     let predecessor = String::from(format!("{}{}", namespace, incoming.1.get_name().to_str().unwrap()));
+            //     let phi_condition = get_entry_condition(&solver, &function, &predecessor, &node, namespace);
+            //     let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            //     let rvalue_var_name = get_var_name(&incoming.0, &solver, namespace);
+            //     if instruction.get_type().to_string().eq("\"i1\"") {
+            //         let lvalue_var = Bool::new_const(
+            //             solver.get_context(),
+            //             lvalue_var_name
+            //         );
+            //         let rvalue_var = Bool::new_const(
+            //             solver.get_context(),
+            //             rvalue_var_name
+            //         );
+            //         assignment = Bool::and(&solver.get_context(), &[&assignment, &phi_condition.implies(&lvalue_var._eq(&rvalue_var))]);
+            //     } else if instruction.get_type().is_int_type() {
+            //         let lvalue_var = Int::new_const(
+            //             solver.get_context(),
+            //             lvalue_var_name
+            //         );
+            //         let rvalue_var = Int::new_const(
+            //             solver.get_context(),
+            //             rvalue_var_name
+            //         );
+            //         assignment = Bool::and(&solver.get_context(), &[&assignment, &phi_condition.implies(&lvalue_var._eq(&rvalue_var))]);
+            //     } else {
+            //         warn!("Currently unsupported type {:?} for Phi", incoming.0.get_type().to_string());
+            //     }
+            // }
+            // node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::Trunc => {
             if instruction.get_type().to_string().eq("\"i1\"") {

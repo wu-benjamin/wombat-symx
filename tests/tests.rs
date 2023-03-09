@@ -519,15 +519,15 @@ fn test_unsafe_tricky_phi() {
         "
             fn test_unsafe_tricky_phi(
                 c1: bool,
-                // c2: bool
+                c2: bool
             ) -> i32 {
                 let mut r = 0;
                 if c1 {
                     r -= 1;
                 }
-                // if c2 {
-                // 	r += 2;
-                // }
+                if c2 {
+                    r += 2;
+                }
                 assert!(r >= 0);
                 return r;
             }
@@ -537,7 +537,6 @@ fn test_unsafe_tricky_phi() {
 }
 
 #[test]
-#[ignore]
 fn test_safe_bool_params() {
     common::test(
         "test_safe_bool_params",
@@ -551,17 +550,3 @@ fn test_safe_bool_params() {
     );
 }
 
-#[test]
-#[ignore]
-fn test_unsafe_float_params() {
-    common::test(
-        "test_unsafe_float_params",
-        "test_unsafe_float_params",
-        "
-            fn test_unsafe_float_params(y: f32) -> () {
-                assert!(y == 0.0);
-            }
-        ",
-        false,
-    );
-}

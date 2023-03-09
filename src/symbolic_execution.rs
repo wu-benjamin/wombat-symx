@@ -17,7 +17,7 @@ use crate::codegen::codegen_function::codegen_function;
 use crate::utils::pretty_print::{print_file_functions};
 use crate::utils::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
 use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
-use crate::utils::resolve_phi::resolve_phi;
+use crate::utils::resolve_phi_to_dsa::resolve_phi_to_dsa;
 
 // pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
 pub const MAIN_FUNCTION_NAMESPACE: &str = "";
@@ -66,7 +66,7 @@ pub fn get_module_name_from_file_name(file_name: &String) -> String {
 }
 
 
-fn convert_to_dsa<'a>(module: &InkwellModule) -> () {
+fn convert_to_ssa<'a>(module: &InkwellModule) -> () {
     let pass_manager_builder = PassManagerBuilder::create();
     let pass_manager = PassManager::create(module);
     pass_manager.add_promote_memory_to_register_pass();
@@ -115,8 +115,8 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
 
     print_file_functions(&module);
 
-    convert_to_dsa(&module);
-    resolve_phi(&context, &module);
+    convert_to_ssa(&module);
+    resolve_phi_to_dsa(&context, &module);
 
     let function_option = get_function_by_name(&module, &target_function_name_prefix);
     if function_option.is_none() {
@@ -134,8 +134,8 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     codegen_function(&module, &function, &solver, MAIN_FUNCTION_NAMESPACE, call_stack, COMMON_END_NODE, MAIN_FUNCTION_RETURN_REGISTER);
 
     // constrain int inputs
+    // Supports signed int types and booleans
     for input in function.get_params() {
-        // TODO: Support other input types
         if input.get_type().to_string().eq("\"i1\"") {
             continue;
         } else if input.get_type().is_int_type() {

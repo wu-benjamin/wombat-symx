@@ -3,8 +3,6 @@ use inkwell::values::{AnyValue};
 use z3::ast::{Ast, Bool, Int};
 use z3::Solver;
 
-use super::resolve_phi::MAGIC_STRING_TERMINATOR;
-
 
 pub const CONST_NAMESPACE: &str = "const_";
 
@@ -35,11 +33,7 @@ pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace:
         let var_name = String::from(&value_str[start_index..end_index]);
         String::from(format!("{}{}", namespace, var_name))
     };
-    // println!("HELP");
-    // println!("{}", name);
-    // println!("{}", value_str);
-    // println!("{}", name[0..name.find(MAGIC_STRING_TERMINATOR).unwrap_or(name.len())].to_string());
-    return name[0..name.find(MAGIC_STRING_TERMINATOR).unwrap_or(name.len())].to_string();
+    return name
 }
 
 pub fn get_min_max_signed_int(size: &str) -> (i64, i64) {

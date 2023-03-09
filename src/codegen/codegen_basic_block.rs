@@ -211,7 +211,7 @@ pub fn codegen_basic_block(
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
-        node_var = codegen_instruction(&module, &node, node_var, current_instruction, function, solver, namespace, call_stack, return_register);
+        node_var = codegen_instruction(&module, node_var, current_instruction, solver, namespace, call_stack, return_register);
         prev_instruction = current_instruction.get_previous_instruction();
     }
 

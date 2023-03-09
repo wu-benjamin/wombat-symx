@@ -19,7 +19,6 @@ use crate::utils::function_utils::{get_function_name, get_function_by_name, get_
 use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
 use crate::utils::resolve_phi_to_dsa::resolve_phi_to_dsa;
 
-// pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
 pub const MAIN_FUNCTION_NAMESPACE: &str = "";
 pub const COMMON_END_NODE: &str = "common_end_node";
 pub const PANIC_VAR_NAME: &str = "is_panic";
@@ -44,7 +43,7 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
         return None;
     }
 
-    let buffer = MemoryBuffer::create_from_file(&path).unwrap();
+    let buffer = MemoryBuffer::create_from_file(path).unwrap();
     let module_result = InkwellModule::parse_bitcode_from_buffer(&buffer, context);
 
     // Check the module is from a valid bytecode file
@@ -53,20 +52,20 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
         return None;
     }
     let module = module_result.unwrap();
-    return Some(module);
+    Some(module)
 }
 
-pub fn get_module_name_from_file_name(file_name: &String) -> String {
+pub fn get_module_name_from_file_name(file_name: &str) -> String {
     let mut start_index = 0;
-    if let Some(last_slash_index) = file_name.rfind("/") {
+    if let Some(last_slash_index) = file_name.rfind('/') {
         start_index = last_slash_index + 1;
     }
-    let end_index = file_name.rfind(".").unwrap_or(file_name.len());
-    return file_name[start_index..end_index].to_string();
+    let end_index = file_name.rfind('.').unwrap_or(file_name.len());
+    file_name[start_index..end_index].to_string()
 }
 
 
-fn convert_to_ssa<'a>(module: &InkwellModule) -> () {
+fn convert_to_ssa(module: &InkwellModule) {
     let pass_manager_builder = PassManagerBuilder::create();
     let pass_manager = PassManager::create(module);
     pass_manager.add_promote_memory_to_register_pass();
@@ -86,7 +85,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let bytecode_file_name = format!("{}.bc", &file_name[0..file_name.rfind('.').unwrap_or(file_name.len())]);
 
     Command::new("rustc")
-        .args(["--emit=llvm-bc", &file_name, "-o", &bytecode_file_name])
+        .args(["--emit=llvm-bc", file_name, "-o", &bytecode_file_name])
         .status()
         .expect("Failed to generate bytecode file!");
 
@@ -95,9 +94,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     };
 
     let module_result = get_inkwell_module(&context, &bytecode_file_name);
-    if module_result.is_none() {
-        return None;
-    }
+    module_result.as_ref()?;
 
     let module = module_result.unwrap();
     let module_name = get_module_name_from_file_name(&bytecode_file_name);
@@ -119,28 +116,24 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     resolve_phi_to_dsa(&context, &module);
 
     let function_option = get_function_by_name(&module, &target_function_name_prefix);
-    if function_option.is_none() {
-        return None;
-    }
+    function_option?;
     let function = function_option.unwrap();
 
     let func_arg_names_option = all_func_arg_names.get(&get_function_name(&function.as_global_value().as_pointer_value()));
-    if func_arg_names_option.is_none() {
-        return None;
-    }
+    func_arg_names_option?;
     let func_arg_names = func_arg_names_option.unwrap();
 
     let call_stack = function.get_name().to_str().unwrap();
     codegen_function(&module, &function, &solver, MAIN_FUNCTION_NAMESPACE, call_stack, COMMON_END_NODE, MAIN_FUNCTION_RETURN_REGISTER);
 
-    // constrain int inputs
+    // Constrain int inputs
     // Supports signed int types and booleans
     for input in function.get_params() {
         if input.get_type().to_string().eq("\"i1\"") {
             continue;
         } else if input.get_type().is_int_type() {
-            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
-            let (min_int_val, max_int_val) = get_min_max_signed_int(&input.get_type().to_string().as_str().replace("\"", "")[1..]);
+            let arg = Int::new_const(solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
+            let (min_int_val, max_int_val) = get_min_max_signed_int(&input.get_type().to_string().as_str().replace('\"', "")[1..]);
             let min_int = Int::from_i64(solver.get_context(), min_int_val);
             let max_int = Int::from_i64(solver.get_context(), max_int_val);
             solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
@@ -155,7 +148,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
 
     let start_node = function.get_first_basic_block().unwrap();
     let start_node_var_name = format!("{}{}", MAIN_FUNCTION_NAMESPACE, start_node.get_name().to_str().unwrap());
-    let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
+    let start_node_var = Bool::new_const(solver.get_context(), start_node_var_name);
     solver.assert(&start_node_var.not());
 
     debug!("{}", format!("\nSolver:\n{:?}", solver));
@@ -167,27 +160,27 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let is_confirmed_unsafe = satisfiability == SatResult::Sat;
     println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
 
-    // Exhibit a pathological input if the function is unsafe
     if is_confirmed_unsafe {
+        // Exhibit a pathological input if the function is unsafe
+        // Supports signed int types and booleans
         let model = solver.get_model().unwrap();
         debug!("\n{:?}", model);
         println!("\nUnsafe values:");
         let mut argument_values = Vec::<String>::new();
         for (arg_name, z3_name, var_type) in func_arg_names {
-            // TODO: Support non-int params
             let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
-            let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
+            let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace('%', "");
             let value_string;
             if var_type.to_string().eq("\"i1\"") {
                 let value = Bool::new_const(solver.get_context(), z3_name.as_str());
                 value_string = format!("{:?}", model.eval(&value, true).unwrap());
-                let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
+                let cleaned_value_string = &value_string.replace('(', "").replace(')', "").replace(' ', "");
                 println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
                 argument_values.push(cleaned_value_string.to_string());
             } else if var_type.is_int_type() {
                 let value = Int::new_const(solver.get_context(), z3_name.as_str());
                 value_string = format!("{:?}", model.eval(&value, true).unwrap());
-                let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
+                let cleaned_value_string = &value_string.replace('(', "").replace(')', "").replace(' ', "");
                 println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
                 argument_values.push(cleaned_value_string.to_string());
             } else {
@@ -196,12 +189,15 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         };
         
         let mut source_file_content = fs::read_to_string(file_name).unwrap();
-        source_file_content = source_file_content.replace("fn main", "fn _main");
-        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
-        for argument_value in argument_values {
-            source_file_content = format!("{}{},", source_file_content, argument_value);
+        if !function_name.eq(&String::from("main")) {
+            // Inject custom main function as entry point for test program to generate stack trace
+            source_file_content = source_file_content.replace("fn main", "fn _main");
+            source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
+            for argument_value in argument_values {
+                source_file_content = format!("{}{},", source_file_content, argument_value);
+            }
+            source_file_content = format!("{});}}", source_file_content);
         }
-        source_file_content = format!("{});}}", source_file_content);
         debug!("{}", source_file_content);
 
         let mut temp_file_path_base_end_index = 0;
@@ -209,7 +205,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
             temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
         }
         let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
-        fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
+        fs::write(&temp_source_file_name, &source_file_content).expect("Failed to write file!");
 
         let _temp_source_file_dropper = FileDropper {
             file_name: &temp_source_file_name,
@@ -218,7 +214,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
 
         Command::new("rustc")
-            .args([&temp_source_file_name, "-o", &temp_executable_file_name])
+            .args([&temp_source_file_name, "-o", temp_executable_file_name])
             .status()
             .expect("Failed to generate executable file!");
 
@@ -226,9 +222,9 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
             file_name: &String::from(temp_executable_file_name),
         };
 
-        println!("\n{}", format!("Error from calling function {} with unsafe arguments:", function_name));
-        println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace("\n", "\n\t"));
+        println!("\nError from calling function {} with unsafe arguments:", function_name);
+        println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace('\n', "\n\t"));
     }
 
-    return Some(is_confirmed_safe);
+    Some(is_confirmed_safe)
 }

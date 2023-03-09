@@ -10,7 +10,7 @@ pub const CONST_NAMESPACE: &str = "const_";
 pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace: &str) -> String {
     let value_llvm_str = value.print_to_string();
     let value_str = value_llvm_str.to_str().unwrap();
-    let name = if !value_str.contains("%") {
+    let name = if !value_str.contains('%') {
         // handle const literals
         let const_value_str = value_str.split_whitespace().nth(1).unwrap();
         let var_name_string = format!("{}{}", CONST_NAMESPACE, const_value_str);
@@ -24,16 +24,16 @@ pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace:
         } else {
             let parsed_num = const_value_str.parse::<i64>().unwrap();
             let num_const = Int::new_const(solver.get_context(), var_name);
-            solver.assert(&num_const._eq(&Int::from_i64(solver.get_context(), parsed_num.into())));
+            solver.assert(&num_const._eq(&Int::from_i64(solver.get_context(), parsed_num)));
         }
         String::from(var_name)
     } else {
-        let start_index = value_str.find("%").unwrap();
-        let end_index = value_str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or(value_str[start_index..].len()) + start_index;
+        let start_index = value_str.find('%').unwrap();
+        let end_index = value_str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or_else(|| value_str[start_index..].len()) + start_index;
         let var_name = String::from(&value_str[start_index..end_index]);
-        String::from(format!("{}{}", namespace, var_name))
+        format!("{}{}", namespace, var_name)
     };
-    return name
+    name
 }
 
 pub fn get_min_max_signed_int(size: &str) -> (i64, i64) {

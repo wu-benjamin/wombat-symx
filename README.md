@@ -36,11 +36,11 @@ cargo build
 
 ### Update Project Dependencies
 
-To build the project, use:
+To update project dependencies, use:
 ```
 cargo update
 ```
-Note it is wise to backup your local dependencies incase an external dependency is updated in a breaking way and is not properly versioned.
+Note it is wise to backup your local dependencies in case an external dependency is updated in a breaking way and is not properly versioned.
 
 ## Runtime Execution
 
@@ -82,6 +82,18 @@ rustc --emit=llvm-bc <file-name>.rs
 A human-readable LLVM IR format can be created by using the following:
 ```zsh
 rustc --emit=llvm-ir <file-name>.rs
+```
+
+# Linting
+
+Obtain a report from the linter by running the following command:
+```
+cargo clippy
+```
+
+Attempt to automatically fix linter issues by running the following command:
+```
+cargo clippy --fix
 ```
 
 # Benchmarking

@@ -50,10 +50,9 @@ fn codegen_general_call<'a>(
     }
 
     // PRE_NODE with CALL_NODE as successor: Assign call arguments
-    // TODO: Handle try_from fail
+    // Supports signed int types and booleans
     assert!(u32::try_from(function.get_params().len()).unwrap() == instruction.get_num_operands() - 1);
     for i in 0..function.get_params().len() {
-        // TODO: Support other input types
         let params = function.get_params();
         let input = params.get(i).unwrap();
         if input.get_type().to_string().eq("\"i1\"") {

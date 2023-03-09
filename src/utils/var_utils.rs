@@ -33,7 +33,7 @@ pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace:
         let var_name = String::from(&value_str[start_index..end_index]);
         String::from(format!("{}{}", namespace, var_name))
     };
-    return name;
+    return name
 }
 
 pub fn get_min_max_signed_int(size: &str) -> (i64, i64) {

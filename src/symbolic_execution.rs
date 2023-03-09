@@ -196,12 +196,6 @@ pub fn symbolic_execution(file_name: &String, function_name: &String, is_benchma
                 warn!("{} is not a supported parameter type!", var_type);
             }
         }
-        let mut source_file_content = fs::read_to_string(file_name).unwrap();
-        source_file_content = source_file_content.replace("fn main", "fn _main");
-        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
-        for argument_value in &argument_values {
-            source_file_content = format!("{}{},", source_file_content, argument_value);
-        }
 
         let mut source_file_content = fs::read_to_string(file_name).unwrap();
         if !function_name.eq(&String::from("main")) {

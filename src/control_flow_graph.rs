@@ -11,7 +11,7 @@ pub fn get_forward_edges(function: &FunctionValue, namespace: &str, return_targe
     let mut all_edges = HashMap::new();
     for bb in function.get_basic_blocks() {
         let mut node_edges = HashSet::new();
-        let basic_block_name = String::from(format!("{}{}", namespace, bb.get_name().to_str().unwrap()));
+        let basic_block_name = format!("{}{}", namespace, bb.get_name().to_str().unwrap());
         if let Some(terminator) = bb.get_terminator() {
             let opcode = terminator.get_opcode();
             let num_operands = terminator.get_num_operands();
@@ -23,16 +23,16 @@ pub fn get_forward_edges(function: &FunctionValue, namespace: &str, return_targe
                     if num_operands == 1 {
                         // Unconditional branch
                         let successor_basic_block = terminator.get_operand(0).unwrap().right().unwrap();
-                        let successor_basic_block_name = String::from(format!("{}{}", namespace, successor_basic_block.get_name().to_str().unwrap()));
-                        node_edges.insert(String::from(successor_basic_block_name));
+                        let successor_basic_block_name = format!("{}{}", namespace, successor_basic_block.get_name().to_str().unwrap());
+                        node_edges.insert(successor_basic_block_name);
                     } else if num_operands == 3 {
                         // Conditional branch
                         let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
-                        let successor_basic_block_name_1 = String::from(format!("{}{}", namespace, successor_basic_block_1.get_name().to_str().unwrap()));
-                        node_edges.insert(String::from(successor_basic_block_name_1));
+                        let successor_basic_block_name_1 = format!("{}{}", namespace, successor_basic_block_1.get_name().to_str().unwrap());
+                        node_edges.insert(successor_basic_block_name_1);
                         let successor_basic_block_2 = terminator.get_operand(2).unwrap().right().unwrap();
-                        let successor_basic_block_name_2 = String::from(format!("{}{}", namespace, successor_basic_block_2.get_name().to_str().unwrap()));
-                        node_edges.insert(String::from(successor_basic_block_name_2));
+                        let successor_basic_block_name_2 = format!("{}{}", namespace, successor_basic_block_2.get_name().to_str().unwrap());
+                        node_edges.insert(successor_basic_block_name_2);
                     } else {
                         warn!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
                     }
@@ -41,8 +41,8 @@ pub fn get_forward_edges(function: &FunctionValue, namespace: &str, return_targe
                     for operand in 0..num_operands {
                         if operand % 2 == 1 {
                             let successor_basic_block = terminator.get_operand(operand).unwrap().right().unwrap();
-                            let successor_basic_block_name = String::from(format!("{}{}", namespace, successor_basic_block.get_name().to_str().unwrap()));
-                            node_edges.insert(String::from(successor_basic_block_name));
+                            let successor_basic_block_name = format!("{}{}", namespace, successor_basic_block.get_name().to_str().unwrap());
+                            node_edges.insert(successor_basic_block_name);
                         }
                     }
                 }
@@ -79,7 +79,7 @@ pub fn get_forward_edges(function: &FunctionValue, namespace: &str, return_targe
         }
         all_edges.insert(basic_block_name, node_edges);
     }
-    return all_edges;
+    all_edges
 }
 
 
@@ -87,7 +87,7 @@ pub fn get_backward_edges(function: &FunctionValue, namespace: &str, return_targ
     let all_forward_edges = get_forward_edges(function, namespace, return_target_node);
     let mut all_backward_edges = HashMap::new();
     for bb in function.get_basic_blocks() {
-        let basic_block_name = String::from(format!("{}{}", namespace, bb.get_name().to_str().unwrap()));
+        let basic_block_name = format!("{}{}", namespace, bb.get_name().to_str().unwrap());
         all_backward_edges.insert(basic_block_name, HashSet::new());
     }
     for (source, dests) in all_forward_edges {
@@ -97,7 +97,7 @@ pub fn get_backward_edges(function: &FunctionValue, namespace: &str, return_targ
             }
         }
     }
-    return all_backward_edges;
+    all_backward_edges
 }
 
 
@@ -107,7 +107,7 @@ pub fn forward_topological_sort(function: &FunctionValue, namespace: &str, retur
     let mut sorted = Vec::new();
     let mut unsorted = Vec::new();
     for bb in function.get_basic_blocks() {
-        let basic_block_name = String::from(format!("{}{}", namespace, bb.get_name().to_str().unwrap()));
+        let basic_block_name = format!("{}{}", namespace, bb.get_name().to_str().unwrap());
         unsorted.push(basic_block_name);
     }
     let num_nodes = unsorted.len();
@@ -132,9 +132,9 @@ pub fn forward_topological_sort(function: &FunctionValue, namespace: &str, retur
                     next_node = Some(node.to_string());
                     sorted.push(node.to_string());
                     if let Some(dests) = forward_edges.get(&node.clone()) {
-                        for dest in dests.into_iter() {
+                        for dest in dests.iter() {
                             if let Some(prev_indegree) = indegrees.get_mut(&dest.clone()) {
-                                *prev_indegree = *prev_indegree - 1;
+                                *prev_indegree -= 1;
                             }
                         }
                     }
@@ -149,12 +149,12 @@ pub fn forward_topological_sort(function: &FunctionValue, namespace: &str, retur
             }
         }
     }
-    return sorted;
+    sorted
 }
 
 
 pub fn backward_topological_sort(function: &FunctionValue, namespace: &str, return_target_node: &str) -> Vec<String> {
     let mut sorted = forward_topological_sort(function, namespace, return_target_node);
     sorted.reverse();
-    return sorted;
+    sorted
 }

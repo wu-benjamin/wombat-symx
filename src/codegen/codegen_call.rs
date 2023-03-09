@@ -37,11 +37,11 @@ fn codegen_general_call<'a>(
     let new_return_register_string = get_var_name(&instruction, solver, namespace);
     let new_return_register_str = new_return_register_string.as_str();
     let new_call_stack_string = format!("{},{}", call_stack, function.get_name().to_str().unwrap());
-    codegen_function(module, &function, solver, new_namespace.as_str(), new_call_stack_string.as_str(), &post_node_name_str, new_return_register_str);
+    codegen_function(module, &function, solver, new_namespace.as_str(), new_call_stack_string.as_str(), post_node_name_str, new_return_register_str);
     
     // CALL_NODE: Start node of function
     let called_function_forward_sorted_nodes = forward_topological_sort(&function, &new_namespace, post_node_name_str);
-    if called_function_forward_sorted_nodes.len() > 0 {
+    if !called_function_forward_sorted_nodes.is_empty() {
         let call_node_name = called_function_forward_sorted_nodes.first().unwrap();
         node_var = Bool::new_const(solver.get_context(), call_node_name.as_str());
     } else {
@@ -56,13 +56,13 @@ fn codegen_general_call<'a>(
         let params = function.get_params();
         let input = params.get(i).unwrap();
         if input.get_type().to_string().eq("\"i1\"") {
-            let lvalue = Bool::new_const(solver.get_context(), get_var_name(input, &solver, &new_namespace));
-            let rvalue = Bool::new_const(solver.get_context(), get_var_name(&instruction.get_operand(u32::try_from(i).unwrap()).unwrap().left().unwrap(), &solver, namespace));
+            let lvalue = Bool::new_const(solver.get_context(), get_var_name(input, solver, &new_namespace));
+            let rvalue = Bool::new_const(solver.get_context(), get_var_name(&instruction.get_operand(u32::try_from(i).unwrap()).unwrap().left().unwrap(), solver, namespace));
             let assignment = lvalue._eq(&rvalue);
             node_var = assignment.implies(&node_var);
         } else if input.get_type().is_int_type() {
-            let lvalue = Int::new_const(solver.get_context(), get_var_name(input, &solver, &new_namespace));
-            let rvalue = Int::new_const(solver.get_context(), get_var_name(&instruction.get_operand(u32::try_from(i).unwrap()).unwrap().left().unwrap(), &solver, namespace));
+            let lvalue = Int::new_const(solver.get_context(), get_var_name(input, solver, &new_namespace));
+            let rvalue = Int::new_const(solver.get_context(), get_var_name(&instruction.get_operand(u32::try_from(i).unwrap()).unwrap().left().unwrap(), solver, namespace));
             let assignment = lvalue._eq(&rvalue);
             node_var = assignment.implies(&node_var);
         }  else {
@@ -71,7 +71,7 @@ fn codegen_general_call<'a>(
     }
 
     // Return PRE_NODE
-    return node_var;
+    node_var
 }
 
 pub fn codegen_call<'a>(
@@ -88,7 +88,7 @@ pub fn codegen_call<'a>(
     let call_operation_name_str = call_operation_name_string.as_str();
 
     let module_name = get_module_name_from_file_name(&String::from(module.get_name().to_str().unwrap()));
-    if call_operation_name_str.find(&module_name).is_some() {
+    if call_operation_name_str.contains(&module_name) {
         return codegen_general_call(module, node_var, instruction, solver, namespace, call_stack);
     }
 
@@ -100,16 +100,16 @@ pub fn codegen_call<'a>(
 
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
             let operand2_name = get_var_name(
                 &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
 
-            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
+            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, solver, namespace));
             let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
             let rvalue_var_1 = Int::add(solver.get_context(), &[
                 &Int::new_const(solver.get_context(), operand1_name),
@@ -118,7 +118,7 @@ pub fn codegen_call<'a>(
             
             let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
+            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, solver, namespace));
             let min_int = Int::from_i64(solver.get_context(), min_int_val);
             let max_int = Int::from_i64(solver.get_context(), max_int_val);
             let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
@@ -134,16 +134,16 @@ pub fn codegen_call<'a>(
 
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
             let operand2_name = get_var_name(
                 &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
 
-            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
+            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, solver, namespace));
             let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
             let rvalue_var_1 = Int::sub(solver.get_context(), &[
                 &Int::new_const(solver.get_context(), operand1_name),
@@ -152,7 +152,7 @@ pub fn codegen_call<'a>(
             
             let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
+            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, solver, namespace));
             let min_int = Int::from_i64(solver.get_context(), min_int_val);
             let max_int = Int::from_i64(solver.get_context(), max_int_val);
             let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
@@ -168,16 +168,16 @@ pub fn codegen_call<'a>(
 
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
             let operand2_name = get_var_name(
                 &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
 
-            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, &solver, namespace));
+            let lvalue_var_name_1 = format!("{}.0", get_var_name(&instruction, solver, namespace));
             let lvalue_var_1 = Int::new_const(solver.get_context(), lvalue_var_name_1);
             let rvalue_var_1 = Int::mul(solver.get_context(), &[
                 &Int::new_const(solver.get_context(), operand1_name),
@@ -186,7 +186,7 @@ pub fn codegen_call<'a>(
             
             let assignment_1 = lvalue_var_1._eq(&rvalue_var_1);
 
-            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, &solver, namespace));
+            let lvalue_var_name_2 = format!("{}.1", get_var_name(&instruction, solver, namespace));
             let min_int = Int::from_i64(solver.get_context(), min_int_val);
             let max_int = Int::from_i64(solver.get_context(), max_int_val);
             let rvalue_var_2 = Bool::or(solver.get_context(), &[&rvalue_var_1.gt(&max_int), &rvalue_var_1.lt(&min_int)]);
@@ -198,17 +198,17 @@ pub fn codegen_call<'a>(
         "llvm.expect.i1" => {
             let lvalue_var_name = get_var_name(
                 &instruction,
-                &solver,
+                solver,
                 namespace
             );
             let operand1_name = get_var_name(
                 &instruction.get_operand(0).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
             let operand2_name = get_var_name(
                 &instruction.get_operand(1).unwrap().left().unwrap(),
-                &solver,
+                solver,
                 namespace
             );
             let rvalue_var = Bool::new_const(solver.get_context(), operand1_name)._eq(&Bool::new_const(solver.get_context(), operand2_name));
@@ -222,5 +222,5 @@ pub fn codegen_call<'a>(
             warn!("Unsupported Call function {:?}", call_operation_name_str);
         }
     }
-    return node_var;
+    node_var
 }

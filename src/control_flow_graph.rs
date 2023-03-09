@@ -1,10 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
-use tracing::warn;
+use tracing::{warn};
 
 use inkwell::values::{FunctionValue, InstructionOpcode};
 
 use crate::symbolic_execution::COMMON_END_NODE;
+
 
 pub fn get_forward_edges(function: &FunctionValue, namespace: &str, return_target_node: &str) -> HashMap<String, HashSet<String>> {
     let mut all_edges = HashMap::new();
@@ -81,6 +82,7 @@ pub fn get_forward_edges(function: &FunctionValue, namespace: &str, return_targe
     all_edges
 }
 
+
 pub fn get_backward_edges(function: &FunctionValue, namespace: &str, return_target_node: &str) -> HashMap<String, HashSet<String>> {
     let all_forward_edges = get_forward_edges(function, namespace, return_target_node);
     let mut all_backward_edges = HashMap::new();
@@ -97,6 +99,7 @@ pub fn get_backward_edges(function: &FunctionValue, namespace: &str, return_targ
     }
     all_backward_edges
 }
+
 
 pub fn forward_topological_sort(function: &FunctionValue, namespace: &str, return_target_node: &str) -> Vec<String> {
     let forward_edges = get_forward_edges(function, namespace, return_target_node);
@@ -148,6 +151,7 @@ pub fn forward_topological_sort(function: &FunctionValue, namespace: &str, retur
     }
     sorted
 }
+
 
 pub fn backward_topological_sort(function: &FunctionValue, namespace: &str, return_target_node: &str) -> Vec<String> {
     let mut sorted = forward_topological_sort(function, namespace, return_target_node);

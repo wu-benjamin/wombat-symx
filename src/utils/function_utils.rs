@@ -1,16 +1,17 @@
-use std::collections::HashMap;
+use std::collections::{HashMap};
 
 use inkwell::types::BasicTypeEnum;
 // use tracing::{debug};
 
 use rustc_demangle::demangle;
 
-use inkwell::module::Module as InkwellModule;
-use inkwell::values::{AnyValue, FunctionValue, InstructionOpcode, PointerValue};
+use inkwell::module::{Module as InkwellModule};
+use inkwell::values::{FunctionValue, InstructionOpcode, AnyValue, PointerValue};
 
-use z3::Solver;
+use z3::{Solver};
 
 use crate::utils::var_utils::get_var_name;
+
 
 trait Named {
     fn get_name(&self) -> String;
@@ -42,17 +43,15 @@ pub fn get_function_argument_names<'a>(function: FunctionValue<'a>, solver: &Sol
         if param.get_name().is_empty() {
             // Var name is empty, find in start basic block
             let alias_name = &get_var_name(&param.as_any_value_enum(), solver, namespace);
-
+            
             let start_block_option = function.get_first_basic_block();
             if start_block_option.is_none() {
                 return arg_names;
             }
-            let start_block = start_block_option.unwrap();
+            let start_block =start_block_option.unwrap();
             let mut instr = start_block.get_first_instruction();
             while instr.is_some() {
-                if instr.unwrap().get_opcode() == InstructionOpcode::Store
-                    && *alias_name == get_var_name(&instr.unwrap().as_any_value_enum(), solver, namespace)
-                {
+                if instr.unwrap().get_opcode() == InstructionOpcode::Store && *alias_name == get_var_name(&instr.unwrap().as_any_value_enum(), solver, namespace) {
                     let arg_name = get_var_name(&instr.unwrap().get_operand(1).unwrap().left().unwrap().as_any_value_enum(), solver, namespace);
                     arg_names.push((arg_name.to_string(), alias_name.to_string(), param.get_type()));
                 }
@@ -69,11 +68,8 @@ pub fn get_function_argument_names<'a>(function: FunctionValue<'a>, solver: &Sol
     arg_names
 }
 
-pub fn get_all_function_argument_names<'a>(
-    module: &'a InkwellModule,
-    solver: &'a Solver,
-    namespace: &'a str,
-) -> HashMap<String, Vec<(String, String, BasicTypeEnum<'a>)>> {
+
+pub fn get_all_function_argument_names<'a>(module: &'a InkwellModule, solver: &'a Solver, namespace: &'a str) -> HashMap<String, Vec<(String, String, BasicTypeEnum<'a>)>> {
     let mut all_func_arg_names = HashMap::<String, Vec<(String, String, BasicTypeEnum)>>::new();
 
     let mut next_function = module.get_first_function();
@@ -86,9 +82,11 @@ pub fn get_all_function_argument_names<'a>(
     all_func_arg_names
 }
 
+
 pub fn get_function_name(function: &PointerValue) -> String {
     return demangle(function.get_name().to_str().unwrap()).to_string();
 }
+
 
 pub fn get_function_by_name<'a>(module: &'a InkwellModule, target_function_name_prefix: &String) -> Option<FunctionValue<'a>> {
     let mut next_function = module.get_first_function();

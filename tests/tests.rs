@@ -262,6 +262,7 @@ fn test_safe_foo() {
     );
 }
 
+
 #[test]
 fn test_safe_switch() {
     common::test(
@@ -548,3 +549,4 @@ fn test_safe_bool_params() {
         true,
     );
 }
+

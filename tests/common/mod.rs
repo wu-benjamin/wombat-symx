@@ -41,7 +41,7 @@ pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_sa
 
     fs::write(&source_file_name, format!("{}\n{}", source_code.replace("            ", ""), main)).expect("Failed to write temp test file!");
 
-    let actual_safe = wombat_symx::symbolic_execution::symbolic_execution(&source_file_name, &String::from(function_name));
+    let actual_safe = wombat_symx::symbolic_execution::symbolic_execution(&source_file_name, &String::from(function_name), false);
 
     assert!(expected_safe == actual_safe.unwrap());
 }

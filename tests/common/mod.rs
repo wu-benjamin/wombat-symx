@@ -34,9 +34,7 @@ pub fn test(test_name: &str, function_name: &str, source_code: &str, expected_sa
         fs::create_dir("tests_temp").expect("Unable to create test directory: \"tests_temp\"");
     }
 
-    let _file_dropper = FileDropper {
-        file_name: &source_file_name,
-    };
+    let _file_dropper = FileDropper { file_name: &source_file_name };
 
     // Prevent compiler from optimizing away unused function
     let main = format!("fn main() {{println!(\"{{:p}}\", {} as *const ())}}", function_name);

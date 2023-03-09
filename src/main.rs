@@ -35,6 +35,6 @@ fn main() {
 
     let file_name = String::from(&features.file_name);
     let function_name = String::from(&features.function_name);
-    
+
     symbolic_execution(&file_name, &function_name);
 }

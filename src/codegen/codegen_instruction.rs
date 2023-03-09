@@ -1,4 +1,7 @@
-use tracing::warn;
+// Copyright (c) 2023 Benjamin Jialong Wu
+// This code is licensed under MIT license (see LICENSE.md for details)
+
+use tracing::{warn};
 
 use inkwell::module::Module as InkwellModule;
 use inkwell::values::{InstructionOpcode, InstructionValue};

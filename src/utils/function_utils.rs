@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+// Copyright (c) 2023 Benjamin Jialong Wu
+// This code is licensed under MIT license (see LICENSE.md for details)
+
+use std::collections::{HashMap};
 
 use inkwell::types::BasicTypeEnum;
 // use tracing::{debug};

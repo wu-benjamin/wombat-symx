@@ -78,17 +78,24 @@ fn convert_to_ssa(module: &InkwellModule) {
     }
 }
 
-pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<bool> {
+pub fn symbolic_execution(file_name: &String, function_name: &String, is_benchmark_mode: bool) -> Option<bool> {
     let context = InkwellContext::create();
 
     let bytecode_file_name = format!("{}.bc", &file_name[0..file_name.rfind('.').unwrap_or(file_name.len())]);
 
-    Command::new("rustc")
-        .args(["--emit=llvm-bc", file_name, "-o", &bytecode_file_name])
-        .status()
-        .expect("Failed to generate bytecode file!");
+    if !is_benchmark_mode {
+        // Benchmark mode skips compilation and assumes user has already compiled bytecode & executable
+        Command::new("rustc")
+            .args(["--emit=llvm-bc", &file_name, "-o", &bytecode_file_name])
+            .status()
+            .expect("Failed to generate bytecode file!");
+    }
 
-    let _temp_bc_file_dropper = FileDropper { file_name: &bytecode_file_name };
+    let _temp_bc_file_dropper = if !is_benchmark_mode {
+        Some(FileDropper {
+            file_name: &bytecode_file_name,
+        })
+    } else { None };
 
     let module_result = get_inkwell_module(&context, &bytecode_file_name);
     module_result.as_ref()?;
@@ -192,6 +199,12 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
             } else {
                 warn!("{} is not a supported parameter type!", var_type);
             }
+        };
+        let mut source_file_content = fs::read_to_string(file_name).unwrap();
+        source_file_content = source_file_content.replace("fn main", "fn _main");
+        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
+        for argument_value in argument_values {
+            source_file_content = format!("{}{},", source_file_content, argument_value);
         }
 
         let mut source_file_content = fs::read_to_string(file_name).unwrap();

@@ -36,11 +36,11 @@ cargo build
 
 ### Update Project Dependencies
 
-To build the project, use:
+To update project dependencies, use:
 ```
 cargo update
 ```
-Note it is wise to backup your local dependencies incase an external dependency is updated in a breaking way and is not properly versioned.
+Note it is wise to backup your local dependencies in case an external dependency is updated in a breaking way and is not properly versioned.
 
 ## Runtime Execution
 

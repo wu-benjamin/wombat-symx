@@ -1,11 +1,9 @@
-use inkwell::values::{AnyValue};
+use inkwell::values::AnyValue;
 
 use z3::ast::{Ast, Bool, Int};
 use z3::Solver;
 
-
 pub const CONST_NAMESPACE: &str = "const_";
-
 
 pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace: &str) -> String {
     let value_llvm_str = value.print_to_string();
@@ -29,7 +27,10 @@ pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace:
         String::from(var_name)
     } else {
         let start_index = value_str.find('%').unwrap();
-        let end_index = value_str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or_else(|| value_str[start_index..].len()) + start_index;
+        let end_index = value_str[start_index..]
+            .find(|c: char| c == '"' || c == ' ' || c == ',')
+            .unwrap_or_else(|| value_str[start_index..].len())
+            + start_index;
         let var_name = String::from(&value_str[start_index..end_index]);
         format!("{}{}", namespace, var_name)
     };
@@ -44,6 +45,6 @@ pub fn get_min_max_signed_int(size: &str) -> (i64, i64) {
         "64" => (i64::MIN, i64::MAX),
         "size" => (isize::MIN as i64, isize::MAX as i64), // isize depends on devices architecture (32 bits or 64 bits)
         "128" => panic!("i128 are unsupported due to Z3 allowing up to 64 bit integers"),
-        _ => panic!("Unsupported signed integer type")
+        _ => panic!("Unsupported signed integer type"),
     }
 }

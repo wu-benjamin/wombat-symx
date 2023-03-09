@@ -2,28 +2,27 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use tracing::{debug, warn, error};
+use tracing::{debug, error, warn};
 
 use inkwell::context::Context as InkwellContext;
-use inkwell::module::{Module as InkwellModule};
 use inkwell::memory_buffer::MemoryBuffer;
+use inkwell::module::Module as InkwellModule;
 use inkwell::passes::{PassManager, PassManagerBuilder};
 
-use z3::{Config, Solver, SatResult};
+use z3::ast::{Ast, Bool, Int};
 use z3::Context as Z3Context;
-use z3::ast::{Int, Bool, Ast};
+use z3::{Config, SatResult, Solver};
 
 use crate::codegen::codegen_function::codegen_function;
-use crate::utils::pretty_print::{print_file_functions};
-use crate::utils::function_utils::{get_function_name, get_function_by_name, get_all_function_argument_names};
-use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
+use crate::utils::function_utils::{get_all_function_argument_names, get_function_by_name, get_function_name};
+use crate::utils::pretty_print::print_file_functions;
 use crate::utils::resolve_phi_to_dsa::resolve_phi_to_dsa;
+use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
 
 pub const MAIN_FUNCTION_NAMESPACE: &str = "";
 pub const COMMON_END_NODE: &str = "common_end_node";
 pub const PANIC_VAR_NAME: &str = "is_panic";
 pub const MAIN_FUNCTION_RETURN_REGISTER: &str = "wombat_symx_return_register";
-
 
 struct FileDropper<'a> {
     file_name: &'a String,
@@ -34,7 +33,6 @@ impl Drop for FileDropper<'_> {
         fs::remove_file(self.file_name).expect("Failed to delete file.");
     }
 }
-
 
 fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Option<InkwellModule<'a>> {
     let path = Path::new(&file_name);
@@ -48,7 +46,10 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
 
     // Check the module is from a valid bytecode file
     if module_result.is_err() {
-        error!("{:?} is not a valid LLVM bitcode file. Please pass in a valid bc file.\nThe module_result is below:\n{:?}", file_name, module_result);
+        error!(
+            "{:?} is not a valid LLVM bitcode file. Please pass in a valid bc file.\nThe module_result is below:\n{:?}",
+            file_name, module_result
+        );
         return None;
     }
     let module = module_result.unwrap();
@@ -64,7 +65,6 @@ pub fn get_module_name_from_file_name(file_name: &str) -> String {
     file_name[start_index..end_index].to_string()
 }
 
-
 fn convert_to_ssa(module: &InkwellModule) {
     let pass_manager_builder = PassManagerBuilder::create();
     let pass_manager = PassManager::create(module);
@@ -78,7 +78,6 @@ fn convert_to_ssa(module: &InkwellModule) {
     }
 }
 
-
 pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<bool> {
     let context = InkwellContext::create();
 
@@ -89,9 +88,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         .status()
         .expect("Failed to generate bytecode file!");
 
-    let _temp_bc_file_dropper = FileDropper {
-        file_name: &bytecode_file_name,
-    };
+    let _temp_bc_file_dropper = FileDropper { file_name: &bytecode_file_name };
 
     let module_result = get_inkwell_module(&context, &bytecode_file_name);
     module_result.as_ref()?;
@@ -158,7 +155,16 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
 
     let is_confirmed_safe = satisfiability == SatResult::Unsat;
     let is_confirmed_unsafe = satisfiability == SatResult::Sat;
-    println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
+    println!(
+        "\nFunction safety: {}",
+        if is_confirmed_safe {
+            "safe"
+        } else if is_confirmed_unsafe {
+            "unsafe"
+        } else {
+            "unknown"
+        }
+    );
 
     if is_confirmed_unsafe {
         // Exhibit a pathological input if the function is unsafe
@@ -186,8 +192,8 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
             } else {
                 warn!("{} is not a supported parameter type!", var_type);
             }
-        };
-        
+        }
+
         let mut source_file_content = fs::read_to_string(file_name).unwrap();
         if !function_name.eq(&String::from("main")) {
             // Inject custom main function as entry point for test program to generate stack trace
@@ -204,12 +210,14 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         if file_name.rfind('/').is_some() {
             temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
         }
-        let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
+        let temp_source_file_name = format!(
+            "{}temp_wombat_symx_{}",
+            &file_name[0..temp_file_path_base_end_index],
+            &file_name[temp_file_path_base_end_index..file_name.len()]
+        );
         fs::write(&temp_source_file_name, &source_file_content).expect("Failed to write file!");
 
-        let _temp_source_file_dropper = FileDropper {
-            file_name: &temp_source_file_name,
-        };
+        let _temp_source_file_dropper = FileDropper { file_name: &temp_source_file_name };
 
         let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
 
@@ -223,7 +231,12 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         };
 
         println!("\nError from calling function {} with unsafe arguments:", function_name);
-        println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace('\n', "\n\t"));
+        println!(
+            "\t{}",
+            std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr)
+                .unwrap()
+                .replace('\n', "\n\t")
+        );
     }
 
     Some(is_confirmed_safe)

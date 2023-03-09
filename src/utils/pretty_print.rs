@@ -10,7 +10,7 @@ use crate::codegen::codegen_basic_block::is_panic_block;
 use crate::symbolic_execution::COMMON_END_NODE;
 
 
-pub fn print_file_functions(module: &InkwellModule) -> () {
+pub fn print_file_functions(module: &InkwellModule) {
     //! Iterates through all functions in the file and prints the demangled name
     debug!("Functions in {:?}:", module.get_name());
     let mut next_function = module.get_first_function();
@@ -22,7 +22,7 @@ pub fn print_file_functions(module: &InkwellModule) -> () {
 }
 
 
-pub fn pretty_print_function(function: &FunctionValue, namespace: &str) -> () {
+pub fn pretty_print_function(function: &FunctionValue, namespace: &str) {
     debug!("Function {}", demangle(function.get_name().to_str().unwrap()));
     let number_of_nodes = function.count_basic_blocks();
     debug!("Number of Nodes: {}", function.count_basic_blocks());

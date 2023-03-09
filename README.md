@@ -84,6 +84,18 @@ A human-readable LLVM IR format can be created by using the following:
 rustc --emit=llvm-ir <file-name>.rs
 ```
 
+# Linting
+
+Obtain a report from the linter by running the following command:
+```
+cargo clippy
+```
+
+Attempt to automatically fix linter issues by running the following command:
+```
+cargo clippy --fix
+```
+
 # Benchmarking
 ## Install KLEE
 

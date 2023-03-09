@@ -22,7 +22,7 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
     let mut matched = false;
     for bb in function.get_basic_blocks() {
         let node_name = format!("{}{}", namespace, bb.get_name().to_str().unwrap());
-        if name.eq(&String::from(node_name)) {
+        if name.eq(&node_name) {
             if matched {
                 warn!("Multiple basic blocks matched name {:?}", name);
             }
@@ -30,7 +30,7 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
             matched = true;
         }
     }
-    return matching_bb;
+    matching_bb
 }
 
 
@@ -109,7 +109,7 @@ pub fn get_entry_condition<'a>(
                     let mut target_val = true;
                     let discriminant = terminator.get_operand(0).unwrap().left().unwrap();
                     let successor_basic_block_1 = terminator.get_operand(1).unwrap().right().unwrap();
-                    let successor_basic_block_name_1 = String::from(format!("{}{}", namespace, successor_basic_block_1.get_name().to_str().unwrap()));
+                    let successor_basic_block_name_1 = format!("{}{}", namespace, successor_basic_block_1.get_name().to_str().unwrap());
                     if successor_basic_block_name_1.eq(&String::from(node)) {
                         target_val = false;
                     }
@@ -117,7 +117,7 @@ pub fn get_entry_condition<'a>(
                         Bool::from_bool(solver.get_context(), target_val);
                     let switch_var = Bool::new_const(
                         solver.get_context(),
-                        get_var_name(&discriminant, &solver, namespace),
+                        get_var_name(&discriminant, solver, namespace),
                     );
 
                     entry_condition = switch_var._eq(&target_val_var);
@@ -132,7 +132,7 @@ pub fn get_entry_condition<'a>(
                 for i in 0..num_operands {
                     if i % 2 == 1 {
                         let basic_block = terminator.get_operand(i).unwrap().right().unwrap();
-                        let basic_block_name = String::from(format!("{}{}", namespace, basic_block.get_name().to_str().unwrap()));
+                        let basic_block_name = format!("{}{}", namespace, basic_block.get_name().to_str().unwrap());
                         if basic_block_name.eq(&String::from(node)) {
                             target_val = terminator.get_operand(i-1).unwrap().left().unwrap();
                             break;
@@ -141,7 +141,7 @@ pub fn get_entry_condition<'a>(
                 }
                 let switch_var = Int::new_const(
                     solver.get_context(),
-                    get_var_name(&discriminant, &solver, namespace),
+                    get_var_name(&discriminant, solver, namespace),
                 );
 
                 if target_val == terminator.get_operand(0).unwrap().left().unwrap() {
@@ -149,12 +149,12 @@ pub fn get_entry_condition<'a>(
                     for j in 2..num_operands {
                         if j % 2 == 0 { 
                             let temp_target_val = terminator.get_operand(j).unwrap().left().unwrap();
-                            let temp_target_val_var = Int::new_const(solver.get_context(), get_var_name(&temp_target_val, &solver, namespace));
+                            let temp_target_val_var = Int::new_const(solver.get_context(), get_var_name(&temp_target_val, solver, namespace));
                             entry_condition = Bool::and(solver.get_context(), &[&(switch_var._eq(&temp_target_val_var)).not(), &entry_condition]);
                         }
                     }
                 } else {
-                    let target_val_var = Int::new_const(solver.get_context(), get_var_name(&target_val, &solver, namespace));
+                    let target_val_var = Int::new_const(solver.get_context(), get_var_name(&target_val, solver, namespace));
                     entry_condition = switch_var._eq(&target_val_var);
                 }
             }
@@ -171,10 +171,11 @@ pub fn get_entry_condition<'a>(
     } else {
         warn!("\tNo terminator found when computing node entry conditions");
     }
-    return entry_condition;
+    entry_condition
 }
 
 
+#[allow(clippy::too_many_arguments)]
 pub fn codegen_basic_block(
     module: &InkwellModule,
     node: String,
@@ -185,7 +186,7 @@ pub fn codegen_basic_block(
     namespace: &str,
     call_stack: &str,
     return_register: &str
-) -> () {
+) {
     let mut successor_conditions = Bool::from_bool(solver.get_context(), true);
     if let Some(successors) = forward_edges.get(&node) {
         for successor in successors {
@@ -200,27 +201,27 @@ pub fn codegen_basic_block(
     if forward_edges.get(&node).is_some() && forward_edges.get(&node).unwrap().contains(COMMON_END_NODE) {
         // assign panic_var
         let lvalue_var = Bool::new_const(solver.get_context(), PANIC_VAR_NAME);
-        let is_panic = is_panic_block(&get_basic_block_by_name(&function, &node, namespace).unwrap()).unwrap_or(true);
+        let is_panic = is_panic_block(&get_basic_block_by_name(function, &node, namespace).unwrap()).unwrap_or(true);
         let rvalue_var = Bool::from_bool(solver.get_context(), is_panic);
         let assignment = lvalue_var._eq(&rvalue_var);
         node_var = assignment.implies(&node_var);
     }
 
     // Parse statements in the basic block
-    let mut prev_instruction = get_basic_block_by_name(&function, &node, namespace).unwrap().get_last_instruction();
+    let mut prev_instruction = get_basic_block_by_name(function, &node, namespace).unwrap().get_last_instruction();
 
     while let Some(current_instruction) = prev_instruction {
         // Process current instruction
-        node_var = codegen_instruction(&module, node_var, current_instruction, solver, namespace, call_stack, return_register);
+        node_var = codegen_instruction(module, node_var, current_instruction, solver, namespace, call_stack, return_register);
         prev_instruction = current_instruction.get_previous_instruction();
     }
 
     let mut entry_conditions = Bool::from_bool(solver.get_context(), true);
     if let Some(predecessors) = backward_edges.get(&node) {
-        if predecessors.len() > 0 {
+        if !predecessors.is_empty() {
             for predecessor in predecessors {
                 // get conditions
-                let entry_condition = get_entry_condition(&solver, &function, &predecessor, &node, namespace);
+                let entry_condition = get_entry_condition(solver, function, predecessor, &node, namespace);
                 entry_conditions = Bool::and(solver.get_context(), &[&entry_conditions, &entry_condition]);
             }
         }

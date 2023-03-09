@@ -13,7 +13,7 @@ use crate::utils::var_utils::get_var_name;
 
 fn get_field_to_extract(instruction: &InstructionValue) -> String {
     let instruction_string = instruction.to_string();
-    return String::from(&instruction_string[instruction_string.rfind(" ").unwrap()+1..instruction_string.rfind("\"").unwrap()]);
+    String::from(&instruction_string[instruction_string.rfind(' ').unwrap()+1..instruction_string.rfind('\"').unwrap()])
 }
 
 
@@ -79,8 +79,8 @@ pub fn codegen_instruction<'a>(
             if !instruction.get_type().is_int_type() {
                 warn!("Currently unsupported type {:?} for load operand", instruction.get_type().to_string())
             }
-            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-            let rvalue_var_name = get_var_name(&operand, &solver, namespace);
+            let lvalue_var_name = get_var_name(&instruction, solver, namespace);
+            let rvalue_var_name = get_var_name(&operand, solver, namespace);
             let lvalue_var = Int::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -100,8 +100,8 @@ pub fn codegen_instruction<'a>(
             }
             let operand2 = instruction.get_operand(1).unwrap().left().unwrap().into_pointer_value();
             
-            let lvalue_var_name = get_var_name(&operand1, &solver, namespace);
-            let rvalue_var_name = get_var_name(&operand2, &solver, namespace);
+            let lvalue_var_name = get_var_name(&operand1, solver, namespace);
+            let rvalue_var_name = get_var_name(&operand2, solver, namespace);
             let lvalue_var = Int::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -117,8 +117,8 @@ pub fn codegen_instruction<'a>(
             // NO-OP
         }
         InstructionOpcode::Xor => {
-            let operand1_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
-            let operand2_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
+            let operand1_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), solver, namespace);
+            let operand2_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), solver, namespace);
             if !instruction.get_type().to_string().eq("\"i1\"") {
                 warn!("Currently unsupported type {:?} for xor operand", instruction.get_type().to_string());
             }
@@ -131,7 +131,7 @@ pub fn codegen_instruction<'a>(
                 operand2_var_name
             );
             let rvalue_var = operand1_var.xor(&operand2_var);
-            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            let lvalue_var_name = get_var_name(&instruction, solver, namespace);
             let lvalue_var = Bool::new_const(
                 solver.get_context(),
                 lvalue_var_name
@@ -140,56 +140,54 @@ pub fn codegen_instruction<'a>(
             node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::ICmp => {
-            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            let lvalue_var_name = get_var_name(&instruction, solver, namespace);
             let lvalue_var = Bool::new_const(solver.get_context(), lvalue_var_name);
-            let operand1 = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
-            let operand2 = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
-            let rvalue_operation;
-            
+            let operand1 = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), solver, namespace);
+            let operand2 = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), solver, namespace);            
 
             // Split by the sub-instruction (denoting the type of comparison)
             // TODO: can signed & unsigned comparisons be combined?
             let icmp_type = instruction.get_icmp_predicate().unwrap();
-            match &icmp_type {
+            let rvalue_operation = match &icmp_type {
                 IntPredicate::EQ => {
-                    rvalue_operation = Int::new_const(&solver.get_context(), operand1)._eq(
-                        &Int::new_const(&solver.get_context(), operand2)
-                    );
+                    Int::new_const(solver.get_context(), operand1)._eq(
+                        &Int::new_const(solver.get_context(), operand2)
+                    )
                 }
                 IntPredicate::NE => {
-                    rvalue_operation = Int::new_const(&solver.get_context(), operand1)._eq(
-                        &Int::new_const(&solver.get_context(), operand2)
-                    ).not();
+                    Int::new_const(solver.get_context(), operand1)._eq(
+                        &Int::new_const(solver.get_context(), operand2)
+                    ).not()
                 }
                 IntPredicate::SGE | IntPredicate::UGE => {
-                    rvalue_operation = Int::new_const(&solver.get_context(), operand1).ge(
-                        &Int::new_const(&solver.get_context(), operand2)
-                    );
+                    Int::new_const(solver.get_context(), operand1).ge(
+                        &Int::new_const(solver.get_context(), operand2)
+                    )
                 }
                 IntPredicate::SGT | IntPredicate::UGT => {
-                    rvalue_operation = Int::new_const(&solver.get_context(), operand1).gt(
-                        &Int::new_const(&solver.get_context(), operand2)
-                    );
+                    Int::new_const(solver.get_context(), operand1).gt(
+                        &Int::new_const(solver.get_context(), operand2)
+                    )
                 }
                 IntPredicate::SLE | IntPredicate::ULE => {
-                    rvalue_operation = Int::new_const(&solver.get_context(), operand1).le(
-                        &Int::new_const(&solver.get_context(), operand2)
-                    );
+                    Int::new_const(solver.get_context(), operand1).le(
+                        &Int::new_const(solver.get_context(), operand2)
+                    )
                 }
                 IntPredicate::SLT | IntPredicate::ULT => {
-                    rvalue_operation = Int::new_const(&solver.get_context(), operand1).lt(
-                        &Int::new_const(&solver.get_context(), operand2)
-                    );
+                    Int::new_const(solver.get_context(), operand1).lt(
+                        &Int::new_const(solver.get_context(), operand2)
+                    )
                 }
-            }
+            };
 
             let assignment = lvalue_var._eq(&rvalue_operation);
             node_var = assignment.implies(&node_var);
         }
         InstructionOpcode::ExtractValue => {
-            let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
+            let lvalue_var_name = get_var_name(&instruction, solver, namespace);
             let operand = instruction.get_operand(0).unwrap().left().unwrap();
-            let rvalue_var_name = format!("{}.{}", get_var_name(&operand, &solver, namespace), get_field_to_extract(&instruction));
+            let rvalue_var_name = format!("{}.{}", get_var_name(&operand, solver, namespace), get_field_to_extract(&instruction));
             if instruction.get_type().to_string().eq("\"i1\"") {
                 let lvalue_var = Bool::new_const(
                     solver.get_context(),
@@ -224,8 +222,8 @@ pub fn codegen_instruction<'a>(
         }
         InstructionOpcode::Trunc => {
             if instruction.get_type().to_string().eq("\"i1\"") {
-                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+                let lvalue_var_name = get_var_name(&instruction, solver, namespace);
+                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), solver, namespace);
                 let lvalue_var = Bool::new_const(
                     solver.get_context(),
                     lvalue_var_name
@@ -245,9 +243,9 @@ pub fn codegen_instruction<'a>(
         }
         InstructionOpcode::Select => {
             let discriminant = instruction.get_operand(0).unwrap().left().unwrap();
-            let discriminant_name = get_var_name(&discriminant, &solver, namespace);
-            let operand_1_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), &solver, namespace);
-            let operand_2_var_name = get_var_name(&instruction.get_operand(2).unwrap().left().unwrap(), &solver, namespace);
+            let discriminant_name = get_var_name(&discriminant, solver, namespace);
+            let operand_1_var_name = get_var_name(&instruction.get_operand(1).unwrap().left().unwrap(), solver, namespace);
+            let operand_2_var_name = get_var_name(&instruction.get_operand(2).unwrap().left().unwrap(), solver, namespace);
             if !discriminant.get_type().to_string().eq("\"i1\"") {
                 warn!("Currently unsupported type {:?} for select discriminant", discriminant.get_type().to_string());
             }
@@ -264,8 +262,8 @@ pub fn codegen_instruction<'a>(
                     solver.get_context(),
                     operand_2_var_name
                 );                            
-                let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_1_var));
-                let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_2_var));
+                let select_1 = discriminant_var.implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, solver, namespace))._eq(&operand_1_var));
+                let select_2 = discriminant_var.not().implies(&Bool::new_const(solver.get_context(), get_var_name(&instruction, solver, namespace))._eq(&operand_2_var));
                 node_var = Bool::and(solver.get_context(), &[&select_1.implies(&node_var), &select_2.implies(&node_var)]);
             } else if instruction.get_type().is_int_type() {
                 let operand_1_var = Int::new_const(
@@ -276,8 +274,8 @@ pub fn codegen_instruction<'a>(
                     solver.get_context(),
                     operand_2_var_name
                 );                            
-                let select_1 = discriminant_var.implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_1_var));
-                let select_2 = discriminant_var.not().implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, &solver, namespace))._eq(&operand_2_var));
+                let select_1 = discriminant_var.implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, solver, namespace))._eq(&operand_1_var));
+                let select_2 = discriminant_var.not().implies(&Int::new_const(solver.get_context(), get_var_name(&instruction, solver, namespace))._eq(&operand_2_var));
                 let assignment = Bool::and(solver.get_context(), &[&select_1, &select_2]);
                 node_var = assignment.implies(&node_var);
             } else {
@@ -286,8 +284,8 @@ pub fn codegen_instruction<'a>(
         }
         InstructionOpcode::ZExt => {
             if instruction.get_operand(0).unwrap().left().unwrap().get_type().to_string().eq("\"i1\"") {
-                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+                let lvalue_var_name = get_var_name(&instruction, solver, namespace);
+                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), solver, namespace);
                 let lvalue_var = Int::new_const(
                     solver.get_context(),
                     lvalue_var_name
@@ -303,8 +301,8 @@ pub fn codegen_instruction<'a>(
                 let assignment = Bool::and(solver.get_context(), &[&cast_1, &cast_2]);
                 node_var = assignment.implies(&node_var);
             } else if instruction.get_operand(0).unwrap().left().unwrap().get_type().is_int_type() {
-                let lvalue_var_name = get_var_name(&instruction, &solver, namespace);
-                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), &solver, namespace);
+                let lvalue_var_name = get_var_name(&instruction, solver, namespace);
+                let operand_var_name = get_var_name(&instruction.get_operand(0).unwrap().left().unwrap(), solver, namespace);
                 let lvalue_var = Int::new_const(
                     solver.get_context(),
                     lvalue_var_name
@@ -323,5 +321,5 @@ pub fn codegen_instruction<'a>(
             warn!("Opcode {:?} is not supported as a statement for code gen", opcode);
         }
     }
-    return node_var;
+    node_var
 }

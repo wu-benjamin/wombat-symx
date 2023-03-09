@@ -21,11 +21,11 @@ fn get_instructions(bb: BasicBlock) -> Vec<InstructionValue> {
         instructions.push(current_instruction);
         next_instruction = current_instruction.get_next_instruction();
     }
-    return instructions;
+    instructions
 }
 
 
-pub fn resolve_phi_to_dsa<'a>(context: &Context, module: &InkwellModule) -> () {
+pub fn resolve_phi_to_dsa(context: &Context, module: &InkwellModule) {
     let mut next_function = module.get_first_function();
     let builder = context.create_builder();
     while let Some(current_function) = next_function {
@@ -46,15 +46,13 @@ pub fn resolve_phi_to_dsa<'a>(context: &Context, module: &InkwellModule) -> () {
                     // No need for namespace since there is no notion of instances of function calls in this preprocessing step
                     let value_llvm_str = &phi_instruction.print_to_string();
                     let value_str = value_llvm_str.to_str().unwrap();
-                    let start_index = value_str.find("%").unwrap() + 1;
-                    let end_index = value_str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or(value_str[start_index..].len()) + start_index;
+                    let start_index = value_str.find('%').unwrap() + 1;
+                    let end_index = value_str[start_index..].find(|c: char| c == '"' || c == ' ' || c == ',').unwrap_or_else(|| value_str[start_index..].len()) + start_index;
                     let var_name = String::from(&value_str[start_index..end_index]);
 
                     for incoming_index in 0..phi_instruction.count_incoming() {
                         let (phi_rvalue, phi_predecessor) = phi_instruction.get_incoming(incoming_index).unwrap();
-                        if !phi_predecessor_assignments.contains_key(&phi_predecessor) {
-                            phi_predecessor_assignments.insert(phi_predecessor, Vec::<Assignment>::new());
-                        }
+                        phi_predecessor_assignments.entry(phi_predecessor).or_insert_with(Vec::<Assignment>::new);
 
                         let assignment = Assignment{
                             lvalue: var_name.clone(),

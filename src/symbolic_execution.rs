@@ -43,7 +43,7 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
         return None;
     }
 
-    let buffer = MemoryBuffer::create_from_file(&path).unwrap();
+    let buffer = MemoryBuffer::create_from_file(path).unwrap();
     let module_result = InkwellModule::parse_bitcode_from_buffer(&buffer, context);
 
     // Check the module is from a valid bytecode file
@@ -52,20 +52,20 @@ fn get_inkwell_module<'a>(context: &'a InkwellContext, file_name: &String) -> Op
         return None;
     }
     let module = module_result.unwrap();
-    return Some(module);
+    Some(module)
 }
 
-pub fn get_module_name_from_file_name(file_name: &String) -> String {
+pub fn get_module_name_from_file_name(file_name: &str) -> String {
     let mut start_index = 0;
-    if let Some(last_slash_index) = file_name.rfind("/") {
+    if let Some(last_slash_index) = file_name.rfind('/') {
         start_index = last_slash_index + 1;
     }
-    let end_index = file_name.rfind(".").unwrap_or(file_name.len());
-    return file_name[start_index..end_index].to_string();
+    let end_index = file_name.rfind('.').unwrap_or(file_name.len());
+    file_name[start_index..end_index].to_string()
 }
 
 
-fn convert_to_ssa<'a>(module: &InkwellModule) -> () {
+fn convert_to_ssa(module: &InkwellModule) {
     let pass_manager_builder = PassManagerBuilder::create();
     let pass_manager = PassManager::create(module);
     pass_manager.add_promote_memory_to_register_pass();
@@ -85,7 +85,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let bytecode_file_name = format!("{}.bc", &file_name[0..file_name.rfind('.').unwrap_or(file_name.len())]);
 
     Command::new("rustc")
-        .args(["--emit=llvm-bc", &file_name, "-o", &bytecode_file_name])
+        .args(["--emit=llvm-bc", file_name, "-o", &bytecode_file_name])
         .status()
         .expect("Failed to generate bytecode file!");
 
@@ -94,9 +94,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     };
 
     let module_result = get_inkwell_module(&context, &bytecode_file_name);
-    if module_result.is_none() {
-        return None;
-    }
+    module_result.as_ref()?;
 
     let module = module_result.unwrap();
     let module_name = get_module_name_from_file_name(&bytecode_file_name);
@@ -118,15 +116,11 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     resolve_phi_to_dsa(&context, &module);
 
     let function_option = get_function_by_name(&module, &target_function_name_prefix);
-    if function_option.is_none() {
-        return None;
-    }
+    function_option?;
     let function = function_option.unwrap();
 
     let func_arg_names_option = all_func_arg_names.get(&get_function_name(&function.as_global_value().as_pointer_value()));
-    if func_arg_names_option.is_none() {
-        return None;
-    }
+    func_arg_names_option?;
     let func_arg_names = func_arg_names_option.unwrap();
 
     let call_stack = function.get_name().to_str().unwrap();
@@ -138,8 +132,8 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         if input.get_type().to_string().eq("\"i1\"") {
             continue;
         } else if input.get_type().is_int_type() {
-            let arg = Int::new_const(&solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
-            let (min_int_val, max_int_val) = get_min_max_signed_int(&input.get_type().to_string().as_str().replace("\"", "")[1..]);
+            let arg = Int::new_const(solver.get_context(), get_var_name(&input, &solver, MAIN_FUNCTION_NAMESPACE));
+            let (min_int_val, max_int_val) = get_min_max_signed_int(&input.get_type().to_string().as_str().replace('\"', "")[1..]);
             let min_int = Int::from_i64(solver.get_context(), min_int_val);
             let max_int = Int::from_i64(solver.get_context(), max_int_val);
             solver.assert(&Bool::and(solver.get_context(), &[&arg.ge(&min_int), &arg.le(&max_int)]));
@@ -154,7 +148,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
 
     let start_node = function.get_first_basic_block().unwrap();
     let start_node_var_name = format!("{}{}", MAIN_FUNCTION_NAMESPACE, start_node.get_name().to_str().unwrap());
-    let start_node_var = Bool::new_const(solver.get_context(), String::from(start_node_var_name));
+    let start_node_var = Bool::new_const(solver.get_context(), start_node_var_name);
     solver.assert(&start_node_var.not());
 
     debug!("{}", format!("\nSolver:\n{:?}", solver));
@@ -232,5 +226,5 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace('\n', "\n\t"));
     }
 
-    return Some(is_confirmed_safe);
+    Some(is_confirmed_safe)
 }

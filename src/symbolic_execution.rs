@@ -91,11 +91,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String, is_benchma
             .expect("Failed to generate bytecode file!");
     }
 
-    let _temp_bc_file_dropper = if !is_benchmark_mode {
-        Some(FileDropper {
-            file_name: &bytecode_file_name,
-        })
-    } else { None };
+    let _temp_bc_file_dropper = if !is_benchmark_mode { Some(FileDropper { file_name: &bytecode_file_name }) } else { None };
 
     let module_result = get_inkwell_module(&context, &bytecode_file_name);
     module_result.as_ref()?;
@@ -199,11 +195,11 @@ pub fn symbolic_execution(file_name: &String, function_name: &String, is_benchma
             } else {
                 warn!("{} is not a supported parameter type!", var_type);
             }
-        };
+        }
         let mut source_file_content = fs::read_to_string(file_name).unwrap();
         source_file_content = source_file_content.replace("fn main", "fn _main");
         source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
-        for argument_value in argument_values {
+        for argument_value in &argument_values {
             source_file_content = format!("{}{},", source_file_content, argument_value);
         }
 
@@ -212,7 +208,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String, is_benchma
             // Inject custom main function as entry point for test program to generate stack trace
             source_file_content = source_file_content.replace("fn main", "fn _main");
             source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
-            for argument_value in argument_values {
+            for argument_value in &argument_values {
                 source_file_content = format!("{}{},", source_file_content, argument_value);
             }
             source_file_content = format!("{});}}", source_file_content);

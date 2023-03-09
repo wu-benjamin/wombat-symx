@@ -1,21 +1,19 @@
 use std::collections::{HashMap, HashSet};
 
-use tracing::{warn};
+use tracing::warn;
 
-use inkwell::module::{Module as InkwellModule};
 use inkwell::basic_block::BasicBlock;
+use inkwell::module::Module as InkwellModule;
 use inkwell::values::{FunctionValue, InstructionOpcode};
 
-use z3::Solver;
 use z3::ast::{Ast, Bool, Int};
+use z3::Solver;
 
 use crate::codegen::codegen_instruction::codegen_instruction;
+use crate::symbolic_execution::{COMMON_END_NODE, PANIC_VAR_NAME};
 use crate::utils::var_utils::get_var_name;
-use crate::symbolic_execution::{PANIC_VAR_NAME, COMMON_END_NODE};
-
 
 pub type EdgeSet = HashMap<String, HashSet<String>>;
-
 
 fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, namespace: &str) -> Option<BasicBlock<'a>> {
     let mut matching_bb: Option<BasicBlock> = None;
@@ -33,20 +31,13 @@ fn get_basic_block_by_name<'a>(function: &'a FunctionValue, name: &String, names
     matching_bb
 }
 
-
 pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
     return if let Some(terminator) = bb.get_terminator() {
         let opcode = terminator.get_opcode();
         match &opcode {
-            InstructionOpcode::Return => {
-                Some(false)
-            }
-            InstructionOpcode::Br => {
-                Some(false)
-            }
-            InstructionOpcode::Switch => {
-                Some(false)
-            }
+            InstructionOpcode::Return => Some(false),
+            InstructionOpcode::Br => Some(false),
+            InstructionOpcode::Switch => Some(false),
             InstructionOpcode::IndirectBr => {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
                 None
@@ -75,9 +66,7 @@ pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
                 warn!("Unsure if opcode {:?} implies a panicking block.", opcode);
                 None
             }
-            InstructionOpcode::Unreachable => {
-                Some(true)
-            }
+            InstructionOpcode::Unreachable => Some(true),
             _ => {
                 warn!("Opcode {:?} is not supported as a terminator for panic detection", opcode);
                 None
@@ -86,19 +75,15 @@ pub fn is_panic_block(bb: &BasicBlock) -> Option<bool> {
     } else {
         warn!("\tNo terminator found for panic detection");
         None
-    }
+    };
 }
 
-
-pub fn get_entry_condition<'a>(
-    solver: &'a Solver<'_>,
-    function: &'a FunctionValue,
-    predecessor: &str,
-    node: &str,
-    namespace: &str,
-) -> Bool<'a> {
+pub fn get_entry_condition<'a>(solver: &'a Solver<'_>, function: &'a FunctionValue, predecessor: &str, node: &str, namespace: &str) -> Bool<'a> {
     let mut entry_condition = Bool::from_bool(solver.get_context(), true);
-    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace).unwrap().get_terminator() {
+    if let Some(terminator) = get_basic_block_by_name(function, &String::from(predecessor), namespace)
+        .unwrap()
+        .get_terminator()
+    {
         let opcode = terminator.get_opcode();
         let num_operands = terminator.get_num_operands();
         match &opcode {
@@ -113,15 +98,10 @@ pub fn get_entry_condition<'a>(
                     if successor_basic_block_name_1.eq(&String::from(node)) {
                         target_val = false;
                     }
-                    let target_val_var =
-                        Bool::from_bool(solver.get_context(), target_val);
-                    let switch_var = Bool::new_const(
-                        solver.get_context(),
-                        get_var_name(&discriminant, solver, namespace),
-                    );
+                    let target_val_var = Bool::from_bool(solver.get_context(), target_val);
+                    let switch_var = Bool::new_const(solver.get_context(), get_var_name(&discriminant, solver, namespace));
 
                     entry_condition = switch_var._eq(&target_val_var);
-
                 } else {
                     warn!("Incorrect number of operators {:?} for opcode {:?} for edge generations", num_operands, opcode);
                 }
@@ -134,20 +114,17 @@ pub fn get_entry_condition<'a>(
                         let basic_block = terminator.get_operand(i).unwrap().right().unwrap();
                         let basic_block_name = format!("{}{}", namespace, basic_block.get_name().to_str().unwrap());
                         if basic_block_name.eq(&String::from(node)) {
-                            target_val = terminator.get_operand(i-1).unwrap().left().unwrap();
+                            target_val = terminator.get_operand(i - 1).unwrap().left().unwrap();
                             break;
                         }
                     }
                 }
-                let switch_var = Int::new_const(
-                    solver.get_context(),
-                    get_var_name(&discriminant, solver, namespace),
-                );
+                let switch_var = Int::new_const(solver.get_context(), get_var_name(&discriminant, solver, namespace));
 
                 if target_val == terminator.get_operand(0).unwrap().left().unwrap() {
                     // default
                     for j in 2..num_operands {
-                        if j % 2 == 0 { 
+                        if j % 2 == 0 {
                             let temp_target_val = terminator.get_operand(j).unwrap().left().unwrap();
                             let temp_target_val_var = Int::new_const(solver.get_context(), get_var_name(&temp_target_val, solver, namespace));
                             entry_condition = Bool::and(solver.get_context(), &[&(switch_var._eq(&temp_target_val_var)).not(), &entry_condition]);
@@ -166,14 +143,13 @@ pub fn get_entry_condition<'a>(
             }
             _ => {
                 warn!("Opcode {:?} is not supported as a terminator for computing node entry conditions", opcode);
-            },
+            }
         }
     } else {
         warn!("\tNo terminator found when computing node entry conditions");
     }
     entry_condition
 }
-
 
 #[allow(clippy::too_many_arguments)]
 pub fn codegen_basic_block(
@@ -185,15 +161,13 @@ pub fn codegen_basic_block(
     solver: &Solver,
     namespace: &str,
     call_stack: &str,
-    return_register: &str
+    return_register: &str,
 ) {
     let mut successor_conditions = Bool::from_bool(solver.get_context(), true);
     if let Some(successors) = forward_edges.get(&node) {
         for successor in successors {
-            let successor_var =
-                Bool::new_const(solver.get_context(), String::from(successor));
-            successor_conditions =
-                Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
+            let successor_var = Bool::new_const(solver.get_context(), String::from(successor));
+            successor_conditions = Bool::and(solver.get_context(), &[&successor_conditions, &successor_var]);
         }
     }
     let mut node_var = successor_conditions;

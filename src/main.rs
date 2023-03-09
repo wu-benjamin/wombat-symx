@@ -26,19 +26,15 @@ fn main() {
 
     // Setup the tracing debug level
     let subscriber = if features.debug {
-        FmtSubscriber::builder()
-            .with_max_level(Level::DEBUG)
-            .finish()
+        FmtSubscriber::builder().with_max_level(Level::DEBUG).finish()
     } else {
-        FmtSubscriber::builder()
-            .with_max_level(Level::WARN)
-            .finish()
+        FmtSubscriber::builder().with_max_level(Level::WARN).finish()
     };
     // _guard resets the current default dispatcher to the prior default when dropped
     let _guard = tracing::subscriber::set_default(subscriber);
 
     let file_name = String::from(&features.file_name);
     let function_name = String::from(&features.function_name);
-
+    
     symbolic_execution(&file_name, &function_name);
 }

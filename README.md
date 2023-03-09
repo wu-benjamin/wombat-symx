@@ -84,7 +84,7 @@ A human-readable LLVM IR format can be created by using the following:
 rustc --emit=llvm-ir <file-name>.rs
 ```
 
-# Linting and Formatting
+# Linting
 
 Obtain a report from the linter by running the following command:
 ```
@@ -94,11 +94,6 @@ cargo clippy
 Attempt to automatically fix linter issues by running the following command:
 ```
 cargo clippy --fix
-```
-
-Standardize the format of the source code by running the following command:
-```
-cargo fmt
 ```
 
 # Benchmarking

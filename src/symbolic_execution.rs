@@ -19,7 +19,6 @@ use crate::utils::function_utils::{get_function_name, get_function_by_name, get_
 use crate::utils::var_utils::{get_min_max_signed_int, get_var_name};
 use crate::utils::resolve_phi_to_dsa::resolve_phi_to_dsa;
 
-// pub const MAIN_FUNCTION_NAMESPACE: &str = "wombat_symx_";
 pub const MAIN_FUNCTION_NAMESPACE: &str = "";
 pub const COMMON_END_NODE: &str = "common_end_node";
 pub const PANIC_VAR_NAME: &str = "is_panic";
@@ -133,7 +132,7 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let call_stack = function.get_name().to_str().unwrap();
     codegen_function(&module, &function, &solver, MAIN_FUNCTION_NAMESPACE, call_stack, COMMON_END_NODE, MAIN_FUNCTION_RETURN_REGISTER);
 
-    // constrain int inputs
+    // Constrain int inputs
     // Supports signed int types and booleans
     for input in function.get_params() {
         if input.get_type().to_string().eq("\"i1\"") {
@@ -167,67 +166,72 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
     let is_confirmed_unsafe = satisfiability == SatResult::Sat;
     println!("\nFunction safety: {}", if is_confirmed_safe {"safe"} else if is_confirmed_unsafe {"unsafe"} else {"unknown"});
 
-    // Exhibit a pathological input if the function is unsafe
     if is_confirmed_unsafe {
-        let model = solver.get_model().unwrap();
-        debug!("\n{:?}", model);
-        println!("\nUnsafe values:");
-        let mut argument_values = Vec::<String>::new();
-        for (arg_name, z3_name, var_type) in func_arg_names {
-            // TODO: Support non-int params
-            let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
-            let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
-            let value_string;
-            if var_type.to_string().eq("\"i1\"") {
-                let value = Bool::new_const(solver.get_context(), z3_name.as_str());
-                value_string = format!("{:?}", model.eval(&value, true).unwrap());
-                let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
-                println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
-                argument_values.push(cleaned_value_string.to_string());
-            } else if var_type.is_int_type() {
-                let value = Int::new_const(solver.get_context(), z3_name.as_str());
-                value_string = format!("{:?}", model.eval(&value, true).unwrap());
-                let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
-                println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
-                argument_values.push(cleaned_value_string.to_string());
-            } else {
-                warn!("{} is not a supported parameter type!", var_type);
+        if function_name.eq(&String::from("main")) {
+            warn!("Showing a stack trace for a pathological input is not supported for the main function as the main function does not accept arguments outside the command line");
+        } else {
+            // Exhibit a pathological input if the function is unsafe
+            // Supports signed int types and booleans
+            let model = solver.get_model().unwrap();
+            debug!("\n{:?}", model);
+            println!("\nUnsafe values:");
+            let mut argument_values = Vec::<String>::new();
+            for (arg_name, z3_name, var_type) in func_arg_names {
+                let arg_name_without_namespace = &arg_name[MAIN_FUNCTION_NAMESPACE.len()..];
+                let arg_name_without_namespace_and_percent = arg_name_without_namespace.replace("%", "");
+                let value_string;
+                if var_type.to_string().eq("\"i1\"") {
+                    let value = Bool::new_const(solver.get_context(), z3_name.as_str());
+                    value_string = format!("{:?}", model.eval(&value, true).unwrap());
+                    let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
+                    println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
+                    argument_values.push(cleaned_value_string.to_string());
+                } else if var_type.is_int_type() {
+                    let value = Int::new_const(solver.get_context(), z3_name.as_str());
+                    value_string = format!("{:?}", model.eval(&value, true).unwrap());
+                    let cleaned_value_string = &value_string.replace("(", "").replace(")", "").replace(" ", "");
+                    println!("\t{:?} = {}", &arg_name_without_namespace_and_percent, cleaned_value_string);
+                    argument_values.push(cleaned_value_string.to_string());
+                } else {
+                    warn!("{} is not a supported parameter type!", var_type);
+                }
+            };
+            
+            let mut source_file_content = fs::read_to_string(file_name).unwrap();
+            // Inject custom main function as entry point for test program to generate stack trace
+            source_file_content = source_file_content.replace("fn main", "fn _main");
+            source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
+            for argument_value in argument_values {
+                source_file_content = format!("{}{},", source_file_content, argument_value);
             }
-        };
-        
-        let mut source_file_content = fs::read_to_string(file_name).unwrap();
-        source_file_content = source_file_content.replace("fn main", "fn _main");
-        source_file_content = format!("{}\nfn main() {{{}(", source_file_content, function_name);
-        for argument_value in argument_values {
-            source_file_content = format!("{}{},", source_file_content, argument_value);
+            source_file_content = format!("{});}}", source_file_content);
+            debug!("{}", source_file_content);
+
+            let mut temp_file_path_base_end_index = 0;
+            if file_name.rfind('/').is_some() {
+                temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
+            }
+            let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
+            fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
+
+            let _temp_source_file_dropper = FileDropper {
+                file_name: &temp_source_file_name,
+            };
+
+            let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
+
+            Command::new("rustc")
+                .args([&temp_source_file_name, "-o", &temp_executable_file_name])
+                .status()
+                .expect("Failed to generate executable file!");
+
+            let _temp_executable_file_dropper = FileDropper {
+                file_name: &String::from(temp_executable_file_name),
+            };
+
+            println!("\n{}", format!("Error from calling function {} with unsafe arguments:", function_name));
+            println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace("\n", "\n\t"));
         }
-        source_file_content = format!("{});}}", source_file_content);
-        debug!("{}", source_file_content);
-
-        let mut temp_file_path_base_end_index = 0;
-        if file_name.rfind('/').is_some() {
-            temp_file_path_base_end_index = file_name.rfind('/').unwrap() + 1;
-        }
-        let temp_source_file_name = format!("{}temp_wombat_symx_{}", &file_name[0..temp_file_path_base_end_index], &file_name[temp_file_path_base_end_index..file_name.len()]);
-        fs::write(&temp_source_file_name, format!("{}", source_file_content)).expect("Failed to write file!");
-
-        let _temp_source_file_dropper = FileDropper {
-            file_name: &temp_source_file_name,
-        };
-
-        let temp_executable_file_name = &temp_source_file_name[0..temp_source_file_name.rfind('.').unwrap()];
-
-        Command::new("rustc")
-            .args([&temp_source_file_name, "-o", &temp_executable_file_name])
-            .status()
-            .expect("Failed to generate executable file!");
-
-        let _temp_executable_file_dropper = FileDropper {
-            file_name: &String::from(temp_executable_file_name),
-        };
-
-        println!("\n{}", format!("Error from calling function {} with unsafe arguments:", function_name));
-        println!("\t{}", std::str::from_utf8(&Command::new(format!("./{}", temp_executable_file_name)).output().ok().unwrap().stderr).unwrap().replace("\n", "\n\t"));
     }
 
     return Some(is_confirmed_safe);

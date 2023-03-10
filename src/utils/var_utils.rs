@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Benjamin Jialong Wu
 // This code is licensed under MIT license (see LICENSE.md for details)
 
-use inkwell::values::{AnyValue};
+use inkwell::values::AnyValue;
 
 use z3::ast::{Ast, Bool, Int};
 use z3::Solver;

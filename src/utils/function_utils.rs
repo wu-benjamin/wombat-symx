@@ -73,7 +73,8 @@ pub fn get_all_function_argument_names<'a>(module: &'a InkwellModule, solver: &'
     let mut next_function = module.get_first_function();
     while let Some(current_function) = next_function {
         let current_full_function_name = get_function_name(&current_function.as_global_value().as_pointer_value());
-        let function_argument_names = get_function_argument_names(current_function, solver, namespace);
+        let mut function_argument_names = get_function_argument_names(current_function, solver, namespace);
+        function_argument_names.sort_by(|(arg_name_a, _z3_a, _bte_a), (arg_name_b, _z3_b, _bte_b)| arg_name_a.cmp(arg_name_b));
         all_func_arg_names.insert(current_full_function_name, function_argument_names);
         next_function = current_function.get_next_function();
     }

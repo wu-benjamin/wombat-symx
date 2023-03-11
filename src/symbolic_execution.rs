@@ -170,7 +170,15 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         // Exhibit a pathological input if the function is unsafe
         // Supports signed int types and booleans
         let model = solver.get_model().unwrap();
-        debug!("\n{:?}", model);
+
+        // Difficult to manually extract variables in model. Instead, parse and clean model output
+        let model_str = format!("{:?}", model);
+        let mut model_output_tokens: Vec<String> = model_str.split('\n').map(|s| s.to_string()).collect();
+        model_output_tokens.remove(0);
+        model_output_tokens.sort();
+        let cleaned_model_output = model_output_tokens.join("\n");
+        debug!("{}", cleaned_model_output);
+
         println!("\nUnsafe values:");
         let mut argument_values = Vec::<String>::new();
         for (arg_name, z3_name, var_type) in func_arg_names {

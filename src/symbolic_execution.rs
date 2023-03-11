@@ -174,7 +174,6 @@ pub fn symbolic_execution(file_name: &String, function_name: &String) -> Option<
         // Difficult to manually extract variables in model. Instead, parse and clean model output
         let model_str = format!("{:?}", model);
         let mut model_output_tokens: Vec<String> = model_str.split('\n').map(|s| s.to_string()).collect();
-        model_output_tokens.remove(0);
         model_output_tokens.sort();
         let cleaned_model_output = model_output_tokens.join("\n");
         debug!("{}", cleaned_model_output);

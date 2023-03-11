@@ -19,6 +19,10 @@ struct Args {
     /// Set function to perform symbolic execution on
     #[clap()]
     function_name: String,
+
+    /// Enable benchmark mode which disables compilation of test files
+    #[clap(short, long)]
+    benchmark_mode: bool,
 }
 
 fn main() {
@@ -35,6 +39,5 @@ fn main() {
 
     let file_name = String::from(&features.file_name);
     let function_name = String::from(&features.function_name);
-
-    symbolic_execution(&file_name, &function_name);
+    symbolic_execution(&file_name, &function_name, features.benchmark_mode);
 }

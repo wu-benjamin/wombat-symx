@@ -4,3 +4,5 @@
 /.vscode
 /.idea
 /tests_temp
+/benchmark_output/klee*
+/benchmark_output/wombat*

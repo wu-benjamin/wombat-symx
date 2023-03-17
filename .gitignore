@@ -6,3 +6,6 @@
 /tests_temp
 /benchmark_output/klee*
 /benchmark_output/wombat*
+.DS_Store
+
+

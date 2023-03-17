@@ -106,6 +106,10 @@ cargo fmt
 
 `brew install klee`
 
+## Install hyperfine
+
+`brew install hyperfine`
+
 ## Add to Include Path
 
 Add the path to the directory (check with `brew info klee`) with the header file to the C include path.

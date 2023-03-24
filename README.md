@@ -114,13 +114,18 @@ cargo fmt
 
 Add the path to the directory (check with `brew info klee`) with the header file to the C include path.
 The path looks like the following:
-`"/opt/homebrew/Cellar/klee/2.3_4/include/klee"`
+
+m1: `"/opt/homebrew/Cellar/klee/2.3_4/include/klee"`
+
+intel: `"/usr/local/Cellar/klee/2.3_4/include/klee"`
 
 ## Generate Test Cases
 `python3 generate_test_seq_br.py <language> <number_of_branches> <safety>`
 
 ## Compile C Code for KLEE
-`clang -I "/opt/homebrew/Cellar/klee/2.3_4/include/klee" -emit-llvm -c -g -O0 -Xclang -disable-O0-optnone <c_file>`
+m1: `clang -I "/opt/homebrew/Cellar/klee/2.3_4/include/klee" -emit-llvm -c -g -O0 -Xclang -disable-O0-optnone <c_file>`
+
+intel: `clang -I "/usr/local/Cellar/klee/2.3_4/include/klee" -emit-llvm -c -g -O0 -Xclang -disable-O0-optnone <c_file>`
 
 ## Time KLEE
 `time klee <c_bc_file>`

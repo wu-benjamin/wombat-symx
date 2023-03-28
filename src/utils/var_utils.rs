@@ -43,7 +43,7 @@ pub fn get_var_name<'a>(value: &dyn AnyValue, solver: &'a Solver<'_>, namespace:
 pub fn get_min_max_signed_int(size: &str) -> (i64, i64) {
     match size {
         "8" => (i8::MIN as i64, i8::MAX as i64),
-        "16" => (i8::MIN as i64, i8::MAX as i64),
+        "16" => (i16::MIN as i64, i16::MAX as i64),
         "32" => (i32::MIN as i64, i32::MAX as i64),
         "64" => (i64::MIN, i64::MAX),
         "size" => (isize::MIN as i64, isize::MAX as i64), // isize depends on devices architecture (32 bits or 64 bits)

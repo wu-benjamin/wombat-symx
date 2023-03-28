@@ -1,0 +1,7 @@
+fn unsafe_assert_bool_op(x: i32) -> () {
+    assert!(x > 0 && x < 13);
+}
+
+fn main() {
+    println!("{:p}", unsafe_assert_bool_op as *const ());
+}

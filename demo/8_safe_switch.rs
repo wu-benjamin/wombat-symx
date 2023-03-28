@@ -1,3 +1,4 @@
+// target/release/wombat_symx demo/8_safe_switch.rs safe_switch
 fn safe_switch(x: i32) -> i32 {
     match x{
         1=>{

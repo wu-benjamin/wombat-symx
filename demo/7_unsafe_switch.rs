@@ -1,3 +1,4 @@
+// target/release/wombat_symx demo/7_unsafe_switch.rs unsafe_switch
 fn unsafe_switch(x: i64) -> i64 {
     match x{
         1=>{

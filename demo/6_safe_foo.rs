@@ -1,3 +1,4 @@
+// target/release/wombat_symx demo/6_safe_foo.rs safe_foo
 fn safe_foo(c1: bool, c2: bool, mut x: i32) -> i32 {
     if x > i32::MAX - 4 {
         x = i32::MAX - 4;
